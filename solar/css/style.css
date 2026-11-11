@@ -1565,3 +1565,15 @@ ul {
   -webkit-mask: url("../../assets/img/logo.svg") center / contain no-repeat;
           mask: url("../../assets/img/logo.svg") center / contain no-repeat;
 }
+
+/* Hero headline: Figma sm/h1 — 56/62 Medium, −1% (40/46 on phones),
+   the same size as the Electronics hero headline */
+.hero__title.display-xl {
+  font-size: 56px;
+  line-height: 62px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+@media (max-width: 720px) {
+  .hero__title.display-xl { font-size: 40px; line-height: 46px; }
+}

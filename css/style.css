@@ -262,15 +262,19 @@ ul { list-style: none; }
 }
 
 .hero { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-.hero__title {
+.hero__title {                     /* same type style as the Solar hero (display-xl), in white */
   position: absolute;
   top: 158px;
   left: var(--gutter);
-  font-weight: 400;
-  font-size: clamp(36px, 3.9vw, 66px);
-  line-height: 1.13;
-  letter-spacing: -0.01em;
+  font-weight: 500;
+  font-size: clamp(42px, 5.25vw, 82px);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  color: #fff;
 }
+/* word masks for the intro: each word rises out of its own clipped box */
+.hero__title .wm { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .1em; margin-bottom: -.1em; }
+.hero__title .wd { display: inline-block; will-change: transform; }
 .news {
   pointer-events: auto;
   position: absolute;
@@ -1218,3 +1222,60 @@ body.is-leaving { opacity: 0; }
    e.g. a GitHub Pages address like user.github.io/smith-prototype/ */
 .photo-bg--impact      { --img: url("../assets/img/impact.jpg"); }
 .photo-bg--testimonial { --img: url("../assets/img/testimonial.jpg"); }
+
+/* =========================================================
+   Type scale — Figma text styles (sm/h1 … sm/h6, sm/stat), all set in
+   Gilroy Medium. Desktop sizes first; phones (≤720px) use the mobile
+   values from the Figma home / mobile frame. These rules come last so
+   they win over the per-section sizes above.
+   ========================================================= */
+:root {
+  --h1: 500 56px/62px var(--sans);   --h1-ls: -0.01em;
+  --h2: 500 48px/54px var(--sans);   --h2-ls: -0.01em;
+  --h3: 500 40px/46px var(--sans);   --h3-ls: -0.005em;
+  --h4: 500 32px/40px var(--sans);
+  --h5: 500 24px/30px var(--sans);
+  --h6: 500 20px/26px var(--sans);
+  --stat: 500 56px/64px var(--sans); --stat-ls: -0.01em;
+}
+
+/* sm/h1 — hero headline */
+.hero__title { font: var(--h1); letter-spacing: var(--h1-ls); }
+
+/* sm/h2 — section headlines and big statements */
+.statement, .insights__title, .quote__text, .section__title,
+.testimonial blockquote, .footer__quote, .modal__title {
+  font: var(--h2); letter-spacing: var(--h2-ls);
+}
+
+/* sm/h3 — product names */
+.product h3 { font: var(--h3); letter-spacing: var(--h3-ls); }
+
+/* sm/h4 — insight cards, chart title */
+.card h3, .chart__title { font: var(--h4); letter-spacing: 0; }
+
+/* sm/h5 — service cards, testimonial author */
+.svc-card h3, .testimonial figcaption b { font: var(--h5); letter-spacing: 0; }
+
+/* sm/h6 — CTA cards, footer headings, ™/® marks */
+.cta-card p, .footer h3, .product__mark-sym { font: var(--h6); letter-spacing: 0; }
+
+/* sm/stat — global reach numbers */
+.stat b { font: var(--stat); letter-spacing: var(--stat-ls); }
+
+@media (max-width: 720px) {
+  :root {
+    --h1: 500 40px/46px var(--sans);
+    --h2: 500 32px/38px var(--sans);
+    --h3: 500 28px/34px var(--sans);
+    --h4: 500 24px/30px var(--sans);
+    --h5: 500 20px/26px var(--sans);
+    --stat: 500 40px/44px var(--sans);
+  }
+  /* mobile frame swaps a few styles */
+  .statement, .footer__quote { font: var(--h3); letter-spacing: var(--h3-ls); }
+  .quote__text, .chart__title { font: var(--h4); letter-spacing: 0; }
+  .card h3 { font: var(--h5); }
+  .product__mark-sym { font: 500 16px/22px var(--sans); }
+}
+.stat b { font-variant-numeric: tabular-nums; }   /* keep digits steady while counting up */

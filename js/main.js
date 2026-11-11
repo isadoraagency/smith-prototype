@@ -79,6 +79,41 @@ if (SOLID_NAV_ON_SCROLL) ScrollTrigger.create({
 });
 
 /* ---------------------------------------------------------
+   2b. Hero intro — same choreography as the Smith Solar hero:
+       the headline words rise out of their masks one by one,
+       the video settles from a zoom, then the news card,
+       ticker, nav and chat button follow.
+       (The scroll-driven stage below animates .hero__title and
+       .news themselves, so the intro only touches their insides
+       / a clip-path, never the same properties.)
+   --------------------------------------------------------- */
+const heroTitle = document.querySelector('.hero__title');
+heroTitle.innerHTML = heroTitle.innerHTML
+  .split(/(<br\s*\/?>)/i)
+  .map((part) => (/^<br/i.test(part) ? part : part.trim().split(/\s+/)
+    .map((w) => `<span class="wm"><span class="wd">${w}</span></span>`).join(' ')))
+  .join('');
+const heroWords = heroTitle.querySelectorAll('.wd');
+const introNav = gsap.utils.toArray('.nav > *, .ticker, .chat');
+
+if (!reduceMotion) {
+  // hide everything before the first paint so nothing flashes in place
+  gsap.set(heroWords, { yPercent: 110 });
+  gsap.set('#heroVideo', { scale: 1.22 });
+  gsap.set('.news', { clipPath: 'inset(0% 0% 100% 0% round 14px)' });
+  gsap.set(introNav, { y: -24, autoAlpha: 0 });
+
+  const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
+  Promise.race([fontsReady, new Promise((r) => setTimeout(r, 1200))]).then(() => {
+    gsap.timeline({ defaults: { ease: 'expo.out', duration: 1.4 } })
+      .to(heroWords, { yPercent: 0, stagger: 0.06 }, 0)
+      .to('#heroVideo', { scale: 1, duration: 2.4, clearProps: 'scale' }, 0)
+      .to(introNav, { y: 0, autoAlpha: 1, stagger: 0.07, duration: 1.2, clearProps: 'transform,opacity,visibility' }, 0.2)
+      .to('.news', { clipPath: 'inset(0% 0% 0% 0% round 14px)', duration: 1.2, clearProps: 'clipPath' }, 0.55);
+  });
+}
+
+/* ---------------------------------------------------------
    3. Stage — hero video shrinks into the big circle,
       lines draw in from the left, bubbles pop up,
       statement lights up word by word.
