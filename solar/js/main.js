@@ -154,88 +154,15 @@
   }
 
   /* ------------------------------------------------------------------------
-     Preloader
+     Start-up (the yellow preloader was removed): wait briefly for the web
+     fonts so the title splits on the right words, then start the intro.
+     The scrub video keeps loading in the background; until it is ready the
+     hero shows its poster frame (initHero waits for video.duration).
      ------------------------------------------------------------------------ */
-  function runLoader(video) {
-    const loader = $(".loader");
-    const countEl = $(".js-load-count");
-    const bar = $(".js-load-bar");
-    const shown = { v: 0 };
-    let real = 0;
-
-    const render = () => {
-      countEl.textContent = Math.round(shown.v);
-      bar.style.transform = `scaleX(${shown.v / 100})`;
-    };
-    // creep forward even without a content-length
-    const creep = gsap.to(shown, {
-      v: 88,
-      duration: 6,
-      ease: "power1.out",
-      onUpdate: render,
-    });
-    const follow = (p) => {
-      real = Math.max(real, p * 100);
-      if (real > shown.v) {
-        creep.kill();
-        gsap.to(shown, {
-          v: Math.min(real, 99),
-          duration: 0.4,
-          ease: "power2.out",
-          onUpdate: render,
-          overwrite: true,
-        });
-      }
-    };
-
-    gsap.from(".loader__inner > *", {
-      yPercent: 40,
-      autoAlpha: 0,
-      stagger: 0.08,
-      duration: 1,
-    });
-
-    const minTime = new Promise((r) => setTimeout(r, 900));
-    return Promise.all([
-      loadVideo(video, follow),
-      document.fonts ? document.fonts.ready : null,
-      minTime,
-    ]).then(
-      () =>
-        new Promise((resolve) => {
-          creep.kill();
-          gsap.to(shown, {
-            v: 100,
-            duration: 0.5,
-            ease: "power2.out",
-            overwrite: true,
-            onUpdate: render,
-            onComplete: () => {
-              const tl = gsap.timeline({
-                onComplete: () => {
-                  loader.remove();
-                },
-              });
-              tl.to(".loader__inner", {
-                yPercent: -30,
-                autoAlpha: 0,
-                duration: 0.6,
-                ease: "power3.in",
-              })
-                .to(
-                  loader,
-                  {
-                    clipPath: "inset(0 0 100% 0)",
-                    duration: 1.1,
-                    ease: "expo.inOut",
-                  },
-                  "-=0.15",
-                )
-                .add(resolve, "-=0.75");
-            },
-          });
-        }),
-    );
+  function whenReady() {
+    const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
+    const cap = new Promise((r) => setTimeout(r, 1200));   // never wait longer than this
+    return Promise.race([fonts, cap]);
   }
 
   /* ------------------------------------------------------------------------
@@ -933,8 +860,6 @@
      ------------------------------------------------------------------------ */
   function initStatic(video) {
     document.documentElement.classList.add("is-static");
-    $(".loader") && $(".loader").remove();
-    document.body.classList.remove("is-loading");
     video.removeAttribute("data-src");
     ScrollTrigger.create({
       trigger: "[data-statement]",
@@ -960,11 +885,11 @@
   window.scrollTo(0, 0);
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
-  // Hide intro elements before the loader lifts
+  // Hide intro elements until the intro plays
   gsap.set(".nav > *, .hero__aside > *, .hero__scroll > *", { autoAlpha: 0 });
 
-  runLoader(video).then(() => {
-    document.body.classList.remove("is-loading");
+  loadVideo(video, () => {});   // background — no loader screen
+  whenReady().then(() => {
     gsap.set(".nav > *, .hero__aside > *, .hero__scroll > *", {
       clearProps: "opacity,visibility",
     });
