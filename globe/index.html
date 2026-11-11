@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Smith Global Reach Globe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  @font-face { font-family: "Gilroy"; src: url("../assets/fonts/Gilroy-Light.woff2") format("woff2"); font-weight: 300; font-display: swap; }
+  @font-face { font-family: "Gilroy"; src: url("../assets/fonts/Gilroy-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Gilroy"; src: url("../assets/fonts/Gilroy-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+</style>
+<style>
+  /* Layout: Smith "Global reach" section — WebGL dot globe left, region card right, on brand/cobalt with the dot pattern (gradients retired Nov 2026). Single deliberate look (matches the Figma comp in both host themes). */
+  :root {
+    --cobalt: #00253e;       /* brand/cobalt, section background */
+    --ink: #ffffff;          /* text/inverse */
+    --ink-soft: rgba(255, 255, 255, 0.7);
+    --red: #d53b2d;          /* Smith offices */
+    --blue: #2c8bff;         /* Manufacturing hubs */
+    --chip-on: rgba(255, 255, 255, 0.16);
+    --line: rgba(255, 255, 255, 0.32);
+    --font-display: "Gilroy", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  .is-embed, .is-embed body { height: auto; }
+  body {
+    background:
+      radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1.2px) 0 0 / 16px 16px,
+      var(--cobalt);
+    color: var(--ink);
+    font-family: var(--font-display);
+    overflow-x: hidden;
+  }
+  .stage {
+    min-height: 100%;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 395px);
+    gap: clamp(24px, 4vw, 64px);
+    align-items: center;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding-block: clamp(24px, 5vw, 72px);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .globe-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+    touch-action: none;
+    cursor: grab;
+  }
+  .globe-wrap.dragging { cursor: grabbing; }
+  #globe { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+  /* Zoomed in, the globe is larger than the canvas: fade the edges to a round lens instead of a square crop. */
+  .globe-wrap.zoomed #globe { -webkit-mask-image: radial-gradient(circle closest-side, #000 82%, transparent 100%); mask-image: radial-gradient(circle closest-side, #000 82%, transparent 100%); }
+  .markers { position: absolute; inset: 0; pointer-events: none; }
+  .marker {
+    position: absolute; left: 0; top: 0;
+    width: 14px; height: 14px; margin: -7px 0 0 -7px;
+    border-radius: 50%; border: 2px solid #fff;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+    padding: 0; cursor: pointer; pointer-events: auto;
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  .marker.office { background: var(--red); }
+  .marker.hub { background: var(--blue); }
+  .marker.dim { opacity: 0.35; }
+  .marker.hidden, .marker.hidden.dim { opacity: 0; pointer-events: none; }
+  .marker.featured {
+    width: 20px; height: 20px; margin: -10px 0 0 -10px; border-width: 3px; z-index: 2;
+    box-shadow: 0 0 0 7px rgba(213, 59, 45, 0.24), 0 0 0 16px rgba(213, 59, 45, 0.10), 0 2px 10px rgba(0, 37, 62, 0.35);
+  }
+  .marker.featured.active::after { inset: -22px; border-width: 2px; }
+  .flag {
+    position: absolute; left: 0; top: 0; pointer-events: none; white-space: nowrap;
+    background: #192134; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px;
+    font-size: 14px; line-height: 1.25; box-shadow: 0 6px 20px rgba(0, 20, 40, 0.25);
+    transition: opacity 0.3s;
+  }
+  .flag small { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ff8a7f; }
+  .flag.off { opacity: 0; }
+  .marker.active::after {
+    content: ""; position: absolute; inset: -9px; border-radius: 50%;
+    border: 1.5px solid currentColor; animation: ping 1.8s ease-out infinite;
+  }
+  .marker.office.active { color: var(--red); }
+  .marker.hub.active { color: var(--blue); }
+  .marker:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  @keyframes ping { from { transform: scale(0.6); opacity: 0.9; } to { transform: scale(1.6); opacity: 0; } }
+  .tip {
+    position: absolute; left: 0; top: 0; transform: translate(-50%, calc(-100% - 14px));
+    background: #192134; color: #fff; border: 1px solid var(--line); font-size: 13px; line-height: 1.3;
+    padding: 8px 12px; border-radius: 8px; white-space: nowrap; pointer-events: none;
+    box-shadow: 0 6px 20px rgba(0, 20, 40, 0.25);
+  }
+  .tip small { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
+  .hint {
+    position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft); pointer-events: none; transition: opacity 0.6s;
+  }
+  .zoom {
+    position: absolute; right: 2%; bottom: 8%; display: flex; flex-direction: column; gap: 8px; z-index: 3;
+  }
+  .zoom button {
+    width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; padding: 0; cursor: pointer;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--line); color: var(--ink);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: background 0.2s, opacity 0.2s;
+  }
+  .zoom button:hover { background: var(--chip-on); }
+  .zoom button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .zoom button:disabled { opacity: 0.4; cursor: default; background: rgba(255,255,255,0.06); }
+  .zoom button[hidden] { display: none; }
+  .zoom svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.6; fill: none; }
+
+  .panel { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+  .tab {
+    font-family: var(--font-mono); font-size: 12px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft); background: none; border: 0; padding: 10px 0; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .tab::before { content: ""; width: 7px; height: 7px; background: var(--red); display: none; }
+  .tab[aria-selected="true"] { color: var(--ink); font-weight: 500; }
+  .tab[aria-selected="true"]::before { display: inline-block; }
+  .tab:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .card { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  .photo {
+    width: 100%; max-width: 100%; aspect-ratio: 395 / 223; border-radius: 16px; overflow: hidden;
+    background: rgba(255,255,255,0.08);
+  }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo[hidden] { display: none; }
+  h2 { margin: 0; font-size: clamp(26px, 2.6vw, 30px); font-weight: 400; letter-spacing: -0.01em; text-wrap: balance; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 15px; color: var(--ink); }
+  .legend span { display: inline-flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; }
+  .legend i { width: 7px; height: 7px; display: inline-block; }
+  .desc { margin: 0; font-size: 17px; line-height: 1.55; font-weight: 300; max-width: 38ch; }
+  .places { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .places button {
+    font: 400 13px/1 var(--font-display); color: var(--ink); cursor: pointer;
+    background: transparent; border: 1px solid var(--line);
+    padding: 8px 12px 8px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .places button i { width: 7px; height: 7px; border-radius: 50%; }
+  .places button:hover, .places button[aria-pressed="true"] { background: var(--chip-on); }
+  .places button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .langs { margin: 0; font-size: 15px; font-weight: 300; }
+  .langs b { font-weight: 500; margin-right: 6px; }
+  .langs[hidden], .all-link[hidden] { display: none; }
+  .all-link { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-size: 16px; padding: 10px 4px; min-height: 44px; box-sizing: border-box; }
+  .all-link svg { width: 16px; height: 16px; stroke: var(--red); stroke-width: 1.6; fill: none; transition: transform 0.2s; }
+  .all-link:hover svg { transform: translateX(3px); }
+  .all-link:focus-visible { outline: 2px solid #2c8bff; outline-offset: 2px; }
+  .note { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); margin: 0; }
+  .fallback { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: var(--ink); }
+
+  @media (max-width: 820px) {
+    .stage { grid-template-columns: minmax(0, 1fr); }
+    .globe-wrap { max-width: 520px; margin: 0 auto; }
+  }
+  /* Mobile (375): tabs swipe row on top, full-width globe, region card below.
+     Horizontal drags rotate the globe; vertical swipes scroll the page. */
+  @media (max-width: 600px) {
+    .stage { gap: 24px; padding-block: 48px; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
+    .panel { display: contents; }
+    .tabs { order: 1; flex-wrap: nowrap; overflow-x: auto; gap: 24px; margin-inline: -24px; padding-inline: 24px; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { min-height: 44px; white-space: nowrap; }
+    .globe-wrap { order: 2; max-width: 100%; touch-action: pan-y; }
+    .card { order: 3; }
+    .marker { width: 18px; height: 18px; margin: -9px 0 0 -9px; }
+    .marker::before { content: ""; position: absolute; inset: -13px; } /* 44px hit area */
+    .marker.featured { width: 22px; height: 22px; margin: -11px 0 0 -11px; }
+    .flag { font-size: 13px; padding: 6px 10px; }
+    .hint { bottom: -4px; }
+    .zoom { right: 0; bottom: 4%; }
+    .zoom button { width: 44px; height: 44px; }
+    .places button { min-height: 44px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marker.active::after { animation: none; opacity: 0.6; }
+  }
+</style>
+
+</head>
+<body>
+<main class="stage">
+  <div class="globe-wrap" id="wrap">
+    <canvas id="globe" tabindex="0" aria-label="Interactive globe showing Smith offices and manufacturing hubs. Drag or use arrow keys to rotate; scroll, pinch or press plus and minus to zoom."></canvas>
+    <div class="markers" id="markers"></div>
+    <div class="hint" id="hint">Drag to rotate · Scroll to zoom</div>
+    <div class="zoom" role="group" aria-label="Zoom">
+      <button type="button" id="zoomIn" aria-label="Zoom in"><svg viewBox="0 0 16 16"><path d="M8 2v12M2 8h12"/></svg></button>
+      <button type="button" id="zoomOut" aria-label="Zoom out"><svg viewBox="0 0 16 16"><path d="M2 8h12"/></svg></button>
+      <button type="button" id="zoomReset" aria-label="Reset zoom" hidden><svg viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.5-3.5M3 2.5v2.5h2.5"/></svg></button>
+    </div>
+  </div>
+
+  <section class="panel" aria-label="Global reach">
+    <div class="tabs" role="tablist" aria-label="Region">
+      <button class="tab" role="tab" id="tab-all" data-region="all">All</button>
+      <button class="tab" role="tab" id="tab-americas" data-region="americas">Americas</button>
+      <button class="tab" role="tab" id="tab-apac" data-region="apac">Asia Pacific</button>
+      <button class="tab" role="tab" id="tab-emea" data-region="emea">EMEA</button>
+    </div>
+    <div class="card" role="tabpanel" id="panel">
+      <div class="photo" id="photo"><img id="photoImg" alt=""></div>
+      <h2 id="region"></h2>
+      <div class="legend">
+        <span><i style="background:var(--red)"></i><span id="nOffices"></span></span>
+        <span><i style="background:var(--blue)"></i><span id="nHubs"></span></span>
+      </div>
+      <p class="desc" id="desc"></p>
+      <ul class="places" id="places"></ul>
+      <p class="langs" id="langsRow"><b>Languages:</b><span id="langs"></span></p>
+      <a class="all-link" id="allLink" href="#all">All Locations <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+      <p class="note">Locations from Smith news releases · confirm before launch</p>
+    </div>
+  </section>
+</main>
+
+<script src="../vendor/three.min.js"></script>
+<script>
+(() => {
+  // ---- Content ---------------------------------------------------------
+  const IMG = { apac: "img/region-apac.jpg", americas: "img/region-americas.jpg" };   // region photos from the Figma region cards
+  // Smith's 20 locations, from smithweb.com news releases and Wikipedia (Nov 2026).
+  // type "office" (red) = sales office; "hub" (blue) = operational hub with testing and logistics.
+  const PLACES = [
+    { name: "São Paulo", lat: -23.55, lon: -46.63, type: "office", region: "americas", featured: true },
+    { name: "Houston", lat: 29.76, lon: -95.37, type: "hub", region: "americas", label: "Headquarters & operational hub" },
+    { name: "Austin", lat: 30.27, lon: -97.74, type: "office", region: "americas" },
+    { name: "New York", lat: 40.71, lon: -74.01, type: "office", region: "americas" },
+    { name: "Tampa", lat: 27.95, lon: -82.46, type: "office", region: "americas" },
+    { name: "Guadalajara", lat: 20.66, lon: -103.35, type: "office", region: "americas" },
+    { name: "Amsterdam", lat: 52.37, lon: 4.90, type: "hub", region: "emea", label: "European headquarters & operational hub" },
+    { name: "London", lat: 51.51, lon: -0.13, type: "office", region: "emea" },
+    { name: "Munich", lat: 48.14, lon: 11.58, type: "office", region: "emea" },
+    { name: "Berlin", lat: 52.52, lon: 13.40, type: "office", region: "emea" },
+    { name: "Cluj-Napoca", lat: 46.77, lon: 23.59, type: "office", region: "emea" },
+    { name: "Hong Kong", lat: 22.32, lon: 114.17, type: "hub", region: "apac", label: "Sales office & operational hub" },
+    { name: "Singapore", lat: 1.35, lon: 103.82, type: "hub", region: "apac" },
+    { name: "Shenzhen", lat: 22.54, lon: 114.06, type: "office", region: "apac" },
+    { name: "Shanghai", lat: 31.23, lon: 121.47, type: "office", region: "apac" },
+    { name: "Taipei", lat: 25.03, lon: 121.56, type: "office", region: "apac" },
+    { name: "Seoul", lat: 37.57, lon: 126.98, type: "office", region: "apac" },
+    { name: "Tokyo", lat: 35.68, lon: 139.69, type: "office", region: "apac" },
+    { name: "Penang", lat: 5.41, lon: 100.33, type: "office", region: "apac" },
+    { name: "Bengaluru", lat: 12.97, lon: 77.59, type: "office", region: "apac" },
+  ];
+  const kindOf = p => p.label || (p.type === "office" ? "Smith office" : "Operational hub");
+  const REGIONS = {
+    all:      { title: "Global reach", lon: -20, lat: 18, photo: null, langs: null,
+                desc: "Twenty locations across three regions, with operational hubs in Houston, Amsterdam, Hong Kong and Singapore." },
+    americas: { title: "Americas", lon: -58, lat: -8, photo: "americas", langs: "English, Spanish, Portuguese",
+                desc: "Headquartered in Houston, with sales teams from New York to São Paulo working one-on-one with customers." },
+    apac:     { title: "Asia Pacific", lon: 116, lat: 20, photo: "apac", langs: "Mandarin, English",
+                desc: "Trading desk and quality liaison, working alongside the Hsinchu and Kaohsiung supply base on IC, memory and passive sourcing." },
+    emea:     { title: "EMEA", lon: 12, lat: 40, photo: null, langs: "English, Dutch, German, Romanian",
+                desc: "European operations run from the Amsterdam hub, with sales offices in London, Munich, Berlin and Cluj-Napoca." },
+  };
+
+  // ---- Land mask (720×360 equirectangular bitmap, 1 bit per cell) -------
+  const MASK_W = 720, MASK_H = 360;
+  const maskBytes = Uint8Array.from(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//////gAAAAD////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB////////gAAB8P/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH///////+Af////////////8A/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////+A/////////////3//+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf8P//////g////////////////+AAAAAAAAAAAAAAAAAAAAHvAAAAAAAAAAAAAB/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//+AP///8H///////////////+AAAAAAAAAAAB//+AAAAAAHwAAAAAAAAAAAAAD//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///f////AAf//////////////+AAAAAAAAAD4/D/+AAAAAAAAAAAAAAAAAAAAAA//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAB//z//8AAD///////////////8AAAAAAAAAD//8AAAAAAAAAAAAAAAAAAAAAAAAP/xwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAf4eD/8///8AH////////////////4AAAAAAAAAB//8AAAAAAAAAAAAAAAAAAAAAAAAAAH/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8fgHA///8D/////////////////4AAAAAAAAAAf/w8AAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfwAAAB8ADn//AAf////////////////4AAAAAAAAAAB/A/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAAAAAAD//4AAB////////////////8AAAAAAAAAAD+AAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/gAEAAAD/4f///AAH////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAA+AAAAAAAAAAD/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfwPgPAB/4B8AAAwAAA////////////////gAAAAAAAAAAAAAAAAAAAAAAAAAAP/8AAAAAAAAAD////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+H8B/4A/gAcAAAAAAAf////////////4AAAAAAAAAAAAAAAAAAAAAAAAAH/4AAAAAAAAB///////AAAAAAAB//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB///8APx8f///wAAAAAAH////////////4AAAAAAAAAAAAAAAAAAAAAAAAB/4AAAAAAAAH///////+AAAAAAAD//z8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAA8H///wAAAAAAB////////////wAAAAAAAAAAAAAAAAAAAAAAAAD/AAAAAAAAB////////gAAAAAAAAcAAHAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/AAAAAAAAAAAAAAAAAAAAA////////////AAAAAAAAAAAAAAAAAAAAAAAAAP4AAAAAAAAB///////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAAAAEAf+AQAQAAAAAAAP///////////gAAAAAAAAAAAAAAAAAAAAAAAB/gAAAAAAAf/////////8AAAAAAAAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//kAAHgf4/4Pj+fwAAAAAAH//////////gAAAAAAAAAAAAAAAAAAAAAAAAB/AAAAAAAB////////////8A/8AAAAeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/5+8Y+B38/A/3/gAAAAAAAD//////////4AAAAAAAAAAAAAAAAAAAAAAAAH8AAAA/hgB////////////////AAADwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/n//+/Af+cA///n+AAAAAAD/////////+AAAAAAAAAAAAAAAAAAAAAAAAAH4AAAA/wh8////////////////AAAH//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAf+P//+/AD+cA/////wAAAAAH//////////4AAAAAAAAAAAAAAAAAAAAAAAAf4AAAD/Dv/////////////////AgAH///AAAAAAAAAA+AAAAAADAAAAAAAAAAB8Af///gAB/A//////gAAAAAP///8AAAAED///////////////////////gD+AAAP/H3/////////////////h//////4AAAAAAAAAAAAAAAB/7wAAAAAAAAAAD////4AB/wf/////8AAAABz////////88AAAAAAAAAAAAAAA//AAAAAAAA/gAAf/j////////////////////////////AAAAAAAAAAAAA////8AAAAAAMAAAAf///AB/4A//////wAAAB/////////gAAAAAAAAAAAAAAAD//gAAAAAAAAAAAP/z////////////////////////////wAAAAAAAAAAAD//////+AAA/+I4A/////w8fgAHhAf//4AAAB+/////////gAAAAAAAAAAAAAP///2AAAAAAAAAYAP/n////////////////////////////gAAD/+AAAAAAH///////+D/////wL///+B/H+AH+AH//8AAAAA////////8AAAAAAAAAAAAAA/////4AAAAAAP/gD8AcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAAAf///4AAAAAAAAAAAAAAAADgH7///4BH4A/8AAf////+AAAAAAAA//////////////8AAAAAAH////+f7wAfAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAB///4AAAAAAAAAAAAAAAAB/+A//g4ADwD//wAD////wAAAAAAAf//////////////gAAAAAAA/8P/BwAAACAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf///gAAAAAAAAAAAAAAAA8HAA4AAADgB/w8AAH///gAAAAAA///////////////+AAAAAAAAH8DwAAAAAAAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///wAAAAAAAAAAAAAAAAAAAAAAAAAAB/x+AAD///AAAAAAB///////////////8AAAAAAAAD8fAAAAAAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACB//+AAAAAAAAAAAAAAAAAAAAAAAAAAH//4AAAP//gAAAAAD///////////////4AAAAAAAAD+MAAAAAAAA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf8HAAAAAAAAAAAAAAAAAAAAAAAAAP///wAOAP//gAAAAAf///j/wf////////wAAAAAAPwOEAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAfAAAAAAAAAAAAAAAAAAAAAAAAAAAf///wAPg///wAAAAP////AAAf////////AAAHgAAD/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfwH/wAAAAAAAAAAAAAAAAAAAAAAAAAAw//AAAH5///4AAAD/////8AAP///////+AAAf4AAD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4AH/v///////////////////////+P4B////AAAAD///4AAAAAf//gAAAAAAAD///gf//8eH/////////////////////////////////////////////+AAAAAAP///////////////////////8f+AgH//wAAAD///4AAAAAD/+AAAAAAAAP///B///+P//////////////////////////////////////////////wAAAAAAP//////////////////////+A/HwAA//wAAAB///wAAAAAA/gAAAAAAAA///8H///////////////////////////////////////////////////4AAAeAB///////////////////////+AEAAAA/z4AAAA///gAAAAAAAAAAAAAAAD///wf///////////////////////////////////////////////////8AAAAA////////////////////////wAAcAAAH8QAAAAf/+AAAAAAAAAAAAAAAAf///A////////////////////////////////////////////////////+AAAAB////////////////////////AAAwI+YAeAAAAAP/+AAAAAAAAAAAAAAAB///+Af//////////////////////////////////////////////x///+AAAAAD///////////////////////+AAAAI//AAAAAAAH/+AAAAAAAAAAAAAAAD///+Af/////////////////////////////////////////////fj///gAAAAAB///////////////////////8AAAAA//gAAAAAAD/8AAAAAAAAAAAAAAAD///8Af////////////////////////////////////////////gfH//8AAAAAAB////38f////////////////4AAAAA//+AAAAAAAD8AAAAAAAAAAAAAAAD///+Af///////////////////////////////////////////+AIP//gAAAAAAOf///n8D////////////////4AAAAAf/+AAAAAAAA4AAAAAAAAAAAAAAAD////gH4H/////////////////////////////////////////8AB//GAAAAAAAAA///PgAA///////////////4AAAAAf/+AcAAAAAAAAAAAAAAAAAAAAAAB////gAAH/////////////////////////////////////////wAD5AAAAAAAAAAA//8EAAAH//////////////4AAAAA//+A+AAAAAAAAAAAAAAAAAAAAAAB/3//AB////////////////////////////////////////g8H8APwAAAAAAAAAAAx7+AAAAB///////////////AAAAB///g/AAAAAAAAAAAAAAAAAAAAAAB/D/8AB///////////////////////////////////////gAAAAAfgAAAAAAAAAAAAH8AAAAAP//////////////AAAAAf////gAAAAAAAAAAAAAAAAAAeAAAcB/4AAf//////////////////////////////////////AAAAAB/AAAAAAAAAAAAAHjgAAAAAP/////////////gAAAAP////wAAAAAAAAAAAAAAAAAA8AAAAB/4AAf/////////////////////////////////////8AAAAAP/gAAAAAAAAAAAAeHAAAAAAH/////////////iAAAAH////4AAAAAAAAAAAAAAAAAA/wAAAY/4Ac//////////////////////////////////////wAAAAAf/wAAAAAAAAAAAB4AAAAAAAD//////////////wAAAH////4AAAAAAAAAAAAAAAAAA/gAAD4f4A///////////////////////////////////////gAAAAA//wAAAAAAAAAAAHgAAAAAAAA//////////////+AAAP////4AAAAAAAAAAAAAAAAAAfAAAD8fwA//////////////////////////////////////+AAAAAB//wAAAAAAAAAAA/AAAAAAAAA///////////////wAAP////+AAAAAAAAAAAAAAAAAAfwAADzuAA//////////////////////////////////////8AAAAAB//AAAAAAAAAAADgAAAAAAAAAf///////////////gA//////gAAAAAAAAAAAAAAAAAP4AABxgAAf/////////////////////////////////////wAAAAAB/+AAAAAAAAAAAcAAAAAAAAAAH///////////////4H//////+AAAAAAAAAAAAAAAAPH8AABwADD//////////////////////////////////////AAAAAAB//AAAAAAAAAAAAAAAAAAAAAAH///////////////4H///////AAAAAAAAAAAAAAAA/A+AAB8wf///////////////////////////////////////8AAAAAB/4AAAAAAAAAAAAAAAAAAAAADB///////////////4D///////AAAAAAAAAAAAAAAB/A/AAB///////////////////////////////////////////+EAAAA/wAAAAAAAAAAAAAAAAAAAAADA///////////////8D///////wAAAAAAAAAAAAAAB/H/AD/////////////////////////////////////////////cAAAA/wAAAAAAAAAAAAAAAAAAAAABA///////////////8B///////4AAAAAAAAAAAAAAB+H/4H/////////////////////////////////////////////+AAAA+AAAAAAAAAAAAAAAAAAAAAAAAP//////////////+D///////4AAAAAAAAAAAAAAB8H/4P/////////////////////////////////////////////8AAAAeAAAAAAAAAAAAAAAAAAAAAAAAP///////////////D///////gAAAAAAAAAAAAAABgP/wP/////////////////////////////////////////////cAAAAcAAAAAAAAAAAAAAAAAAAAAAAAH//////////////////////84AAAAAAAAAAAAAAAAD/4/////////////////////////////////////////////+OAAAAQAAAAAAAAAAAAAAAAAAAAAAAAD//////////////////////hwAAAAAAAAAAAAAAAAP8H/////////////////////////////////////////////+OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////////////////B/BgAAAAAAAAAAAAAAAAaAH/////////////////////////////////////////////+PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD3//////////////////8HAD4AAAAAAAAAAAAAAAAAA//////////////////////////////////////////////+PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA5//////////////////wAwH/gAAAAAAAAAAAAAAAAP//////////////////////////////////////////////+NgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAef/////////////////H8AP/gAAAAAAAAAAAAAAADn//////////////////////////////////////////////8MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEf////////////////+fwAP/wAAAAAAAAAAAAAAAH///////////////////////////////////////////////8IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHf////////////////9/wAf/wAAAAAAAAAAAAAAAB///////////////////////////////////////////////4IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////////////7/wAAEwAAAAAAAAAAAAAAAAf//////////////////////////////////////////////wMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////8AAAwAAAAAAAAAAAAAAAAP////////////z///+D////////////////////////////gOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////5yAAAAAAAAAAAAAAAAAAAH//////////h8D///wD////////////////////////////AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////////////////AAAAAAAAAAAAAAAAAAAD//////////AcH///gD///////////////////////////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////H8AAAAAAAAAAAAAAAAAAAH////n////+B////+Af///////////////////////////8AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////////////////8fAAAAAAAAAAAAAAAAAAAAH////g////8AcH//8Af///////////////////////////4AcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////////////////g4AAAAAAAAAAAAAAAAAAAAH//+/g////4AAB//8B////////////////////////////wAeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////////////8AwAAAAAAAAAAAAAAAAAAAAH//8Hwf///4AAAf/+A////////////////////////////gAf4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////////////////4AAAAAAAAAAAAAAAAAAAA////xgH4D///wAAAP/+Af//////////////////////////eAB/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////////////////wAAAAAAAAAAAAAAAAAAAA////AAn8A///wAAAB/+AH/////////////////////////+AAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////////////////wAAAAAAAAAAAAAAAAAAAA////ABh+AP//wAAAB//AH/////////////////////////8AADmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////////////8AAAAAAAAAAAAAAAAAAAA////ABg/wH//wB/AB//gE/////////////////////////wAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////////////////+AAAAAAAAAAAAAAAAAAAAA///8AAAP4H//8H/wD//wAf////////////////////////gAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////////////////8AAAAAAAAAAAAAAAAAAAAA///gADgD+H/Dj//////4C//////////////////////z//gAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////////////////wAAAAAAAAAAAAAAAAAAAAA///AABwA4n7g///////+D//////////////////////D/+AAADwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////////////////wAAAAAAAAAAAAAAAAAAAAA///AABgAYD8B///////4B/////////////////////+Hn4AAADwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////+gAAAAAAAAAAAAAAAAAAAAB///AABgAMB+B///////4D/////////////////////8GB4AAADwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB////////////////AAAAAAAAAAAAAAAAAAAAAB///AAAAAIB8B///////wA/////////////////////gAD8AAAHgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////////////7AAAAAAAAAAAAAAAAAAAAAA//+AAAAAYA/B///////wA/////////////////////wAD+AAAHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////////////6AAAAAAAAAAAAAAAAAAAAAA//+AAAAfgAdA///////wA/////////////////////8QA/AAAfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////////////4AAAAAAAAAAAAAAAAAAAAAA//4AAAwHgAcAf//////+A/////////////////////++AfgAE/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////////////8AAAAAAAAAAAAAAAAAAAAAAB/wA9/8AAAMAf/7/////3//////////////////////4A/gAH/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////////////8AAAAAAAAAAAAAAAAAAAAAAAwAf//4AAAAABhw////////////////////////////wAfgAP+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//////////////8AAAAAAAAAAAAAAAAAAAAAAAwD///8AAAAAAAA////////////////////////////AAfgAP+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////////////8AAAAAAAAAAAAAAAAAAAAAAA/P///8AAAB+AAw///////////////////////////+AAfAf/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////////////4AAAAAAAAAAAAAAAAAAAAAAB/////4AAAAAABg///////////////////////////+AAcA//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////////////gAAAAAAAAAAAAAAAAAAAAAAD/////wAAAAAAAB////////////////////////////gAADy8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////////////+AAAAAAAAAAAAAAAAAAAAAAAH/////8AAAAAAAB////////////////////////////gAAEeQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB////////////8AAAAAAAAAAAAAAAAAAAAAAAf/////8AAAAAAAD////////////////////////////gAAfYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////////wAAAAAAAAAAAAAAAAAAAAAAA///////4AAwAAAD////////////////////////////wAAfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////////gAAAAAAAAAAAAAAAAAAAAAAB////////gD8AAAD////////////////////////////4AAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9///////////AAAAAAAAAAAAAAAAAAAAAAAB////////gD/wAAH////////////////////////////8AAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcf/////////+AAAAAAAAAAAAAAAAAAAAAAAD////////4D//g8H////////////////////////////8AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOP/////////+AAAAAAAAAAAAAAAAAAAAAAAB/////////D/////////////////////////////////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOP///////gP+AAAAAAAAAAAAAAAAAAAAAAAB///////////////////////////////////////////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGH/////+/gEfAAAAAAAAAAAAAAAAAAAAAAAB///////////////////B///////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADH/////wDAAPAAAAAAAAAAAAAAAAAAAAAAAD//////////////7////B///////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj/////gAAAPgAAAAAAAAAAAAAAAAAAAAAAP/////////////+7////g///////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAx////+AAAAHgAAAAAAAAAAAAAAAAAAAAAAf//////////////f////gf//////////////////////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4f///8AAAAPgAAAAAAAAAAAAAAAAAAAAAD///////////////h////wP//////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4f///4AAAAHwAAAAAAAAAAAAAAAAAAAAAH///////////////h////4D//////////////////////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeP///4AAAAHzAAAAAAAAAAAAAAAAAAAAAH///////////////w////8B4/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGH///4AAAADwQAAAAAAAAAAAAAAAAAAAAf///////////////wf///8AC/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH///8AAAABwAAAAAAAAAAAAAAAAAAAAAf///////////////4f///8gCf///////////////////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADB///4AAAAAgAAAAAAAAAAAAAAAAAAAAA////////////////4P///+gOAf4f////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg///4AAAAABgAAAAAAAAAAAAAAAAAAAA////////////////8P////geAAAP////////////////8MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwf//4AAAAAAgAAAAAAAAAAAAAAAAAAAB////////////////+H////w/AAAH////////////////wYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYP//4AAAAAAgAAAAAAAAAAAAAAAAAAAD////////////////+B//////wAAD////////////////g4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIH//wAAAAAAAAAAAAAAAAAAAAAAAAAAD////////////////+B//////8AAA///////////////+A4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAAAA/4AAAAAAAAAAAAAAAAAAAAH/////////////////A//////+AAAf//////n///////4AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//wAAABj/AAAAAAAAAAAAAAAAAAAAH/////////////////g///////AAAf//////j//////+AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//4AAAAAPgAAAAAAAAAAAAAAAAAAAP/////////////////w//////+AAAf/////8D//////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//4AAfAAB4AAAAAAAAAAAAAAAAAAAP/////////////////w//////8AAAP/////AD////+CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAB//8AB/AAA+AAAAAAAAAAAAAAAAAAAP/////////////////wf/////4AAAAP////AB////8GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//8AB+AAAfwAAAAAAAAAAAAAAAAAAH/////////////////wP/////wAAAAP///+AB////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAB//+AB+AAAAHYAAAAAAAAAAAAAAAAAH/////////////////wH/////gAAAAP///4AAf///wPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAA///AD+AAAAD/AAAAAAAAAAAAAAAAAH/////////////////4D/////wAAAAP///wAAf///geAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//gP+AAAAB/gAAAAAAAAAAAAAAAAD/////////////////4D/////AAAAAP///gAAP///weAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//7/8AAB4f0jgAAAAAAAAAAAAAAAD/////////////////8B////+AAAAAP///AAAH///wAAAAeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////8AAAQAAAAAAAAAAAAAAAAAAAD/////////////////+A////4AAAAAP//+AAAH///4AAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///4AAAAAAAAAAAAAAAAAAAAAAAH//////////////////Af///4AAAAAH//4AAAH///8AAAAeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///4AAAAAAAAAAAAAAAAAAAAAAAH//////////////////Af//+AAAAAAH//wAAAH3//+AAAAeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//4AAAAAAAAAAAAAAAAAAAAAAAH//////////////////AP//4AAAAAAH//gAAAPH///AAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADB/7/AAAAAAAAAAAAAAAAAAAAAAH//////////////////gf//wAAAAAAH/+AAAACH///gAAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///gAAAAAAAAAAAAAAAAAAAAAP//////////////////wP//gAAAAAAD/8AAAAAH///wAAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//gAAAAAAAAAAAAAAAAAAAAAf//////////////////8P/4AAAAAAAB/8AAAAAD///wAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//wAAAAAAAAAAAAAAAAAAAAAP//////////////////+P/wAAAAAAAB/8AAAAAD///wAAAdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//gAAAAAAAAAAAAAAAAAAAAAP///////////////////H+AAAAAAAAB/8AAAAAD///4AAAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN/gAAAAAAAAAAAAAAAAAAAAAP///////////////////vgAAAAAAAAA/+AAAAABz//4AAAYwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/gAAAAAAAAAAAAAAAAAAAAAP///////////////////3AAAAAAAAAA/8AAAAABz//4AAAIQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAgAAAAAAAAAAAAAAAAAH///////////////////4AAAAAAAAAA/8AAAAABwf/wAAAIGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAABmAAAAAAAAAAAAAAAAAH///////////////////wABAAAAAAAAf8AAAAABwP/wAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAPHgAAAAAAAAAAAAAAAAB///////////////////4A/AAAAAAAAP8AAAAABgP/gAAADGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHgAB//wAEAAAAAAAAAAAAAAA///////////////////8P/AAAAAAAAP8AAAAABgH/AAACCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPgAB/f/nsAAAAAAAAAAAAAAAf/////////////////////AAAAAAAAP4AAAAABgB8AAACAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAF4AB/P//4AAAAAAAAAAAAAAAP////////////////////+AAAAAAAAHwAAAAABAA4AAAEBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PD/P//8AAAAAAAAAAAAAAAH////////////////////+AAAAAAAAHzAAAAABAAwAAAIABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf5n////+AAAAAAAAAAAAAAAD////////////////////+AAAAAAAAHDAAAAADwAgAAAAAHgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHg//////gAAAAAAAAAAAAAAD////////////////////8AAAAAAAABHgAAAAD4AAAAAAA/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABx//////wAAAAAAAAAAAAAAD////////////////////8AAAAAAAAADgAAAAA4AAAAAAD/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg//////4AAAAAAAAAAAAAAB////////////////////4AAAAAAAAADgAAAAAYAAAAAACPgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////8AAAAAAAAAAAAAAAf///////////////////4AAAAAAAAADgAAAAAOAAAABgAOgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////+AAAAAAAAAAAAAAAP///+H//////////////wAAAAAAAAADgAAAAAPAAAABgAOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf///////AAAAAAAAAAAAAAD///gD//////////////wAAAAAAAAAAAAAAAAHgAAAD4ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf///////4AAAAAAAAAAAAAB//+AD//////////////gAAAAAAAAAAAAAAB4PwAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf///////8AAAAAAAAAAAAAA+AAAB//////////////AAAAAAAAAAAAAAAB8H4AAAf4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf///////+AAAAAAAAAAAAAAAAAAAA/////////////AAAAAAAAAAAAAAAA+H4AAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////AAAAAAAAAAAAAAAAAAAAf///////////+AAAAAAAAAAAAAAAAfD4AAB/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////////AAAAAAAAAAAAAAAAAAAAf///////////8AAAAAAAAAAAAAAAAPh4AAD/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////////AAAAAAAAAAAAAAAAAAAAf///////////4AAAAAAAAAAAAAAAAHx4AAf/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////////gAAAAAAAAAAAAAAAAAAAf///////////wAAAAAAAAAAAAAAAAD48AAf/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////////wAAAAAAAAAAAAAAAAAAAf///////////AAAAAAAAAAAAAAAAAB/MAE//wAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////wAAAAAAAAAAAAAAAAAAAf//////////+AAAAAAAAAAAAAAAAAA/kAP//4AEGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////////wAAAAAAAAAAAAAAAAAAAf//////////4AAAAAAAAAAAAAAAAAA/wAP//w/4GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////////gAAAAAAAAAAAAAAAAAAAf//////////wAAAAAAAAAAAAAAAAAA/4AP//ggAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////////+AAAAAAAAAAAAAAAAAAA///////////gAAAAAAAAAAAAAAAAAAf4AP//hAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////////+wAAAAAAAAAAAAAAAAAA///////////AAAAAAAAAAAAAAAAAAAP4AH//hhgCB8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////////+AAAAAAAAAAAAAAAAAA///////////AAAAAAAAAAAAAAAAAAAH+AH//B+AAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////////gAAAAAAAAAAAAAAAAA//////////+AAAAAAAAAAAAAAAAAAAH+AD/+B8AAA8BgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////////gAAAAAAAAAAAAAAAAAf/////////8AAAAAAAAAAAAAAAAAAAD/AD/+D8AAAGH4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////////AAAAAAAAAAAAAAAAAP/////////wAAAAAAAAAAAAAAAAAAAB/wD/+DsAAA+P/gAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////////+AAAAAAAAAAAAAAAAH/////////wAAAAAAAAAAAAAAAAAAAA/wAN+DuAz4f//4AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////////////gAAAAAAAAAAAAAAAD/////////wAAAAAAAAAAAAAAAAAAAAfwAAcBuAQEL///AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////wAAAAAAAAAAAAAAAB/////////gAAAAAAAAAAAAAAAAAAAAfwAAABnAAAA///wAHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////////////4AAAAAAAAAAAAAAAB/////////AAAAAAAAAAAAAAAAAAAAAHwAAABlAAAAH//4AGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////////////gAAAAAAAAAAAAAAA/////////AAAAAAAAAAAAAAAAAAAAADwAAABhAAAAB//8AMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////////////wAAAAAAAAAAAAAAA/////////AAAAAAAAAAAAAAAAAAAAABwAAAAAAAAAA//+H4EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////////////wAAAAAAAAAAAAAAA/////////AAAAAAAAAAAAAAAAAAAAAAPAAAAAAAACAf//hgCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////////////wAAAAAAAAAAAAAAAf////////gAAAAAAAAAAAAAAAAAAAAAfhwAAAAAACAf//AABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//////////////wAAAAAAAAAAAAAAAP////////gAAAAAAAAAAAAAAAAAAAAAH/8AAAAAAAAf//AAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//////////////wAAAAAAAAAAAAAAAP////////AAAAAAAAAAAAAAAAAAAAAAAn/gAAAAAAA//vgAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////////////wAAAAAAAAAAAAAAAP////////AAAAAAAAAAAAAAAAAAAAAAAAf4ABAAAABz+DwAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////////////wAAAAAAAAAAAAAAAP////////gAAAAAAAAAAAAAAAAAAAAAAAAA88DwAAAB+B4AAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////////////gAAAAAAAAAAAAAAAP////////gAAAAAAAAAAAAAAAAAAAAAAAAAAAOAAAAAEA+AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////////////gAAAAAAAAAAAAAAAP////////wAAAAAAAAAAAAAAAAAAAAAAAAABgcAAAAAAAfAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////AAAAAAAAAAAAAAAAH////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAHgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////////////8AAAAAAAAAAAAAAAAH////////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////////////8AAAAAAAAAAAAAAAAH////////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////////////4AAAAAAAAAAAAAAAAH////////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////////wAAAAAAAAAAAAAAAAH////////4AAIAAAAAAAAAAAAAAAAAAAAAAAAAAC/8AMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////////wAAAAAAAAAAAAAAAAP////////4AAIAAAAAAAAAAAAAAAAAAAAAAAAAAH/8AOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////////////gAAAAAAAAAAAAAAAAf////////4AAcAAAAAAAAAAAAAAAAAAAAAAAAAAH/4AeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////////////AAAAAAAAAAAAAAAAAf////////4AAcAAAAAAAAAAAAAAAAAAAAAAAAAAP/wAeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////////////AAAAAAAAAAAAAAAAA/////////4AA8AAAAAAAAAAAAAAAAAAAAAAAAB8f/wAfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////////////AAAAAAAAAAAAAAAAA/////////8AB8AAAAAAAAAAAAAAAAAAAAAAAAD8f/gAfwAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB////////////AAAAAAAAAAAAAAAAA/////////4AD+AAAAAAAAAAAAAAAAAAAAAAAAH///wAf4AAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf///////////AAAAAAAAAAAAAAAAA/////////4AH6AAAAAAAAAAAAAAAAAAAAAAAAH///8Af4AAAAAAAAAAA///////////////////////////////////4AAAAAAAAAAA////////////////+AAAAAAH//wB/8AAAAAAAAAAAAAAAAAAAAAAAAX///+Af4AAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB///////////AAAAAAAAAAAAAAAAB/////////gB/8AAAAAAAAAAAAAAAAAD/////+gAAAA/AH//////////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////////AAAAAAAAAAAAAAAAB////////8AD/4AAAAAAAAAAAAAAAAAAAAAAAB/////w/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////////AAAAAAAAAAAAAAAAA////////wAD/4AAAAAAAAAAAAAAAAAAAAAAAB///////8AAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////////+AAAAAAAAAAAAAAAAA////////gAD/4AAAAAAAAAAAAAAAAAAAAAAAD///////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////////+AAAAAAAAAAAAAAAAAf///////AAD/wAAAAAAAAAAAAAAAAAAAAAAAH///////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////+AAAAAAAAAAAAAAAAAf//////+AAB/wAAAAAAAAAAAAAAAAAAAAAAAH////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////8AAAAAAAAAAAAAAAAAP//////8AAB/wAAAAAAAAAAAAAAAAAAAAAAAf////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////4AAAAAAAAAAAAAAAAAP//////4AAB/gAAAAAAAAAAAAAAAAAAAAAAD/////////4AAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////4AAAAAAAAAAAAAAAAAH//////8AAD/gAAAAAAAAAAAAAAAAAAAAAB//////////8AAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////wAAAAAAAAAAAAAAAAAH//////8AAH/gAAAAAAAAAAAAAAAAAAAAAH//////////+AAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////wAAAAAAAAAAAAAAAAAD//////+AAH/AAAAAAAAAAAAAAAAAAAAAAP//////////+AAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////////gAAAAAAAAAAAAAAAAAB//////+AAH/AAAAAAAAAAAAAAAAAAAAAAf//////////+AAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////////AAAAAAAAAAAAAAAAAAB//////+AAH/AAAAAAAAAAAAAAAAAAAAAA////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////////wAAAAAAAAAAAAAAAAAAB//////+AAH+AAAAAAAAAAAAAAAAAAAAAA////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH///////+AAAAAAAAAAAAAAAAAAAB//////+AAH+AAAAAAAAAAAAAAAAAAAAAB////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH///////4AAAAAAAAAAAAAAAAAAAB//////+AAH+AAAAAAAAAAAAAAAAAAAAAB////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH///////gAAAAAAAAAAAAAAAAAAAB//////4AAD8AAAAAAAAAAAAAAAAAAAAAB////////////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH///////AAAAAAAAAAAAAAAAAAAAB//////gAABwAAAAAAAAAAAAAAAAAAAAAA/////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//////+AAAAAAAAAAAAAAAAAAAAA/////+AAAAAAAAAAAAAAAAAAAAAAAAAAA/////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////+AAAAAAAAAAAAAAAAAAAAA//////AAAAAAAAAAAAAAAAAAAAAAAAAAB/////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////+AAAAAAAAAAAAAAAAAAAAA//////AAAAAAAAAAAAAAAAAAAAAAAAAAB/////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////+AAAAAAAAAAAAAAAAAAAAAf////+AAAAAAAAAAAAAAAAAAAAAAAAAAA/////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////+AAAAAAAAAAAAAAAAAAAAAf////+AAAAAAAAAAAAAAAAAAAAAAAAAAA/////////////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////+AAAAAAAAAAAAAAAAAAAAAP////+AAAAAAAAAAAAAAAAAAAAAAAAAAAf////////////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////8AAAAAAAAAAAAAAAAAAAAAH////8AAAAAAAAAAAAAAAAAAAAAAAAAAAf////////////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////4AAAAAAAAAAAAAAAAAAAAAH////4AAAAAAAAAAAAAAAAAAAAAAAAAAAP////////////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////wAAAAAAAAAAAAAAAAAAAAAD////wAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////wAAAAAAAAAAAAAAAAAAAAAB////gAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////gAAAAAAAAAAAAAAAAAAAAAB////gAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//////AAAAAAAAAAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAH////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////+AAAAAAAAAAAAAAAAAAAAAAA///+AAAAAAAAAAAAAAAAAAAAAAAAAAAAH////A///////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAA///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAD///QAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAA///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//8AAD/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////wAAAAAAAAAAAAAAAAAAAAAAA///gAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//wAAB+////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////gAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//wAAA8////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////7/gAAAAAAAAAAAAAAAAAAAAAAAfgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+AAAAA5////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////8eAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4AAAAARf///wAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf///gAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///gAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH///AAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///AAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///AAAAAAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//+AAAAAAAAeIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfvgAAAAAAAAf4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH///gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAEOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP4AAAAAAANcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP4AAAAAAAfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL//6AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHwAAAAAAAfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHwAAAAAAA+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAAAAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB///AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//AAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//AAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//gACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP7gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL3wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG3wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/AAAAAAAAAAAAAAB/AAfgAAAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//gAAAAAAAAAYAAAH/wD//AD/+//4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//4AAAAAAAEf//+f//////+////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////wfAAAAA/////////////////////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////////AAAH//////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcAB/////////gAAf///////////////////////4MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAef/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/4P/////////gAA//////////////////////////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAef/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+//////////gA////////////////////////////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAff/gAAAAAAAAAAAAAAAAAAAAAAPwff/gAD////////////8AH////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/v/wAAAAAAAAAAAAAAAAAAAAAH/5///////////////////AP/////////////////////////////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/n/4AAAAAAAAAAAAAAAAAHgeP/////////////////////+A////////////////////////////////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAA//j/4AAAAAAAAAAAAAAAAP/////////////////////////8B/////////////////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+AAAAAAAc+D/8AAAAAAAAAAAAAAAA///////////////////////////v/////////////////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAQAAAAAAP/8AAAAAAAAAAAAAAAH////////////////////////////////////////////////////////////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAH/wBw/4AQAAf//+AAAAAAAAAAAAAAB/////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAYfwAAAAD//////9/4f///8AAAAAAAAAAAAAAH/////////////////////////////////////////////////////////////gAAAAAAAAAAAAAAAAAAAAAAAP/wAAAP////////////4AAAAAAAAAAAAAAB////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAf////////wAAH///////////+AAAAAAAAAAAAAAAH////////////////////////////////////////////////////////////gAAAAAAAAAAAAAAAAH/////////////3///////////4AAAAAAAAAAAAAAA////////////////////////////////////////////////////////////+AAAAAAAAAAAAAAAAf/////////////////////////8AAAAAAAAAAAAAAAf////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAP////////////////////////8AAAAAAAAAAAAAAA//////////////////////////////////////////////////////////////4AAAAAAAAAAAAAAAD///////////////////////wAAAAAAAAAAAAAAAP///////////////////////////////////////////////////////////////4AAAAAAAAAAAAc+B////////////////////////+AAAAAAAAAAAAAAB////////////////////////////////////////////////////////////////8AAAAAAAAAAAAP///////////////////////////wAAAAAAAAAAAAA/////////////////////////////////////////////////////////////////8AAAAAAAAAAAAH//////////////////////////wAAAAAAAAD/gAAf//////////////////////////////////////////////////////////////////gAAAAAAAAAH8A//////////////////////////AAAAAAAAAP/4AA///////////////////////////////////////////////////////////////////8AAAAAAAAAB+AAP////////////////////////AAAAAAAAAf/4AA/////////////////////////////////////////////////////////////////+AAAAAAAAAAAAAAAAB///////////////////////4AAAACAAB//4AAAAf//////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAf//////////////////////+AAAAHgA///gAAAAH//////////////////////////////////////////////////////////////4AAAAAAAAAAAAAAAAB/////////////////////////wAP/AAf/AAAAAP///////////////////////////////////////////////////////////////wAAAAAAAAAAAAAA/8///////////////////////////gAAAAAAAAAH/////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAH//////////////////////////////AAAAP4B////////////////////////////////////////////////////////////////////AAAAAAAAAAAAAAA//////////////////////////////+AAf///////////////////////////////////////////////////////////////////////wAAAAAAAAAAAAAA///////////////////////////////wf/////////////////////////////////////////////////////////////////////////gAAAAAAAAAAAAB///////////////////////////////////////////////////////////////////////////////////////////////////////////gAAAAAAAAAAAA///////////////////////////////////////////////////////////////////////////////////////////////////////////4AAAIYf+AAAAAA///////////////////////////////////////////////////////////////////////////////////////////////////////////8OAAAAAA///////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8AP/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), c => c.charCodeAt(0));
+  const isLand = (lat, lon) => {
+    const u = Math.min(MASK_W - 1, Math.max(0, Math.floor((lon + 180) / 360 * MASK_W)));
+    const v = Math.min(MASK_H - 1, Math.max(0, Math.floor((90 - lat) / 180 * MASK_H)));
+    const i = v * MASK_W + u;
+    return (maskBytes[i >> 3] >> (7 - (i & 7))) & 1;
+  };
+
+  const deg = Math.PI / 180;
+  const toVec = (lat, lon, r = 1) => new THREE.Vector3(
+    r * Math.cos(lat * deg) * Math.sin(lon * deg),
+    r * Math.sin(lat * deg),
+    r * Math.cos(lat * deg) * Math.cos(lon * deg)
+  );
+
+  // ---- UI refs -----------------------------------------------------------
+  const wrap = document.getElementById("wrap");
+  const canvas = document.getElementById("globe");
+  const markerLayer = document.getElementById("markers");
+  const hint = document.getElementById("hint");
+  const tabs = [...document.querySelectorAll(".tab")];
+  const $ = id => document.getElementById(id);
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  } catch (e) {
+    wrap.insertAdjacentHTML("beforeend", '<div class="fallback">This browser could not start WebGL, so the interactive globe is unavailable.</div>');
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  camera.position.set(0, 0, 4.25);
+  const globe = new THREE.Group();
+  scene.add(globe);
+
+  // ---- Dot sphere: latitude rows, dense bright land, sparse faint ocean --
+  const positions = [], sizes = [], alphas = [];
+  const isPhone = window.matchMedia("(max-width: 600px)").matches;
+  const ROW_STEP = isPhone ? 1.6 : 1.05;          // fewer, larger dots on phones
+  const ROW_DOTS = isPhone ? 220 : 340;
+  for (let lat = -84; lat <= 84; lat += ROW_STEP) {
+    const count = Math.max(1, Math.round(Math.cos(lat * deg) * ROW_DOTS));
+    const offset = (Math.round(lat / ROW_STEP) % 2) * 0.5;
+    for (let k = 0; k < count; k++) {
+      const lon = ((k + offset) / count) * 360 - 180;
+      const land = isLand(lat, lon);
+      if (!land && k % 2) continue;
+      const p = toVec(lat, lon, 1);
+      positions.push(p.x, p.y, p.z);
+      sizes.push(land ? 1.0 : 0.55);
+      alphas.push(land ? 1.0 : 0.32);
+    }
+  }
+  const dotGeo = new THREE.BufferGeometry();
+  dotGeo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  dotGeo.setAttribute("aSize", new THREE.Float32BufferAttribute(sizes, 1));
+  dotGeo.setAttribute("aAlpha", new THREE.Float32BufferAttribute(alphas, 1));
+  const dotMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false,
+    uniforms: { uScale: { value: 3.0 }, uZoom: { value: 1.0 } },
+    vertexShader: `
+      attribute float aSize; attribute float aAlpha;
+      uniform float uScale;
+      uniform float uZoom;
+      varying float vAlpha;
+      void main() {
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vec3 n = normalize((modelMatrix * vec4(position, 0.0)).xyz);
+        vec3 toCam = normalize(cameraPosition - (modelMatrix * vec4(position, 1.0)).xyz);
+        float facing = dot(n, toCam);
+        vAlpha = aAlpha * smoothstep(-0.15, 0.35, facing) * (0.45 + 0.55 * facing);
+        gl_PointSize = aSize * uScale * uZoom * (0.55 + 0.45 * max(facing, 0.0));
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      varying float vAlpha;
+      void main() {
+        vec2 c = gl_PointCoord - 0.5;
+        float d = length(c);
+        if (d > 0.5) discard;
+        gl_FragColor = vec4(1.0, 1.0, 1.0, vAlpha * smoothstep(0.5, 0.32, d));
+      }`,
+  });
+  globe.add(new THREE.Points(dotGeo, dotMat));
+
+  // Soft translucent body + rim light so the sphere reads against the gradient
+  const bodyMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false,
+    vertexShader: `
+      varying vec3 vN; varying vec3 vV;
+      void main() {
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vN = normalize(mat3(modelMatrix) * normal);
+        vV = normalize(cameraPosition - wp.xyz);
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }`,
+    fragmentShader: `
+      varying vec3 vN; varying vec3 vV;
+      void main() {
+        float f = 1.0 - max(dot(vN, vV), 0.0);
+        float a = 0.05 + pow(f, 3.0) * 0.55;
+        gl_FragColor = vec4(1.0, 1.0, 1.0, a);
+      }`,
+  });
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(0.995, 64, 64), bodyMat));
+
+  // ---- Markers (HTML, projected each frame) ------------------------------
+  const tip = document.createElement("div");
+  tip.className = "tip"; tip.hidden = true;
+  markerLayer.appendChild(tip);
+  const markers = PLACES.map((p, i) => {
+    const el = document.createElement("button");
+    el.className = `marker ${p.type}${p.featured ? " featured" : ""}`;
+    el.type = "button";
+    el.setAttribute("aria-label", `${p.name}, ${kindOf(p)}`);
+    el.addEventListener("mouseenter", () => showTip(i));
+    el.addEventListener("focus", () => showTip(i));
+    el.addEventListener("mouseleave", hideTip);
+    el.addEventListener("blur", hideTip);
+    el.addEventListener("click", () => focusPlace(i));
+    markerLayer.appendChild(el);
+    return { ...p, el, v: toVec(p.lat, p.lon, 1.0) };
+  });
+  const featured = markers.find(m => m.featured);
+  const flag = document.createElement("div");
+  flag.className = "flag off";
+  flag.setAttribute("aria-hidden", "true");
+  flag.innerHTML = `<small>Smith office</small>${featured.name}`;
+  markerLayer.appendChild(flag);
+  let tipIndex = -1;
+  function showTip(i) {
+    tipIndex = i;
+    const m = markers[i];
+    tip.innerHTML = `<small>${kindOf(m)}</small>${m.name}`;
+    tip.hidden = false;
+  }
+  function hideTip() { tipIndex = -1; tip.hidden = true; }
+
+  // ---- Rotation state ----------------------------------------------------
+  let rotY = -REGIONS.all.lon * deg, rotX = REGIONS.all.lat * deg;
+  let targetY = rotY, targetX = rotX;
+  let velY = 0, velX = 0;
+  let region = "all", activePlace = -1;
+  let dragging = false, lastX = 0, lastY = 0, lastInteract = 0;
+  const clampX = x => Math.max(-60 * deg, Math.min(60 * deg, x));
+  const nearestAngle = (from, to) => from + (((to - from) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+
+  function lookAt(lat, lon) {
+    targetY = nearestAngle(rotY, -lon * deg);
+    targetX = clampX(lat * deg);
+    velX = velY = 0;
+  }
+
+  function setRegion(key, { fromHash = false } = {}) {
+    region = key;
+    const r = REGIONS[key];
+    tabs.forEach(t => {
+      const on = t.dataset.region === key;
+      t.setAttribute("aria-selected", on);
+      t.tabIndex = on ? 0 : -1;
+    });
+    $("panel").setAttribute("aria-labelledby", `tab-${key}`);
+    $("region").textContent = r.title;
+    $("desc").textContent = r.desc;
+    const list = PLACES.filter(p => key === "all" || p.region === key);
+    const no = list.filter(p => p.type === "office").length, nh = list.length - no;
+    $("nOffices").textContent = `Smith Offices [ ${no} ]`;
+    $("nHubs").textContent = `Operational Hubs [ ${nh} ]`;
+    $("photo").hidden = !r.photo;
+    $("langsRow").hidden = !r.langs; $("langs").textContent = r.langs || "";
+    $("allLink").hidden = key === "all";
+    if (r.photo) { $("photoImg").src = IMG[r.photo]; $("photoImg").alt = `Smith representative meeting a customer, ${r.title}`; }
+    const ul = $("places"); ul.innerHTML = "";
+    list.forEach(p => {
+      const li = document.createElement("li");
+      const i = PLACES.indexOf(p);
+      li.innerHTML = `<button type="button" aria-pressed="false"><i style="background:var(--${p.type === "office" ? "red" : "blue"})"></i>${p.name}</button>`;
+      li.firstChild.addEventListener("click", () => focusPlace(i));
+      ul.appendChild(li);
+    });
+    activePlace = -1;
+    syncActive();
+    lookAt(r.lat, r.lon);
+    lastInteract = key === "all" ? -1e9 : performance.now();
+    if (!fromHash) { try { history.replaceState(null, "", `#${key}`); } catch (e) {} }
+  }
+
+  function focusPlace(i) {
+    const p = PLACES[i];
+    if (region !== "all" && p.region !== region) setRegion(p.region);
+    activePlace = i;
+    syncActive();
+    lookAt(p.lat, p.lon);
+    lastInteract = performance.now();
+  }
+  function syncActive() {
+    markers.forEach((m, i) => m.el.classList.toggle("active", i === activePlace));
+    [...$("places").querySelectorAll("button")].forEach(b => b.setAttribute("aria-pressed", b.textContent === (PLACES[activePlace] || {}).name));
+  }
+
+  $("allLink").addEventListener("click", e => { e.preventDefault(); setRegion("all"); $("tab-all").focus(); });
+  tabs.forEach(t => {
+    t.addEventListener("click", () => setRegion(t.dataset.region));
+    t.addEventListener("keydown", e => {
+      const i = tabs.indexOf(t);
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        const n = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+        n.focus(); setRegion(n.dataset.region); e.preventDefault();
+      }
+    });
+  });
+
+  // ---- Zoom --------------------------------------------------------------
+  // 1× = whole globe in frame; 2.2× = country level (the dot grid gets too sparse beyond that). The camera dollies in, dots grow a little
+  // so the surface stays dense, and drag speed slows so rotation feels the same.
+  const BASE_Z = 4.25, ZOOM_MIN = 1, ZOOM_MAX = 2.2;
+  let zoom = 1, targetZoom = 1;
+  const zoomIn = $("zoomIn"), zoomOut = $("zoomOut"), zoomReset = $("zoomReset");
+  const clampZoom = z => Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
+  function setZoom(z) {
+    targetZoom = clampZoom(z);
+    zoomIn.disabled = targetZoom >= ZOOM_MAX - 1e-3;
+    zoomOut.disabled = targetZoom <= ZOOM_MIN + 1e-3;
+    zoomReset.hidden = targetZoom <= ZOOM_MIN + 1e-3;
+    wrap.classList.toggle("zoomed", targetZoom > 1.02);
+    // Phones: at 1× vertical swipes scroll the page; zoomed in, the globe owns every gesture.
+    if (isPhone) wrap.style.touchAction = targetZoom < 1.05 ? "" : "none";
+    lastInteract = performance.now(); hint.style.opacity = 0;
+  }
+  zoomIn.addEventListener("click", () => setZoom(targetZoom * 1.4));
+  zoomOut.addEventListener("click", () => setZoom(targetZoom / 1.4));
+  zoomReset.addEventListener("click", () => setZoom(1));
+  // Wheel / trackpad pinch (ctrlKey). Hands the scroll back to the page once zoom hits a limit.
+  const EMBED = new URLSearchParams(location.search).has("embed");
+  if (EMBED) document.documentElement.classList.add("is-embed");
+  wrap.addEventListener("wheel", e => {
+    const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+    // Embedded in the homepage: a plain wheel scrolls the page, only pinch (ctrl+wheel) zooms
+    if (EMBED && !e.ctrlKey) { e.preventDefault(); parent.postMessage({ smithWheel: dy }, "*"); return; }
+    const factor = Math.exp(-dy * (e.ctrlKey ? 0.01 : 0.0015));
+    const next = clampZoom(targetZoom * factor);
+    if (!e.ctrlKey && Math.abs(next - targetZoom) < 1e-4) return;   // at a limit: let the page scroll
+    e.preventDefault();
+    setZoom(next);
+  }, { passive: false });
+  wrap.addEventListener("dblclick", e => {
+    if (e.target.closest(".marker, .zoom")) return;
+    setZoom(targetZoom >= ZOOM_MAX - 1e-3 ? 1 : targetZoom * 1.6);
+  });
+
+  // ---- Drag / pinch / keyboard -------------------------------------------
+  const pointers = new Map();
+  let pinchDist = 0, pinchZoom = 1;
+  const spread = () => { const [a, b] = [...pointers.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+  wrap.addEventListener("pointerdown", e => {
+    if (e.target.closest(".marker, .zoom")) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    wrap.setPointerCapture(e.pointerId);
+    hint.style.opacity = 0;
+    if (pointers.size === 2) {           // second finger: switch from rotate to pinch
+      pinchDist = spread(); pinchZoom = targetZoom;
+      velX = velY = 0;
+    } else {
+      dragging = true; lastX = e.clientX; lastY = e.clientY;
+      wrap.classList.add("dragging");
+    }
+  });
+  wrap.addEventListener("pointermove", e => {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size >= 2) {
+      if (pinchDist > 0) setZoom(pinchZoom * spread() / pinchDist);
+      e.preventDefault();
+      return;
+    }
+    if (!dragging) return;
+    const s = 3.2 / wrap.clientWidth / zoom;
+    const dx = (e.clientX - lastX) * s, dy = (e.clientY - lastY) * s;
+    lastX = e.clientX; lastY = e.clientY;
+    const tilt = e.pointerType === "touch" && zoom < 1.05 ? 0 : dy;   // at 1× on touch, vertical moves scroll the page
+    targetY += dx; targetX = clampX(targetX + tilt);
+    velY = dx; velX = tilt;
+    lastInteract = performance.now();
+  });
+  const endDrag = e => {
+    pointers.delete(e.pointerId);
+    if (pointers.size === 1) {          // lifted one finger of a pinch: keep rotating with the other
+      const [p] = pointers.values(); lastX = p.x; lastY = p.y; pinchDist = 0;
+      return;
+    }
+    if (pointers.size === 0) {
+      dragging = false; wrap.classList.remove("dragging"); pinchDist = 0;
+    }
+  };
+  wrap.addEventListener("pointerup", endDrag);
+  wrap.addEventListener("pointercancel", endDrag);
+  canvas.addEventListener("keydown", e => {
+    const step = 12 * deg / zoom;
+    if (e.key === "ArrowLeft") targetY -= step;
+    else if (e.key === "ArrowRight") targetY += step;
+    else if (e.key === "ArrowUp") targetX = clampX(targetX - step);
+    else if (e.key === "ArrowDown") targetX = clampX(targetX + step);
+    else if (e.key === "+" || e.key === "=") setZoom(targetZoom * 1.4);
+    else if (e.key === "-" || e.key === "_") setZoom(targetZoom / 1.4);
+    else if (e.key === "0") setZoom(1);
+    else return;
+    e.preventDefault(); lastInteract = performance.now(); hint.style.opacity = 0;
+  });
+  if (matchMedia("(pointer: coarse)").matches) hint.textContent = "Drag to rotate · Pinch to zoom";
+  else if (EMBED) hint.textContent = "Drag to rotate · Use + / − to zoom";
+  setZoom(1); lastInteract = 0; hint.style.opacity = "";
+
+  // ---- Resize / render ---------------------------------------------------
+  function resize() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    dotMat.uniforms.uScale.value = Math.max(isPhone ? 2.4 : 1.6, (w / 640) * 3.2) * renderer.getPixelRatio();
+  }
+  new ResizeObserver(resize).observe(wrap);
+  resize();
+
+  const tmp = new THREE.Vector3(), camDir = new THREE.Vector3();
+  let prev = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+    if (!dragging) {
+      targetY += velY; targetX = clampX(targetX + velX);
+      velY *= 0.92; velX *= 0.92;
+      const idle = now - lastInteract > 4000;
+      if (!reduceMotion && region === "all" && activePlace < 0 && idle) targetY += dt * 0.12;
+    }
+    const k = reduceMotion ? 1 : 1 - Math.pow(0.002, dt);
+    rotY += (targetY - rotY) * k;
+    rotX += (targetX - rotX) * k;
+    zoom += (targetZoom - zoom) * (reduceMotion ? 1 : 1 - Math.pow(0.0005, dt));
+    camera.position.z = 1 + (BASE_Z - 1) / zoom;   // dolly toward the surface (radius 1)
+    dotMat.uniforms.uZoom.value = Math.pow(zoom, 0.6);
+    globe.rotation.set(rotX, rotY, 0);
+    globe.updateMatrixWorld();
+    renderer.render(scene, camera);
+
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    for (const m of markers) {
+      tmp.copy(m.v).applyMatrix4(globe.matrixWorld);
+      camDir.copy(camera.position).sub(tmp).normalize();
+      const facing = tmp.clone().normalize().dot(camDir);
+      tmp.project(camera);
+      const x = (tmp.x * 0.5 + 0.5) * w, y = (-tmp.y * 0.5 + 0.5) * h;
+      m.el.style.transform = `translate(${x}px, ${y}px)`;
+      const outside = zoom > 1.02 && Math.hypot(x - w / 2, y - h / 2) > Math.min(w, h) * 0.46;   // past the lens fade
+      m.el.classList.toggle("hidden", facing < 0.08 || outside);
+      m.el.classList.toggle("dim", region !== "all" && m.region !== region);
+      m.sx = x; m.sy = y; m.facing = facing;
+    }
+    const showFlag = (region === "americas" || region === "all") && featured.facing > 0.25 && !featured.el.classList.contains("hidden") && tipIndex !== markers.indexOf(featured);
+    flag.classList.toggle("off", !showFlag);
+    flag.style.transform = isPhone
+      ? `translate(${featured.sx}px, ${featured.sy - 22}px) translate(-50%, -100%)`   // above the marker on phones
+      : `translate(${featured.sx + 30}px, ${featured.sy}px) translateY(-50%)`;
+    if (tipIndex >= 0) {
+      const m = markers[tipIndex];
+      if (m.facing < 0.08) hideTip();
+      else tip.style.transform = `translate(${m.sx}px, ${m.sy}px) translate(-50%, calc(-100% - 14px))`;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // Still-frame export for design files: transparent PNG of the dots only, plus where the featured office lands.
+  window.smithGlobe = {
+    exportView(lat, lon, w, h) {
+      const ratio = renderer.getPixelRatio();
+      renderer.setPixelRatio(1);
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+      dotMat.uniforms.uScale.value = (w / 640) * 3.2;
+      dotMat.uniforms.uZoom.value = 1; camera.position.z = BASE_Z; zoom = targetZoom = 1; setZoom(1);
+      globe.rotation.set(lat * deg, -lon * deg, 0);
+      globe.updateMatrixWorld();
+      renderer.render(scene, camera);
+      const data = canvas.toDataURL("image/png");
+      const p = featured.v.clone().applyMatrix4(globe.matrixWorld).project(camera);
+      const spot = { x: (p.x * 0.5 + 0.5) * w, y: (-p.y * 0.5 + 0.5) * h };
+      renderer.setPixelRatio(ratio);
+      rotX = targetX = lat * deg; rotY = targetY = -lon * deg;
+      resize();
+      return { data, spot };
+    },
+  };
+
+  const initial = (location.hash || "").slice(1);
+  setRegion(REGIONS[initial] ? initial : "americas", { fromHash: true });
+  rotY = targetY; rotX = targetX;
+  focusPlace(0);
+  rotY = targetY; rotX = targetX;
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
