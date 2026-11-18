@@ -1,0 +1,491 @@
+/* =========================================================
+   SMITH — Industries / Aerospace & Defense
+   Built from Figma "industries / aerospace-defense / desktop v2".
+   Shared header, footer, buttons and chat come from style.css.
+
+   Pinned scenes (.scene) are laid out on a 1440 × 900 canvas —
+   the Figma frame — and scaled to fit the viewport by
+   js/aerospace.js (--s), so every position matches the design.
+   ========================================================= */
+
+:root {
+  --beige: #d5d5c9;           /* brand/lithiumBeige */
+  --blue-light: #b9caeb;      /* border/onDark */
+  --text-2: rgba(25, 33, 52, .7);
+  --glass: rgba(0, 0, 0, .5); /* overlay/image used as a card fill */
+}
+
+.page-ad { background: var(--cobalt); }
+/* hidden until js/aerospace.js has split the words, so the headline never flashes in full */
+.js .ad-hero__title, .js #heroCopy .btn, .js #heroCallout { visibility: hidden; }
+
+/* ---------- pinned scenes ---------- */
+.scene {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: var(--cobalt);
+  color: #fff;
+}
+.canvas {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 1440px; height: 900px;
+  transform: translate(-50%, -50%) scale(var(--s, 1));
+  transform-origin: 50% 50%;
+}
+
+/* nav: Industries is the current section */
+.nav__drop-btn.is-current { color: #fff; }
+.dropdown__list a[aria-current="page"] { background: var(--paper); color: var(--link-blue); }
+
+/* =========================================================
+   1 + 2. Hero → Overview stage
+   ========================================================= */
+.hero-media {
+  position: absolute; inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  will-change: transform, clip-path;
+}
+.hero-media img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform-origin: 72% 33%;      /* the aircraft in the photo */
+  will-change: transform;
+}
+.hero-media::after {              /* overlay/image, 50% */
+  content: ""; position: absolute; inset: 0;
+  background: var(--overlay);
+  pointer-events: none;
+}
+.ad-hero {
+  position: absolute; z-index: 3;
+  left: var(--gutter); right: var(--gutter);
+  bottom: 22vh;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 32px;
+}
+.ad-hero__title {
+  font-weight: 500;
+  font-size: clamp(36px, 3.89vw, 64px);   /* 56/62 @1440 */
+  line-height: 1.107;
+  letter-spacing: -0.01em;
+  color: #fff;
+  max-width: 880px;
+}
+.ad-hero__title .wm { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }
+.ad-hero__title .wd { display: inline-block; will-change: transform; }
+
+/* sm-chip on the photo, under the avionics bay */
+.ad-callout {
+  position: absolute; z-index: 3;
+  left: 66.5%; top: 48%;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 10px 4px 8px;
+  border: 1px solid rgba(255, 255, 255, .85);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .35);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  font-family: var(--mono); font-size: 12px; line-height: 16px;
+  letter-spacing: .08em; text-transform: uppercase; color: #fff;
+}
+.ad-callout i { width: 8px; height: 8px; border-radius: 2px; background: var(--red); box-shadow: 0 0 0 0 rgba(213, 59, 45, .7); animation: callout-pulse 2.2s infinite; }
+@keyframes callout-pulse { 70% { box-shadow: 0 0 0 8px rgba(213, 59, 45, 0); } 100% { box-shadow: 0 0 0 0 rgba(213, 59, 45, 0); } }
+
+.ov__line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ov__path { fill: none; stroke: var(--cyan); stroke-width: 3; }
+.ov__marker {
+  position: absolute; left: 941px; top: 196px;
+  width: 24px; height: 24px;
+  background: var(--blue);
+  transform: rotate(45deg) scale(0);
+}
+.ov__slot {                       /* where the hero photo lands */
+  position: absolute; left: 542px; top: 63px;
+  width: 275px; height: 275px; border-radius: 50%;
+}
+.ov__statement {
+  position: absolute; left: 48px; top: 514px; width: 904px;
+  font-weight: 400; font-size: 32px; line-height: 40px;
+  color: var(--paper);
+}
+.ov__statement .w { opacity: .18; }
+.ov__card {
+  position: absolute; left: 992px; top: 511px;
+  width: 400px; min-height: 224px;
+  padding: 32px;
+  border-radius: 16px;
+  background: var(--glass);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.ov__card b { font-weight: 400; font-size: 56px; line-height: 64px; color: var(--blue); }
+.ov__card h2 { font-weight: 500; font-size: 24px; line-height: 30px; color: #fff; max-width: 260px; }
+.ov__card p { font-size: 14px; line-height: 20px; color: var(--paper); font-weight: 400; }
+
+/* =========================================================
+   3. Applications
+   ========================================================= */
+.apps__top {
+  position: absolute; left: 290px; top: 20px; width: 860px; height: 860px;   /* hi-res render, whole aircraft in frame */
+  opacity: .55;
+}
+.apps__topwrap { position: absolute; inset: 0; transform-origin: 720px 430px; will-change: transform; }
+.apps__intro .wm { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .1em; margin-bottom: -.1em; }
+.apps__intro .wd { display: inline-block; will-change: transform; }
+.apps__intro {
+  position: absolute; left: 0; right: 0; top: 396px;
+  text-align: center;
+  font-weight: 500; font-size: 48px; line-height: 54px; letter-spacing: -0.01em;
+  color: #fff;
+}
+.apps__zoom { position: absolute; inset: 0; transform-origin: 690px 650px; will-change: transform, opacity; }   /* zooms toward the cockpit on exit */
+.apps__visual { position: absolute; inset: 0; opacity: 0; visibility: hidden; }
+.apps__visual.is-active { opacity: 1; visibility: visible; }
+.apps__plane { position: absolute; left: 520px; top: -40px; width: 980px; height: 980px; }
+.apps__jet { position: absolute; left: 540px; top: -40px; width: 960px; height: 960px; }
+.apps__draw {
+  position: absolute; left: 600px; top: 150px; width: 760px; height: 620px;
+  fill: none; stroke: var(--cyan); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round;
+}
+
+/* highlight: full-colour cutaway + optional detail photo + callout */
+.hl { position: absolute; inset: 0; pointer-events: none; opacity: 0; visibility: hidden; }
+.hl__cut { position: absolute; }
+.hl__line { position: absolute; inset: 0; width: 1440px; height: 900px; overflow: visible; }
+.hl__line line { stroke: var(--blue); stroke-width: 1.5; stroke-linecap: round; }
+.hl__detail {
+  position: absolute; border-radius: 50%; object-fit: cover;
+  box-shadow: 0 24px 60px rgba(0, 10, 20, .45);
+}
+.hl__detail--ring { border: 2px solid var(--blue); }
+.hl__label {
+  position: absolute;
+  font-family: var(--mono); font-size: 12px; line-height: 16px;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--cyan); white-space: nowrap;
+  /* stays readable over the wireframe: a soft navy halo behind the letters */
+  text-shadow: 0 0 2px var(--navy), 0 0 6px var(--navy), 0 0 14px rgba(0, 37, 62, .9);
+}
+
+.apps__ui { position: absolute; inset: 0; }
+.apps__tabs { position: absolute; left: 48px; top: 96px; display: flex; gap: 16px; }
+.apps__tab {
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 44px; padding: 0 20px;           /* same height as the nav bar links (44) */
+  border-radius: 8px;
+  border: 1px solid var(--blue-light);
+  color: #fff;
+  font-family: var(--mono); font-size: 14px; font-weight: 400;
+  letter-spacing: .08em; text-transform: uppercase;
+  transition: background .3s, color .3s, border-color .3s;
+}
+.apps__tab::before {             /* red dot, only on the active tab */
+  content: ""; flex: 0 0 auto;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red);
+  margin-left: -18px; opacity: 0; transform: scale(0);
+  transition: transform .35s cubic-bezier(.2, .7, .2, 1), opacity .25s, margin .35s cubic-bezier(.2, .7, .2, 1);
+}
+.apps__tab:hover { background: rgba(255, 255, 255, .08); }
+.apps__tab.is-active { background: var(--beige); border-color: var(--beige); color: var(--navy); font-weight: 500; }
+.apps__tab.is-active::before { margin-left: 0; opacity: 1; transform: scale(1); }
+
+.apps__panels { position: absolute; left: 48px; top: 300px; width: 560px; }
+.apps__panel { position: absolute; inset: 0 auto auto 0; width: 560px; opacity: 0; visibility: hidden; }
+.apps__panel.is-active { opacity: 1; visibility: visible; }
+.apps__panel h3 { font-weight: 400; font-size: 40px; line-height: 46px; color: #fff; }
+.apps__panel p { margin-top: 20px; font-weight: 400; font-size: 20px; line-height: 30px; color: var(--paper); }
+.apps__tags { margin-top: 32px; display: flex; flex-direction: column; gap: 4px; }
+.apps__tag {
+  position: relative;
+  display: flex; align-items: center; gap: 8px;
+  height: 32px; padding-left: 14px;
+  font-family: var(--mono); font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--beige); opacity: .75;
+  transition: color .35s, opacity .35s, padding .35s;
+}
+.apps__tag i { width: 6px; height: 6px; border-radius: 50%; background: var(--red); transform: scale(0); transition: transform .3s; position: absolute; left: 0; }
+.apps__tag.is-on { color: #fff; opacity: 1; padding-left: 14px; }
+.apps__tag.is-on i { transform: scale(1); }
+
+/* =========================================================
+   4. Realities — sm-realities-card stack
+   ========================================================= */
+/* Applications → Realities handoff: the two scenes overlap while it plays */
+.scene.real { background: transparent; }
+.scene.apps.is-handoff, .scene.real.is-handoff { overflow: visible; }
+.scene.real .canvas { z-index: 1; pointer-events: none; }   /* lets the nav theme read the fill underneath */
+.scene.real .real__cta { pointer-events: auto; }
+.scene.real { z-index: 1; }
+
+/* the whole aircraft (hi-res render with transparent margins), as large as the
+   section allows without ever cropping it; zooms around its cockpit */
+.real__nosewrap {
+  position: absolute; left: 50%; top: 50%;
+  width: min(108vw, 162vh);  aspect-ratio: 3 / 2;
+  transform-origin: 40.7% 39.8%;   /* the cockpit, inside the crop */
+  will-change: transform, opacity;
+}
+/* framing from the Figma intro: the render cropped to 44.5% around the nose
+   (left 10.9%, top 42.3%), i.e. a 2.248× zoom on the cockpit */
+.real__crop {
+  position: absolute; inset: 0;
+  transform-origin: 0 0;
+  transform: translate(-24.49%, -95.18%) scale(2.248);
+}
+.real__nose { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: .2; }
+.real__title {
+  position: absolute; left: 0; right: 0; top: 427px;
+  text-align: center;
+  font-weight: 500; font-size: 40px; line-height: 46px; color: #fff;
+}
+.real__title .wd { display: inline-block; will-change: opacity; }
+.real__title { text-shadow: 0 0 3px var(--navy), 0 0 12px var(--navy), 0 0 28px rgba(0, 37, 62, .85); }   /* readable over the full aircraft */
+.real__title .wd--muted { color: var(--beige); }   /* starts beige, ends white (js) */
+.real__stack { position: absolute; left: 520px; top: 208px; width: 359px; height: 444px; }
+.rcard {
+  position: absolute; inset: 0;
+  padding: 32px 24px;
+  border-radius: 24px;
+  background: var(--paper);
+  color: var(--navy);
+  display: flex; flex-direction: column; gap: 16px;
+  transform-origin: 50% 0;
+  will-change: transform, opacity;
+  box-shadow: 0 30px 60px rgba(0, 10, 20, .25);
+}
+.rcard__dot { position: relative; width: 16px; height: 16px; border-radius: 50%; background: var(--red); flex: 0 0 auto; }
+/* live pulse: a ring grows out of the dot and fades, like a beacon */
+.rcard__dot::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: var(--red);
+  animation: rcard-pulse 2s cubic-bezier(.2, .7, .2, 1) infinite;
+}
+@keyframes rcard-pulse {
+  0%   { transform: scale(1);   opacity: .55; }
+  80%  { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .rcard__dot::after { animation: none; opacity: 0; } }
+.rcard h3 { font-weight: 400; font-size: 32px; line-height: 40px; }
+.rcard p { margin-top: auto; font-weight: 400; font-size: 20px; line-height: 30px; }   /* sits on the bottom padding, never runs into it */
+.rcard > * { opacity: var(--c, 1); transition: opacity .3s; }
+.rcard.is-back > * { opacity: 0; }
+.real__dots { position: absolute; left: 1344px; top: 400px; display: flex; flex-direction: column; gap: 14px; }
+.real__dots i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--blue-light); transition: background .3s, border-color .3s; }
+.real__dots i.is-on { background: var(--red); border-color: var(--red); }
+.real__cta { position: absolute; left: 479px; top: 760px; width: 441px; }
+/* Realities → Quality: the last card's paper grows until it is the Quality
+   background (clip-path tweened in js from the card's rect to the full scene) */
+.real__fill {
+  position: absolute; inset: 0; z-index: 1;   /* under the canvas (same z, earlier in the DOM): the card's text dissolves on top of it */
+  background: var(--paper);
+  visibility: hidden;
+  will-change: clip-path;
+}
+
+/* =========================================================
+   5. Quality
+   ========================================================= */
+/* the Quality section slides up over the last screen of the Realities pin, on
+   top of the expanded card colour: its first screen is see-through (the
+   Realities fill is the paper there), the rest carries its own paper */
+#quality {
+  position: relative; z-index: 2; isolation: isolate;
+  margin-top: calc(-1 * max(100svh, 560px));
+  background: transparent;
+}
+#quality::before {
+  content: ""; position: absolute; z-index: -1;
+  left: 0; right: 0; bottom: 0; top: max(100svh, 560px);
+  background: var(--paper);
+}
+/* head: title | intro on the same 619 / 96 / 629 grid as the body below */
+/* sm-module--quality: the Figma frame is 1440 × 900 (80 / 48 padding) and, like
+   the pinned scenes, it is scaled as a whole to the screen (--s), so type and
+   spacing keep their Figma proportions on any desktop size */
+.quality { padding: 0; }
+.quality__canvas { display: flex; flex-direction: column; justify-content: center; padding: 80px 48px; }
+@media (min-width: 1100px) {
+  .quality__canvas {
+    position: absolute; left: 50%; top: 50%;
+    width: 1440px; height: 900px;
+    transform: translate(-50%, -50%) scale(var(--s, 1));
+  }
+}
+@media (max-width: 1099px) { .quality { padding: var(--section-y) var(--gutter); } .quality__canvas { padding: 0; } }
+/* header 395 | ARGUS card | standards 395, 48 apart */
+.quality__body { display: grid; grid-template-columns: 395px minmax(0, 1fr) 395px; column-gap: 48px; row-gap: 48px; align-items: stretch; }
+.quality__head { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
+.quality__head .section__title { font-size: 48px; line-height: 54px; }   /* sm/h2 */
+.quality__head p { font-weight: 400; font-size: 20px; line-height: 30px; color: var(--navy); }   /* sm/p1, text/primary */
+.quality__head .btn { margin-top: auto; }
+/* Quality → Market: the ARGUS card's navy grows from the card to the screen */
+.quality__fill { position: absolute; inset: 0; z-index: 3; background: var(--navy); visibility: hidden; will-change: clip-path; }
+.quality__list { list-style: none; display: flex; flex-direction: column; gap: 40px; }
+/* sm-standard: node + title; only the highlighted one shows its description */
+.std { display: flex; flex-direction: column; gap: 8px; }
+.std__head { display: flex; align-items: center; gap: 8px; }
+#quality.is-solid { background: var(--paper); }
+#quality { min-height: max(100svh, 560px); }   /* fills the screen while pinned */
+/* cylinder: the standards are stacked on one line and placed by js */
+.quality__list { width: 100%; }
+.quality__list.is-cyl { position: relative; min-height: 420px; }
+.quality__list.is-cyl .std {
+  position: absolute; left: 0; right: 0; top: 185px;   /* the front title lands at y 140, where Figma has the highlighted one */
+  transform-origin: 0 50%;
+  will-change: transform, opacity;
+}
+.std__head i {
+  flex: 0 0 16px; height: 16px; border-radius: 50%;
+  background: var(--navy); box-shadow: inset 0 0 0 2px var(--navy);   /* brand/cobalt node */
+  transition: background .4s, box-shadow .4s;
+}
+.std.is-on .std__head i { background: var(--red); box-shadow: inset 0 0 0 2px var(--red); }
+.std h3 { font-weight: 500; font-size: 24px; line-height: 30px; color: var(--navy); }   /* sm/h5 */
+.std p { font-weight: 500; font-size: 20px; line-height: 26px; color: var(--text-2); }   /* sm/h6 */
+
+
+/* =========================================================
+   6. ARGUS
+   ========================================================= */
+/* sm-argus card: navy, like the ARGUS stat cards it replaces */
+.argus { display: flex; flex-direction: column; padding: 32px; border-radius: 24px; background: var(--navy); color: #fff; }
+.argus__title { font-weight: 400; font-size: 32px; line-height: 40px; color: #fff; }   /* sm/h4 */
+.argus__sub { margin-top: 8px; font-weight: 500; font-size: 20px; line-height: 26px; color: var(--blue-light); }
+.argus__text { margin-top: 16px; font-weight: 400; font-size: 18px; line-height: 27px; color: var(--paper); }
+.argus__scan { position: relative; margin: 24px 0 0; width: 100%; flex: 0 0 260px; height: 260px; border-radius: 16px; overflow: hidden; background: #0b1622; }
+.argus__scan img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.argus__bar {
+  position: absolute; inset: 0 0 auto 0; height: 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  background: var(--glass);
+  font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--paper);
+}
+.argus__status { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 8px; border: 1px solid rgba(255,255,255,.85); border-radius: 999px; color: #fff; }
+.argus__status i { width: 8px; height: 8px; border-radius: 2px; background: var(--red); animation: blink 1.2s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+.argus__line { position: absolute; top: 48px; bottom: 0; left: 0; width: 2px; background: var(--blue); box-shadow: 0 0 12px rgba(44, 139, 255, .8); will-change: transform; }
+.argus__flag { position: absolute; left: calc(var(--x) / 720 * 100%); top: 47.7%; width: calc(64 / 720 * 100%); opacity: 0; }   /* --x is unitless: Figma x on the 720-wide scan */
+.argus__flag i { display: block; width: 100%; aspect-ratio: 1; border: 2px solid var(--red); border-radius: 4px; }
+.argus__flag em { display: inline-block; margin-top: 8px; padding: 4px 8px; border-radius: 2px; background: var(--red); color: #fff; font-style: normal; font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+
+/* =========================================================
+   7. Market intelligence (pinned, cards travel in)
+   ========================================================= */
+.market { position: relative; height: 100vh; height: 100svh; min-height: 680px; overflow: hidden; background: var(--cobalt); color: #fff; }
+/* dusk sky; the airliner is an image sequence drawn on the canvas above it
+   (it flies out of frame with the scroll); the overlay token sits on top */
+.market__bg {
+  position: absolute; inset: 0;
+  background: url("../assets/img/ad/market-sky.jpg") center / cover no-repeat;
+  will-change: transform;
+}
+/* everything in the scene, so it can recede as a whole when Conversion arrives */
+.market__stage { position: absolute; inset: 0; overflow: hidden; transform-origin: 50% 0; will-change: transform; }
+.market__shade { position: absolute; inset: 0; z-index: 3; background: #000; opacity: 0; pointer-events: none; }
+.market__plane { position: absolute; inset: 0; width: 100%; height: 100%; }
+.market__bg::after { content: ""; position: absolute; inset: 0; background: var(--overlay); }
+/* the expanded ARGUS card's navy, handed over from Quality, fades off the scene */
+.market__cover { position: absolute; inset: 0; z-index: 2; background: var(--navy); pointer-events: none; }
+.market__title .wd { display: inline-block; will-change: opacity; }
+/* the Figma frame (1440 × 900), scaled to the screen like the other pinned
+   scenes; the card rail runs past its right edge */
+.market__canvas {
+  position: absolute; z-index: 1; left: 50%; top: 50%;
+  width: 1440px; height: 900px;
+  transform: translate(-50%, -50%) scale(var(--s, 1));
+}
+.market__title {
+  position: absolute; left: 48px; top: 64px;
+  font-weight: 500; font-size: 48px; line-height: 54px; letter-spacing: -0.01em;   /* sm/h2 */
+}
+.market__title .wd--muted { color: var(--beige); }   /* starts beige, ends white (js) */
+.market__rail { position: absolute; left: 0; right: 0; top: 230px; }
+.market__track { display: flex; gap: 12px; width: max-content; padding-left: 48px; will-change: transform; }
+.market__track .sep { width: 6px; }
+.mchip {
+  display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
+  padding: 4px 10px 4px 8px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .85);
+  font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+}
+.mchip i { width: 8px; height: 8px; border-radius: 2px; background: var(--red); }
+.mchip--light { border-color: rgba(0, 37, 62, .55); color: var(--navy); }
+.mfeat {
+  flex: 0 0 auto; width: 723px; height: 444px;
+  padding: 32px; border-radius: 16px;
+  background: var(--paper); color: var(--navy);
+  display: flex; flex-direction: column; gap: 24px;
+  transition: box-shadow .4s;
+}
+.mfeat:hover { box-shadow: 0 18px 40px rgba(0, 0, 0, .25); }
+.mfeat h3 { font-weight: 500; font-size: 40px; line-height: 46px; }
+.mfeat__meta { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+.mfeat time { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+.mcard {
+  flex: 0 0 auto; width: 359px; height: 444px;
+  padding: 32px 24px;
+  border-radius: 24px;
+  background: var(--glass);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: flex; flex-direction: column; gap: 16px;
+  color: #fff;
+  transition: background .3s;
+}
+.mcard:hover { background: rgba(0, 0, 0, .62); }
+.mcard__icon { width: 80px; height: 80px; color: var(--blue-light); margin-bottom: 16px; transition: transform .9s cubic-bezier(.2, .7, .2, 1); }
+.mcard:hover .mcard__icon { transform: rotate(60deg); }
+.mcard h3 { font-weight: 300; font-size: 30px; line-height: 38px; }
+.mcard__read { margin-top: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 500; }
+.mcard__read svg, .mfeat .link svg { width: 16px; height: 16px; }
+.mcard__read svg { color: var(--blue); transition: transform .25s; }
+.mcard:hover .mcard__read svg { transform: translateX(4px); }
+.market__actions {
+  position: absolute; left: 48px; bottom: 64px;   /* left-aligned with the title and first card, clear of the chat button */
+  display: flex; align-items: center; gap: 40px;
+}
+
+/* =========================================================
+   8. Conversion (alt 2)
+   ========================================================= */
+.convert { min-height: 600px; padding: 64px 56px; }
+/* Market → Conversion: the paper section (and the footer after it) slides up
+   over the last screen of the Market pin while the scene recedes beneath */
+#contact { z-index: 2; margin-top: calc(-1 * max(100svh, 680px)); }
+#contact + .footer, #contact ~ .footer { position: relative; z-index: 2; }
+.convert__title .wd { display: inline-block; will-change: opacity; }
+.convert__media img { will-change: transform; }
+.convert .section__title { max-width: 658px; }
+.convert__row { position: relative; z-index: 1; display: flex; gap: 16px; max-width: 724px; margin-top: 208px; }
+.convert__row .cta-card { flex: 1; }
+.convert__media { position: absolute; right: var(--gutter); top: 40px; width: 440px; height: 520px; margin: 0; border-radius: 24px; overflow: hidden; }
+.convert__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.convert__caption {
+  position: absolute; left: 24px; bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 24px 14px 20px; border-radius: 16px;
+  background: var(--navy); color: #fff;
+}
+.convert__caption > i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+.convert__caption span { display: flex; flex-direction: column; gap: 4px; }
+.convert__caption b { font-weight: 500; font-size: 20px; line-height: 26px; }
+.convert__caption em { font-style: normal; font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--paper); }
+
+/* ---------- narrower screens: stack the regular sections ---------- */
+@media (max-width: 1100px) {
+  .quality__body { grid-template-columns: 1fr; }
+  .quality__head .btn { margin-top: 8px; }
+  .convert { padding-bottom: 600px; }
+  .convert__media { left: var(--gutter); right: auto; top: auto; bottom: 40px; width: min(440px, calc(100% - 2 * var(--gutter))); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-callout i, .argus__status i { animation: none; }
+}
+/* two flags sit close on the narrower card scan: the second label goes above its box */
+.argus__flag--up em { position: absolute; left: 0; bottom: 100%; margin: 0 0 8px; }
+.nowrap { white-space: nowrap; }

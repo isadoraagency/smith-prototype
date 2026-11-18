@@ -81,7 +81,8 @@ ul { list-style: none; }
   transition: background .25s, color .25s;
 }
 .switch__btn.is-active { background: #fff; color: var(--navy); }
-.switch__btn { display: inline-flex; align-items: center; }
+.switch__btn { display: inline-flex; align-items: center; gap: 8px; }   /* gap: sun icon on Solar, as on the Solar site */
+.switch__icon { flex: 0 0 auto; display: block; }
 .switch__btn:not(.is-active):hover { background: rgba(255, 255, 255, .14); }
 .header.is-on-light .switch__btn:not(.is-active):hover { background: rgba(0, 37, 62, .1); }
 
@@ -789,32 +790,33 @@ ul { list-style: none; }
 
 /* list: one sliding dot + a line that draws under the active industry
    (same interaction as the Smith Solar "product categories" section) */
-.industries__list { position: relative; list-style: none; min-width: 260px; padding-left: 26px; }
+.industries__list { position: relative; list-style: none; min-width: 260px; padding-left: 20px; }   /* phones: like Solar, names 20px right of the dot */
 .industries__list li { position: relative; pointer-events: none; }   /* only the rows themselves react */
 .industries__list li > * { pointer-events: auto; }
-.industries__item {
+.industries__item {               /* metrics from Smith Solar .cats__item: 13.5/1.45, 7px padding → 33.6px rows */
   display: block; width: 100%; text-align: left;
   padding: 7px 0;
   cursor: pointer;
-  font-family: var(--mono); font-size: 14px; letter-spacing: .06em;
+  font-family: var(--mono); font-size: 13.5px; line-height: 1.45; letter-spacing: .03em;
   text-transform: uppercase;
   color: #fff;
-  opacity: .7;
+  opacity: .82;
   transition: opacity .5s cubic-bezier(.16, 1, .3, 1), transform .6s cubic-bezier(.16, 1, .3, 1);
 }
 .industries__item:hover, .industries__item.is-active { opacity: 1; }
 .industries__item.is-active { transform: translateX(4px); }
 .industries__item.is-after { transform: translateY(38px); }
-.industries__dot {
+.industries__dot {                /* Smith Solar .cats__dot, in Smith red */
   position: absolute; left: 0; top: 0;
-  width: 18px; height: 18px; border-radius: 50%;
-  background: radial-gradient(circle, var(--red) 0 4px, rgba(213, 59, 45, .3) 4.5px);
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(213, 59, 45, .3);
   pointer-events: none;
 }
-.industries__line {
-  position: absolute; left: 30px; top: 0;
-  width: 508px; height: 40px;
-  color: rgba(255, 255, 255, .55);
+.industries__line {               /* same as Smith Solar .cats__line */
+  position: absolute; left: 4px; top: 0;
+  width: 100%; height: 40px;       /* measured on the Solar page: the line is as wide as the list */
+  color: rgba(255, 255, 255, .5);
   pointer-events: none; overflow: visible;
 }
 
@@ -1279,3 +1281,19 @@ body.is-leaving { opacity: 0; }
   .product__mark-sym { font: 500 16px/22px var(--sans); }
 }
 .stat b { font-variant-numeric: tabular-nums; }   /* keep digits steady while counting up */
+
+/* Industries list placed like the Smith Solar "product categories" list:
+   64.7% from the left edge of the section, 35.3% of its width, 110–140px
+   from its top. The list sits inside .industries__inner (the section's
+   content box), so the section's padding is added back into each value. */
+@media (min-width: 901px) {
+  .industries__list {
+    position: absolute;
+    top: calc(clamp(110px, 10vw, 140px) - var(--section-y));
+    left: calc((100% + 2 * var(--gutter)) * 0.647 - var(--gutter));
+    width: calc((100% + 2 * var(--gutter)) * 0.353);
+    min-width: 0;
+    padding-left: 0;
+  }
+  .industries__dot { left: -20px; }   /* same as Solar: 20px left of the names */
+}

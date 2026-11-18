@@ -503,9 +503,26 @@ const indDot = document.querySelector('[data-ind-dot]');
 const indLine = document.querySelector('[data-ind-line]');
 const indPath = indLine.querySelector('path');
 let indActive = -1;
+// Solar's line is its 520×80 path stretched to fill the box (preserveAspectRatio
+// "none"). We rebuild that same stretched shape in real pixels instead, so the
+// stroke stays a crisp 1px and the 0→1 draw always covers the whole line.
+const IND_LINE = [['M', 0, 1], ['H', 270], ['C', 290, 1, 296, 8, 302, 22], ['L', 318, 62],
+  ['C', 324, 76, 332, 79, 350, 79], ['H', 520]];
+function buildIndustryLine() {
+  const w = indLine.clientWidth || indLine.getBoundingClientRect().width;
+  const h = indLine.clientHeight || 40;
+  const sx = w / 520, sy = h / 80;
+  indLine.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  indPath.setAttribute('d', IND_LINE.map(([cmd, ...n]) => cmd + (cmd === 'H'
+    ? (n[0] * sx).toFixed(2)
+    : n.map((v, k) => (k % 2 ? v * sy : v * sx).toFixed(2)).join(' '))).join(''));
+  indPath.removeAttribute('vector-effect');
+}
+buildIndustryLine();
 prepLine(indPath);
 
 function placeIndustry(i, instant) {
+  buildIndustryLine();   // re-measure: the list width settles after fonts/layout
   const btn = indItems[i];
   const li = btn.parentElement;
   const dotY = li.offsetTop + btn.offsetHeight / 2 - indDot.offsetHeight / 2;
@@ -566,7 +583,7 @@ indItems.forEach((b, i) => {
   b.addEventListener('click', () => setIndustry(i));
 });
 setIndustry(indItems.findIndex((b) => b.textContent.trim() === 'Automotive'), true);
-window.addEventListener('resize', () => placeIndustry(indActive, true));
+window.addEventListener('resize', () => { buildIndustryLine(); placeIndustry(indActive, true); });
 
 // touch screens: gentle auto-cycle while the section is in view
 if (window.matchMedia('(hover: none)').matches && !reduceMotion) {
@@ -731,4 +748,32 @@ window.addEventListener('pageshow', () => document.body.classList.remove('is-lea
 /* ---------------------------------------------------------
    10. Re-measure once web fonts have loaded (text widths change)
    --------------------------------------------------------- */
+/* ---------------------------------------------------------
+   Header hides while scrolling down and slides back in as
+   soon as the user scrolls up (stays put near the top and
+   while the Industries menu is open)
+   --------------------------------------------------------- */
+(() => {
+  const bar = document.querySelector('.header');
+  const menu = document.getElementById('industriesMenu');
+  let lastY = window.scrollY;
+  let hidden = false;
+  const setHidden = (h) => {
+    if (h === hidden) return;
+    hidden = h;
+    gsap.to(bar, { yPercent: h ? -130 : 0, duration: h ? 0.45 : 0.6, ease: h ? 'power2.in' : 'expo.out', overwrite: 'auto' });
+  };
+  const onScroll = () => {
+    const y = window.scrollY;
+    const dy = y - lastY;
+    if (Math.abs(dy) < 4) return;            // ignore tiny jitter
+    lastY = y;
+    if (y < 120 || (menu && !menu.hidden)) return setHidden(false);
+    setHidden(dy > 0);
+  };
+  if (lenis) lenis.on('scroll', onScroll); else window.addEventListener('scroll', onScroll, { passive: true });
+  // keyboard users: bring it back when focus moves into the header
+  bar.addEventListener('focusin', () => setHidden(false));
+})();
+
 if (document.fonts) document.fonts.ready.then(() => ScrollTrigger.refresh());

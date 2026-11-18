@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>document.documentElement.classList.add("js")</script>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aerospace &amp; Defense — Smith</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="preload" href="../../assets/fonts/Gilroy-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="../../assets/fonts/Gilroy-Medium.woff2" as="font" type="font/woff2" crossorigin />
+
+  <link rel="stylesheet" href="../../vendor/lenis.css" />
+  <link rel="stylesheet" href="../../css/style.css?v=36" />
+  <link rel="stylesheet" href="../../css/aerospace.css?v=34" />
+</head>
+<body class="page-ad">
+
+  <!-- shared icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M2.5 8h10.5M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-mark" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="2.2" r="1.3"/><circle cx="16.85" cy="3.5" r="1.3"/><circle cx="20.4" cy="7.05" r="1.3"/><circle cx="21.7" cy="12" r="1.3"/><circle cx="20.4" cy="16.85" r="1.3"/><circle cx="16.85" cy="20.4" r="1.3"/><circle cx="12" cy="21.7" r="1.3"/><circle cx="7.05" cy="20.4" r="1.3"/><circle cx="3.5" cy="16.85" r="1.3"/><circle cx="2.2" cy="12" r="1.3"/><circle cx="3.5" cy="7.05" r="1.3"/><circle cx="7.05" cy="3.5" r="1.3"/><circle cx="14.15" cy="6.65" r="1.05"/><circle cx="17.25" cy="9.75" r="1.05"/><circle cx="17.25" cy="14.15" r="1.05"/><circle cx="14.15" cy="17.25" r="1.05"/><circle cx="9.75" cy="17.25" r="1.05"/><circle cx="6.65" cy="14.15" r="1.05"/><circle cx="6.65" cy="9.75" r="1.05"/><circle cx="9.75" cy="6.65" r="1.05"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M21 21H6.2c-1.1 0-1.7 0-2.1-.2a2 2 0 0 1-.9-.9C3 19.5 3 18.9 3 17.8V3m18 4-5.4 5.4c-.2.2-.3.3-.4.3h-.4c-.1 0-.2-.1-.4-.3l-1.9-1.9c-.2-.2-.3-.3-.4-.3h-.4c-.1 0-.2.1-.4.3L7 15m14-8h-4m4 0v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <!-- =====================================================
+       HEADER — fixed nav (Nav Bar AA) + live market ticker
+       ===================================================== -->
+  <header class="header">
+    <div class="nav">
+      <div class="nav__brand">
+        <a href="../../" class="logo" aria-label="Smith home"><img src="../../assets/img/logo.svg" alt="Smith" width="94" height="32" /></a>
+        <nav class="switch" aria-label="Business unit">
+          <a class="switch__btn is-active" href="../../">Electronics</a>
+          <a class="switch__btn" href="../../solar/" data-site-switch>
+            <!-- sun icon, from the Smith Solar nav toggle -->
+            <svg class="switch__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 2.25V3.75M3.98559 5.48559L2.92493 4.42493M14.0143 5.48559L15.075 4.42493M4.5 11.25C4.5 8.76472 6.51472 6.75 9 6.75C11.4853 6.75 13.5 8.76472 13.5 11.25M4.5 11.25H13.5M4.5 11.25H1.5M13.5 11.25H16.5M14.25 14.25H3.75" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Solar
+          </a>
+        </nav>
+      </div>
+
+      <nav class="nav__menu" aria-label="Main">
+        <a href="#">Services</a>
+        <div class="nav__drop">
+          <button type="button" class="nav__drop-btn is-current" id="industriesBtn" aria-expanded="false" aria-controls="industriesMenu">Industries
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
+          </button>
+          <div class="dropdown" id="industriesMenu" hidden>
+            <p class="dropdown__title">Industries</p>
+            <ul class="dropdown__list">
+              <li><a href="./" aria-current="page">Aerospace and Defense</a></li>
+              <li><a href="#">Automotive</a></li>
+              <li><a href="#">Consumer Electronics</a></li>
+              <li><a href="#">Data Center</a></li>
+              <li><a href="#">Education</a></li>
+              <li><a href="#">Gaming</a></li>
+              <li><a href="#">Healthcare &amp; Medical</a></li>
+              <li><a href="#">Oil &amp; Gas</a></li>
+            </ul>
+            <a href="../../#industries" class="dropdown__all">View All Industries</a>
+          </div>
+        </div>
+        <a href="#">Quality</a>
+        <a href="#">Market Insights</a>
+        <a href="#">Company</a>
+        <button class="nav__lang">EN
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
+        </button>
+        <a href="#" class="nav__icon" aria-label="Account">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c.8-4.2 4-6.5 8-6.5s7.2 2.3 8 6.5"/></svg>
+        </a>
+      </nav>
+
+      <a href="#contact" class="cta">Talk to an Expert</a>
+      <button class="burger" aria-label="Open menu"><span></span><span></span></button>
+    </div>
+
+  </header>
+
+
+  <main class="ad">
+
+    <!-- 1 + 2. HERO → OVERVIEW: one pinned stage. The head-on aircraft photo
+         shrinks into the overview circle while the cyan line draws in. -->
+    <section class="ad-stage scene" id="stage" data-nav="dark">
+      <div class="canvas">
+        <svg class="ov__line" viewBox="0 0 1440 900" aria-hidden="true">
+          <path class="ov__path" pathLength="1" d="M-314 213.24H-172.416C-143.694 213.24 -117.153 228.56 -102.792 253.44C-99.2792 259.52 -96.579 266.04 -94.7606 272.83L-82.3242 319.24C-74.5036 348.43 -48.0311 368.7 -17.8146 368.65L318.566 368.09C348.804 368.04 375.249 347.71 383.076 318.5L398.251 261.86C406.053 232.75 432.439 212.5 462.583 212.5H1456"/>
+        </svg>
+        <i class="ov__marker" aria-hidden="true"></i>
+        <div class="ov__slot" id="ovSlot" aria-hidden="true"></div>
+        <p class="ov__statement" id="ovStatement">Aerospace and defense programs depend on components that may remain in service for decades, even as technologies, suppliers, regulations, and availability change. Smith helps organizations navigate that complexity with global procurement expertise, rigorous quality controls, and long-term component lifecycle support.</p>
+        <aside class="ov__card" id="ovCard">
+          <b>#1</b>
+          <h2>Independent Global Distributor</h2>
+          <p>Ranked by Supply Chain Connect.</p>
+        </aside>
+      </div>
+
+      <!-- the hero sits on top; its photo becomes the circle -->
+      <div class="hero-media" id="heroMedia"><img src="../../assets/img/ad/hero.jpg" alt="A commercial airliner flying head-on above the clouds at dusk" /></div>
+      <div class="ad-hero" id="heroCopy">
+        <h1 class="ad-hero__title" id="heroTitle">Aerospace &amp; Defense electronic<br />component sourcing</h1>
+        <a href="#contact" class="btn btn--primary">Book a call with an industry specialist</a>
+      </div>
+      <span class="ad-callout" id="heroCallout"><i></i>Avionics Processor</span>
+    </section>
+
+    <!-- 3. APPLICATIONS: pinned. Intro title over the top-view wireframe,
+         then tabs + panel + perspective wireframe; the categories autoplay
+         (and follow hover) and light up the matching part of the aircraft. -->
+    <section class="apps scene" id="apps" data-nav="dark">
+      <div class="canvas">
+        <div class="apps__topwrap" aria-hidden="true"><img class="apps__top" src="../../assets/img/ad/wire-aircraft-top.png?v=2" alt="" /></div>
+        <h2 class="apps__intro">Supporting the systems<br />behind every mission.</h2>
+
+        <div class="apps__zoom">
+        <div class="apps__visual" data-visual="0">
+          <img class="apps__plane" src="../../assets/img/ad/wire-aircraft-perspective.png" alt="Wireframe of a commercial aircraft" />
+          <div class="hl" data-hl="0" data-dim="1"><img class="hl__cut" src="../../assets/img/ad/cut-engine.png" alt="" style="left:1000.91px;top:580.35px;width:113.22px;height:99.05px" /><img class="hl__detail" src="../../assets/img/ad/detail-fadec.jpg" alt="" style="left:1132px;top:475px;width:220px;height:220px" /><p class="hl__label" style="left:1114px;top:711px">Engine control computer (FADEC)</p></div><div class="hl" data-hl="1" data-dim="1"><img class="hl__cut" src="../../assets/img/ad/cut-eebay.png" alt="" style="left:655.04px;top:619.97px;width:187.1px;height:115.71px" /><p class="hl__label" style="left:764px;top:702px">Avionics &amp; power electronics (E&amp;E bay)</p></div><div class="hl" data-hl="2" data-dim="1"><img class="hl__cut" src="../../assets/img/ad/cut-radome.png" alt="" style="left:602.21px;top:617.1px;width:65.46px;height:121.16px" /><p class="hl__label" style="left:687px;top:663px">Weather radar &amp; air-data probes</p></div><div class="hl" data-hl="3" data-dim="1"><img class="hl__cut" src="../../assets/img/ad/cut-recorder.png" alt="" style="left:1061.3px;top:324.92px;width:83.17px;height:152.26px" /><img class="hl__detail" src="../../assets/img/ad/detail-fdr-inside.jpg" alt="" style="left:1180px;top:420px;width:220px;height:220px" /><p class="hl__label" style="left:1180px;top:656px">Flight recorder memory unit</p></div><div class="hl" data-hl="4" data-dim="1"><img class="hl__cut" src="../../assets/img/ad/cut-flightdeck.png" alt="" style="left:602.3px;top:542.35px;width:173.7px;height:195.81px" /><img class="hl__detail" src="../../assets/img/ad/detail-cockpit.jpg" alt="" style="left:808px;top:488px;width:240px;height:240px" /><p class="hl__label" style="left:808px;top:744px">Flight deck displays &amp; controls</p></div>
+        </div>
+        <div class="apps__visual" data-visual="1"><img class="apps__jet" src="../../assets/img/ad/wire-fighter-jet.png" alt="Wireframe of a fighter jet" /></div>
+        <div class="apps__visual" data-visual="2"><svg class="apps__draw" viewBox="0 0 640 520" aria-hidden="true"><path pathLength="1" d="M 290 220 L 350 220 L 350 300 L 290 300 Z"/><path pathLength="1" d="M 300 236 L 340 236 M 300 252 L 340 252 M 300 268 L 340 268 M 300 284 L 340 284"/><path pathLength="1" d="M 150 236 L 266 236 L 266 284 L 150 284 Z"/><path pathLength="1" d="M 374 236 L 490 236 L 490 284 L 374 284 Z"/><path pathLength="1" d="M 179 236 L 179 284 M 208 236 L 208 284 M 237 236 L 237 284 M 403 236 L 403 284 M 432 236 L 432 284 M 461 236 L 461 284"/><path pathLength="1" d="M 266 260 L 290 260 M 350 260 L 374 260"/><path pathLength="1" d="M 320 220 L 320 180"/><path pathLength="1" d="M 300 168 Q 320 150 340 168"/><path pathLength="1" d="M 320 300 L 320 334 L 304 350 M 320 334 L 336 350"/></svg></div>
+        <div class="apps__visual" data-visual="3"><svg class="apps__draw" viewBox="0 0 640 520" aria-hidden="true"><path pathLength="1" d="M 230 210 Q 300 340 420 250"/><path pathLength="1" d="M 230 210 L 420 250"/><path pathLength="1" d="M 325 230 L 352 160"/><path pathLength="1" d="M 352 160 m -5 0 a 5 5 0 1 0 10 0 a 5 5 0 1 0 -10 0"/><path pathLength="1" d="M 320 262 L 300 360 L 340 360 Z"/><path pathLength="1" d="M 260 360 L 380 360"/><path pathLength="1" d="M 384 128 Q 404 148 396 176"/><path pathLength="1" d="M 404 108 Q 438 146 420 196"/><path pathLength="1" d="M 424 88 Q 474 146 444 216"/></svg></div>
+        </div>
+
+        <div class="apps__ui">
+          <div class="apps__tabs" role="tablist" aria-label="Systems"><button type="button" class="apps__tab is-active" role="tab" aria-selected="true" data-tab="0">Commercial Aircraft</button><button type="button" class="apps__tab" role="tab" aria-selected="false" data-tab="1">Defense Aircraft</button><button type="button" class="apps__tab" role="tab" aria-selected="false" data-tab="2">Satellite &amp; Space Systems</button><button type="button" class="apps__tab" role="tab" aria-selected="false" data-tab="3">Radar &amp; Communications</button></div>
+          <div class="apps__panels"><div class="apps__panel is-active" data-panel="0" role="tabpanel"><h3>Commercial Aircraft</h3><p>Components supporting flight, communications, navigation, power, monitoring, and onboard electronic systems.</p><ul class="apps__tags"><li><button type="button" class="apps__tag" data-tag="0"><i></i>Processors</button></li><li><button type="button" class="apps__tag" data-tag="1"><i></i>Semiconductors</button></li><li><button type="button" class="apps__tag" data-tag="2"><i></i>Sensors</button></li><li><button type="button" class="apps__tag" data-tag="3"><i></i>Memory</button></li><li><button type="button" class="apps__tag" data-tag="4"><i></i>Interface Components</button></li></ul></div><div class="apps__panel" data-panel="1" role="tabpanel"><h3>Defense Aircraft</h3><p>Electronic components supporting long-lifecycle platforms and mission-critical systems.</p><ul class="apps__tags"><li><button type="button" class="apps__tag" data-tag="0"><i></i>High-Reliability Semiconductors</button></li><li><button type="button" class="apps__tag" data-tag="1"><i></i>RF</button></li><li><button type="button" class="apps__tag" data-tag="2"><i></i>Processing</button></li><li><button type="button" class="apps__tag" data-tag="3"><i></i>Memory</button></li></ul></div><div class="apps__panel" data-panel="2" role="tabpanel"><h3>Satellite &amp; Space Systems</h3><p>Components supporting communications, processing, control, and power systems.</p><ul class="apps__tags"><li><button type="button" class="apps__tag" data-tag="0"><i></i>RF</button></li><li><button type="button" class="apps__tag" data-tag="1"><i></i>Processing</button></li><li><button type="button" class="apps__tag" data-tag="2"><i></i>Power</button></li><li><button type="button" class="apps__tag" data-tag="3"><i></i>Memory</button></li></ul></div><div class="apps__panel" data-panel="3" role="tabpanel"><h3>Radar &amp; Communications</h3><p>Components supporting sensing, signal processing, communications, and connectivity.</p><ul class="apps__tags"><li><button type="button" class="apps__tag" data-tag="0"><i></i>RF Semiconductors</button></li><li><button type="button" class="apps__tag" data-tag="1"><i></i>Amplifiers</button></li><li><button type="button" class="apps__tag" data-tag="2"><i></i>Transceivers</button></li><li><button type="button" class="apps__tag" data-tag="3"><i></i>Processing</button></li></ul></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. REALITIES: pinned card stack (sm-realities-card) -->
+    <section class="real scene" id="realities" data-nav="dark">
+      <div class="real__nosewrap" aria-hidden="true"><div class="real__crop"><img class="real__nose" src="../../assets/img/ad/wire-realities-plane.png" alt="" /></div></div>
+      <div class="real__fill" data-nav="light" aria-hidden="true"></div>
+      <div class="canvas">
+        <h2 class="real__title">Built around aerospace &amp; defense <span>supply chain realities.</span></h2>
+        <div class="real__stack"><article class="rcard" data-rcard="0"><i class="rcard__dot" aria-hidden="true"></i><h3>Obsolescence &amp; Long Program Lifecycles</h3><p>Aircraft and defense platforms often outlast their parts. Smith helps customers pinpoint key needs, secure end-of-life stock, and plan inventory for lasting program support.</p></article><article class="rcard" data-rcard="1"><i class="rcard__dot" aria-hidden="true"></i><h3>Counterfeit &amp; Quality Risk</h3><p>Open-market sourcing demands rigorous authenticity controls. Smith pairs a vetted global supplier network with inspection, in-house testing and aerospace-specific standards.</p></article><article class="rcard" data-rcard="2"><i class="rcard__dot" aria-hidden="true"></i><h3>Supply Continuity</h3><p>Allocation, disruption and competing demand can stall production and maintenance. Smith secures critical inventory and holds buffer stock for future requirements, not one-off spot buys.</p></article><article class="rcard" data-rcard="3"><i class="rcard__dot" aria-hidden="true"></i><h3>Trade &amp; Compliance Complexity</h3><p>Export controls, tariffs and rated orders shape where parts can move. Smith maintains dedicated compliance expertise for sourcing and the responsible disposition of excess inventory.</p></article></div>
+        <div class="real__dots" aria-hidden="true"><i data-rdot="0" class="is-on"></i><i data-rdot="1"></i><i data-rdot="2"></i><i data-rdot="3"></i></div>
+        <a href="#" class="btn btn--primary real__cta">Procurement and Supply Chain Solutions</a>
+      </div>
+    </section>
+
+    <!-- 5. QUALITY + ARGUS: one module. Head on top; the ARGUS card on the
+         left, the standards cylinder on the right (pinned) -->
+    <section class="section section--paper quality" id="quality" data-nav="light">
+      <div class="quality__canvas">
+        <div class="quality__body">
+          <div class="quality__head">
+            <h2 class="section__title reveal">Quality standards for high-risk environments.</h2>
+            <p class="reveal">Smith combines aerospace standards with testing, a vetted supplier network, and inspection capabilities to mitigate risk in the supply chain.</p>
+            <a href="#" class="btn btn--secondary reveal"><span>Explore Smith Quality</span></a>
+          </div>
+          <article class="argus reveal" id="argus">
+            <h3 class="argus__title">ARGUS™</h3>
+            <p class="argus__sub">AI-Powered Visual Inspection at Scale</p>
+            <p class="argus__text">Smith’s proprietary inspection technology can evaluate a full reel of components for part-to-part discrepancies, orientation issues, and visual anomalies in minutes.</p>
+            <figure class="argus__scan" id="argusScan">
+              <img src="../../assets/img/ad/argus.jpg" alt="ARGUS camera scanning a reel of electronic components" />
+              <figcaption class="argus__bar"><span>Reel Scan · 18 Parts</span><span class="argus__status"><i></i>Scanning…</span></figcaption>
+              <i class="argus__line" aria-hidden="true"></i>
+              <span class="argus__flag" style="--x:215" data-at="0.3"><i></i><em>Flag · Orientation</em></span>
+              <span class="argus__flag argus__flag--up" style="--x:415" data-at="0.58"><i></i><em>Flag · Marking</em></span>
+            </figure>
+          </article>
+          <ol class="quality__list"><li class="std is-on"><div class="std__head"><i aria-hidden="true"></i><h3>AS6081</h3></div><p>Counterfeit avoidance, detection, mitigation, and disposition.</p></li><li class="std"><div class="std__head"><i aria-hidden="true"></i><h3>AS9120</h3></div><p>Quality-management requirements for aerospace-industry distributors.</p></li><li class="std"><div class="std__head"><i aria-hidden="true"></i><h3>ISO/IEC 17025 + AS6171</h3></div><p>Accredited testing supporting risk-based component authenticity testing.</p></li><li class="std"><div class="std__head"><i aria-hidden="true"></i><h3>DLA QSLD / QTSL</h3></div><p>Qualified supplier status supporting U.S. Defense Logistics Agency procurement.</p></li></ol>
+        </div>
+      </div>
+      <div class="quality__fill" data-nav="dark" aria-hidden="true"></div>
+    </section>
+
+    <!-- 7. MARKET INTELLIGENCE: pinned. Title over the aircraft photo, then the
+         cards travel in from the right (same pattern as the homepage insights). -->
+    <section class="market" id="market" data-nav="dark">
+      <div class="market__stage">
+        <div class="market__bg" aria-hidden="true"><canvas class="market__plane" id="marketPlane"></canvas></div>
+        <div class="market__cover" aria-hidden="true"></div>
+        <div class="market__canvas">
+          <h2 class="market__title">What we’re watching <span>across the market</span></h2>
+          <div class="market__rail">
+            <div class="market__track" id="marketTrack">
+              <a href="#" class="mfeat">
+                <span class="mchip mchip--light"><i></i>Featured Insight</span>
+                <h3>AI server demand is drawing down the same COTS parts aerospace programs rely on.</h3>
+                <span class="mfeat__meta"><time>Updated 22 Sep 2026</time><span class="link">Read the Insight <svg aria-hidden="true"><use href="#i-arrow"/></svg></span></span>
+              </a>
+              <span class="sep" aria-hidden="true"><i></i><i></i></span><a href="#" class="mcard"><svg class="mcard__icon" viewBox="0 0 64 64" aria-hidden="true"><g stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><line x1="32" y1="4" x2="32" y2="16"/><line x1="32" y1="48" x2="32" y2="60"/><line x1="4" y1="32" x2="16" y2="32"/><line x1="48" y1="32" x2="60" y2="32"/><line x1="12.2" y1="12.2" x2="20.7" y2="20.7"/><line x1="43.3" y1="43.3" x2="51.8" y2="51.8"/><line x1="12.2" y1="51.8" x2="20.7" y2="43.3"/><line x1="43.3" y1="20.7" x2="51.8" y2="12.2"/><line x1="21.3" y1="6.2" x2="24.3" y2="13.5"/><line x1="39.7" y1="50.5" x2="42.7" y2="57.8"/><line x1="6.2" y1="42.7" x2="13.5" y2="39.7"/><line x1="50.5" y1="24.3" x2="57.8" y2="21.3"/><line x1="21.3" y1="57.8" x2="24.3" y2="50.5"/><line x1="39.7" y1="13.5" x2="42.7" y2="6.2"/><line x1="6.2" y1="21.3" x2="13.5" y2="24.3"/><line x1="50.5" y1="39.7" x2="57.8" y2="42.7"/></g><circle cx="32" cy="32" r="6" fill="currentColor"/></svg><span class="mchip"><i></i>Obsolescence</span><h3>Last-Time Buy windows closing ahead of published dates</h3><span class="mcard__read">Read <svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a><span class="sep" aria-hidden="true"><i></i><i></i></span><a href="#" class="mcard"><svg class="mcard__icon" viewBox="0 0 64 64" aria-hidden="true"><g stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><line x1="32" y1="4" x2="32" y2="16"/><line x1="32" y1="48" x2="32" y2="60"/><line x1="4" y1="32" x2="16" y2="32"/><line x1="48" y1="32" x2="60" y2="32"/><line x1="12.2" y1="12.2" x2="20.7" y2="20.7"/><line x1="43.3" y1="43.3" x2="51.8" y2="51.8"/><line x1="12.2" y1="51.8" x2="20.7" y2="43.3"/><line x1="43.3" y1="20.7" x2="51.8" y2="12.2"/><line x1="21.3" y1="6.2" x2="24.3" y2="13.5"/><line x1="39.7" y1="50.5" x2="42.7" y2="57.8"/><line x1="6.2" y1="42.7" x2="13.5" y2="39.7"/><line x1="50.5" y1="24.3" x2="57.8" y2="21.3"/><line x1="21.3" y1="57.8" x2="24.3" y2="50.5"/><line x1="39.7" y1="13.5" x2="42.7" y2="6.2"/><line x1="6.2" y1="21.3" x2="13.5" y2="24.3"/><line x1="50.5" y1="39.7" x2="57.8" y2="42.7"/></g><circle cx="32" cy="32" r="6" fill="currentColor"/></svg><span class="mchip"><i></i>Compliance</span><h3>Export-control changes reshape shipping of high-performance parts.</h3><span class="mcard__read">Read <svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a><span class="sep" aria-hidden="true"><i></i><i></i></span><a href="#" class="mcard"><svg class="mcard__icon" viewBox="0 0 64 64" aria-hidden="true"><g stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><line x1="32" y1="4" x2="32" y2="16"/><line x1="32" y1="48" x2="32" y2="60"/><line x1="4" y1="32" x2="16" y2="32"/><line x1="48" y1="32" x2="60" y2="32"/><line x1="12.2" y1="12.2" x2="20.7" y2="20.7"/><line x1="43.3" y1="43.3" x2="51.8" y2="51.8"/><line x1="12.2" y1="51.8" x2="20.7" y2="43.3"/><line x1="43.3" y1="20.7" x2="51.8" y2="12.2"/><line x1="21.3" y1="6.2" x2="24.3" y2="13.5"/><line x1="39.7" y1="50.5" x2="42.7" y2="57.8"/><line x1="6.2" y1="42.7" x2="13.5" y2="39.7"/><line x1="50.5" y1="24.3" x2="57.8" y2="21.3"/><line x1="21.3" y1="57.8" x2="24.3" y2="50.5"/><line x1="39.7" y1="13.5" x2="42.7" y2="6.2"/><line x1="6.2" y1="21.3" x2="13.5" y2="24.3"/><line x1="50.5" y1="39.7" x2="57.8" y2="42.7"/></g><circle cx="32" cy="32" r="6" fill="currentColor"/></svg><span class="mchip"><i></i>Availability</span><h3>High-reliability RF lead times extending into next year</h3><span class="mcard__read">Read <svg aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+            </div>
+          </div>
+          <div class="market__actions">
+            <a href="#" class="btn btn--primary">Explore Market Intelligence</a>
+            <a href="#" class="link link--inverse">Subscribe to Market Intelligence <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </div>
+        </div>
+        <div class="market__shade" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- 8. CONVERSION (alt 2: specialist portrait card) — slides up over the receding Market scene -->
+    <section class="section section--paper convert" id="contact" data-nav="light">
+      <h2 class="section__title convert__title">Talk to someone who knows aerospace programs.</h2>
+      <div class="convert__row reveal">
+        <span class="board-dots board-dots--navy" aria-hidden="true"><i></i><i></i></span>
+        <div class="cta-card"><p>A specialist handles aerospace and defense needs, not general inquiries.</p><a href="#" class="btn btn--primary">Book a Call</a></div>
+        <span class="board-dots board-dots--navy" aria-hidden="true"><i></i><i></i></span>
+      </div>
+      <figure class="convert__media">
+        <img src="../../assets/img/ad/specialist-desk.jpg" alt="Smith aerospace and defense specialist at her desk" loading="lazy" />
+        <figcaption class="convert__caption"><i></i><span><b>[ Specialist Name ]</b><em>Aerospace &amp; Defense Specialist</em></span></figcaption>
+      </figure>
+    </section>
+
+    <!-- =====================================================
+         FOOTER  (sm-footer)
+         ===================================================== -->
+    <footer class="footer">
+      <div class="footer__cta">
+        <p class="footer__quote">Markets move overnight.<br />So do we.</p>
+
+        <!-- one-line circuit, same motif as the About section -->
+        <svg class="footer__circuit" viewBox="0 0 1440 80" aria-hidden="true">
+          <path class="footer__circuit-line" d="M-10 60 H360 C400 60 405 20 445 20 H980 C1020 20 1025 60 1065 60 H1450" />
+          <circle class="marker marker--red" cx="700" cy="20" r="12" />
+          <g transform="translate(1250 60) rotate(45)"><rect class="marker marker--blue" x="-8.5" y="-8.5" width="17" height="17" /></g>
+          <circle class="marker marker--white" cx="180" cy="60" r="12" />
+        </svg>
+      </div>
+
+      <div class="footer__info">
+        <img class="footer__logo" src="../../assets/img/logo.svg" alt="Smith" width="141" height="48" />
+        <div class="footer__address">
+          <h3>World Headquarters</h3>
+          <p>5306 Hollister Street <span>|</span> Houston, TX 77040 <span>|</span> <a href="tel:18004687866">1.800.468.7866</a></p>
+          <a href="#" class="link link--inverse">Global Locations <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div class="footer__social">
+          <h3>Social Media</h3>
+          <ul>
+            <li><a href="#" aria-label="X"><svg viewBox="0 0 22 22" fill="currentColor" aria-hidden="true"><path d="M16.2 2.7H19L12.9 9.7l7.2 9.5h-5.6L10 13.4l-5 5.8H2.1l6.6-7.5-6.9-9h5.8l4 5.3 4.6-5.3Zm-1 14.9h1.6L6.7 4.3H5.1l10.1 13.3Z"/></svg></a></li>
+            <li><a href="#" aria-label="Facebook"><svg viewBox="0 0 22 22" fill="currentColor" aria-hidden="true"><path d="M12.3 19.2v-6.9h2.4l.4-2.7h-2.8V7.8c0-.8.3-1.3 1.4-1.3h1.5V4c-.3 0-1.1-.1-2.1-.1-2.2 0-3.6 1.3-3.6 3.7v2H7.3v2.7h2.2v6.9h2.8Z"/></svg></a></li>
+            <li><a href="#" aria-label="WeChat"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.5 4.5C5.9 4.5 3 6.9 3 9.9c0 1.7.9 3.2 2.4 4.2L4.8 16l2.3-1.2c.7.2 1.5.3 2.4.3l.5-.1a4.6 4.6 0 0 1-.2-1.3c0-3 2.8-5.3 6.3-5.3h.4c-.6-2.2-3.3-3.9-7-3.9z"/><path fill="currentColor" d="M21 13.8c0-2.4-2.4-4.3-5.3-4.3s-5.3 1.9-5.3 4.3 2.4 4.3 5.3 4.3c.6 0 1.2-.1 1.8-.3l1.9 1-.5-1.6c1.3-.8 2.1-2 2.1-3.4z"/><circle cx="7.3" cy="8.6" r=".9" fill="var(--eye)"/><circle cx="11.6" cy="8.6" r=".9" fill="var(--eye)"/><circle cx="14" cy="13" r=".75" fill="var(--eye)"/><circle cx="17.4" cy="13" r=".75" fill="var(--eye)"/></svg></a></li>
+            <li><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4.5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.9" cy="7.1" r="1" fill="currentColor" stroke="none"/></svg></a></li>
+            <li><a href="#" aria-label="LinkedIn"><svg viewBox="0 0 22 22" fill="currentColor" aria-hidden="true"><path d="M6.6 8.2h-3v10.1h3V8.2Z"/><circle cx="5.1" cy="5.05" r="1.75"/><path d="M9.1 8.2h2.8v1.5c.4-.9 1.5-1.8 3.2-1.8 2.9 0 3.5 1.9 3.5 4.4v6h-3v-5.2c0-1.1 0-2.7-1.7-2.7-1.8 0-1.9 1.3-1.9 2.7v5.2H9.1V8.2Z"/></svg></a></li>
+            <li><a href="#" aria-label="YouTube"><svg viewBox="0 0 22 22" fill="currentColor" aria-hidden="true"><path d="M19.7 6.5c-.1-.8-.8-1.4-1.6-1.6-1.5-.4-7.2-.4-7.2-.4s-5.6 0-7.1.4c-.8.2-1.5.8-1.7 1.6-.3 1.5-.3 4.4-.3 4.4s0 3 .3 4.4c.2.9.9 1.5 1.7 1.7 1.5.4 7.1.4 7.1.4s5.7 0 7.2-.4c.8-.2 1.5-.8 1.6-1.7.4-1.4.4-4.4.4-4.4s0-2.9-.4-4.4Z"/><path d="m9.1 13.7 4.8-2.7-4.8-2.8v5.5Z" fill="var(--eye)"/></svg></a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer__legal">
+        <ul>
+          <li><a href="#">Terms of Use and Privacy &amp; Cookies Policy</a></li>
+          <li><a href="#">Terms and Conditions of Sale</a></li>
+          <li><a href="#">Standards &amp; Commitments</a></li>
+          <li><a href="#">Fraud Prevention</a></li>
+        </ul>
+        <div class="footer__meta">
+          <span>© 2026 N.F. Smith &amp; Associates, L.P. All rights reserved.</span>
+          <span>Site by Isadora Agency</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- floating chat (sm-chat) -->
+  <button type="button" class="chat" id="chatBtn" aria-expanded="false" aria-controls="chatPanel">
+    <span class="chat__icon" aria-hidden="true"><svg><use href="#i-mark"/></svg></span>
+    Chat with Us
+  </button>
+
+  <section class="chat-panel" id="chatPanel" role="dialog" aria-label="Chat with Ana Souza" hidden>
+    <header class="chat-panel__head">
+      <span class="chat-panel__avatar" aria-hidden="true">AS</span>
+      <div class="chat-panel__who">
+        <h2>Ana Souza</h2>
+        <p>Account manager São Paulo · replies in minutes</p>
+      </div>
+      <button type="button" class="chat-panel__close" id="chatClose" aria-label="Close chat">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="chat-panel__thread" id="chatThread" data-lenis-prevent>
+      <p class="msg msg--them">Hi, I’m Ana from Smith. Tell me which parts you need and I’ll check availability and pricing for you.</p>
+      <div class="chat-panel__quick" id="chatQuick">
+        <button type="button">Request a Quote</button>
+        <button type="button">Check Stock</button>
+        <button type="button">Talk to a Trader</button>
+      </div>
+    </div>
+    <form class="chat-panel__composer" id="chatForm">
+      <label class="sr-only" for="chatInput">Message</label>
+      <input id="chatInput" type="text" placeholder="Type a part number or question" autocomplete="off" />
+      <button type="submit" aria-label="Send"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </form>
+  </section>
+
+
+  <script src="../../vendor/gsap.min.js"></script>
+  <script src="../../vendor/ScrollTrigger.min.js"></script>
+  <script src="../../vendor/lenis.min.js"></script>
+  <script src="../../js/aerospace.js?v=28"></script>
+</body>
+</html>
