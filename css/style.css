@@ -1306,3 +1306,11 @@ body.is-leaving { opacity: 0; }
   }
   .industries__dot { left: -20px; }   /* same as Solar: 20px left of the names */
 }
+
+/* ---------- Company dropdown + current page in the nav (Figma sm-nav__link state=current) ---------- */
+.dropdown--company { width: 280px; }
+.nav__menu > a[aria-current="page"], .nav__drop-btn.is-current {
+  color: #fff; text-decoration: underline; text-decoration-color: var(--red);
+  text-decoration-thickness: 2px; text-underline-offset: 8px;
+}
+.dropdown__list a[aria-current="page"] { color: var(--link-blue); }

@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>document.documentElement.classList.add("js")</script>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About Smith — Smith</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="preload" href="../../assets/fonts/Gilroy-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="../../assets/fonts/Gilroy-Medium.woff2" as="font" type="font/woff2" crossorigin />
+
+  <link rel="stylesheet" href="../../vendor/lenis.css" />
+  <link rel="stylesheet" href="../../css/style.css?v=38" />
+  <link rel="stylesheet" href="../../css/about.css?v=5" />
+</head>
+<body class="page-about">
+
+  <!-- shared icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M2.5 8h10.5M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-mark" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="2.2" r="1.3"/><circle cx="16.85" cy="3.5" r="1.3"/><circle cx="20.4" cy="7.05" r="1.3"/><circle cx="21.7" cy="12" r="1.3"/><circle cx="20.4" cy="16.85" r="1.3"/><circle cx="16.85" cy="20.4" r="1.3"/><circle cx="12" cy="21.7" r="1.3"/><circle cx="7.05" cy="20.4" r="1.3"/><circle cx="3.5" cy="16.85" r="1.3"/><circle cx="2.2" cy="12" r="1.3"/><circle cx="3.5" cy="7.05" r="1.3"/><circle cx="7.05" cy="3.5" r="1.3"/><circle cx="14.15" cy="6.65" r="1.05"/><circle cx="17.25" cy="9.75" r="1.05"/><circle cx="17.25" cy="14.15" r="1.05"/><circle cx="14.15" cy="17.25" r="1.05"/><circle cx="9.75" cy="17.25" r="1.05"/><circle cx="6.65" cy="14.15" r="1.05"/><circle cx="6.65" cy="9.75" r="1.05"/><circle cx="9.75" cy="6.65" r="1.05"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M21 21H6.2c-1.1 0-1.7 0-2.1-.2a2 2 0 0 1-.9-.9C3 19.5 3 18.9 3 17.8V3m18 4-5.4 5.4c-.2.2-.3.3-.4.3h-.4c-.1 0-.2-.1-.4-.3l-1.9-1.9c-.2-.2-.3-.3-.4-.3h-.4c-.1 0-.2.1-.4.3L7 15m14-8h-4m4 0v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <!-- =====================================================
+       HEADER — fixed nav (Nav Bar AA) + live market ticker
+       ===================================================== -->
+  <header class="header">
+    <div class="nav">
+      <div class="nav__brand">
+        <a href="../../" class="logo" aria-label="Smith home"><img src="../../assets/img/logo.svg" alt="Smith" width="94" height="32" /></a>
+        <nav class="switch" aria-label="Business unit">
+          <a class="switch__btn is-active" href="../../" aria-current="page">Electronics</a>
+          <a class="switch__btn" href="../../solar/" data-site-switch>
+            <!-- sun icon, from the Smith Solar nav toggle -->
+            <svg class="switch__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 2.25V3.75M3.98559 5.48559L2.92493 4.42493M14.0143 5.48559L15.075 4.42493M4.5 11.25C4.5 8.76472 6.51472 6.75 9 6.75C11.4853 6.75 13.5 8.76472 13.5 11.25M4.5 11.25H13.5M4.5 11.25H1.5M13.5 11.25H16.5M14.25 14.25H3.75" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Solar
+          </a>
+        </nav>
+      </div>
+
+      <nav class="nav__menu" aria-label="Main">
+        <a href="../../services/procurement/">Services</a>
+        <div class="nav__drop">
+          <button type="button" class="nav__drop-btn" id="industriesBtn" aria-expanded="false" aria-controls="industriesMenu">Industries
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
+          </button>
+          <div class="dropdown" id="industriesMenu" hidden>
+            <p class="dropdown__title">Industries</p>
+            <ul class="dropdown__list">
+              <li><a href="../../industries/aerospace-defense/">Aerospace and Defense</a></li>
+              <li><a href="#">Automotive</a></li>
+              <li><a href="#">Consumer Electronics</a></li>
+              <li><a href="#">Data Center</a></li>
+              <li><a href="#">Education</a></li>
+              <li><a href="#">Gaming</a></li>
+              <li><a href="#">Healthcare &amp; Medical</a></li>
+              <li><a href="#">Oil &amp; Gas</a></li>
+            </ul>
+            <a href="../../#industries" class="dropdown__all">View All Industries</a>
+          </div>
+        </div>
+        <a href="#">Quality</a>
+        <a href="#">Market Insights</a>
+        <div class="nav__drop">
+          <button type="button" class="nav__drop-btn is-current" id="companyBtn" aria-expanded="false" aria-controls="companyMenu">Company
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
+          </button>
+          <div class="dropdown dropdown--company" id="companyMenu" hidden>
+            <p class="dropdown__title">Company</p>
+            <ul class="dropdown__list">
+              <li><a href="./" aria-current="page">About Smith</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Leadership</a></li>
+              <li><a href="#">Locations</a></li>
+              <li><a href="#">Newsroom</a></li>
+            </ul>
+          </div>
+        </div>
+        <button class="nav__lang">EN
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
+        </button>
+        <a href="#" class="nav__icon" aria-label="Account">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c.8-4.2 4-6.5 8-6.5s7.2 2.3 8 6.5"/></svg>
+        </a>
+      </nav>
+
+      <a href="#contact" class="cta">Talk to an Expert</a>
+      <button class="burger" aria-label="Open menu"><span></span><span></span></button>
+    </div>
+
+  </header>
+
+  <main id="main">
+    <!-- 1. HERO (sm-module--hero) -->
+    <section class="frame about-hero grid-dots" id="top" data-nav="dark" style="--fh:716">
+      <div class="frame__canvas">
+        <div class="about-hero__copy">
+          <h1 class="about-hero__title" id="heroTitle">Built over four decades.<br />Still moving forward.</h1>
+          <p class="about-hero__lead">Smith began as a family business in Houston in 1984. Today, Smith is a global electronic-component distributor and supply chain partner helping companies navigate changing markets with greater intelligence, confidence, and control.</p>
+        </div>
+        <figure class="about-hero__media"><img src="../../assets/img/about/hero.jpg" alt="Two Smith team members walking down a warehouse aisle" /></figure>
+      </div>
+    </section>
+
+    <!-- 2. AT A GLANCE (sm-module--at-a-glance) -->
+    <section class="frame glance" data-nav="light" style="--fh:425">
+      <div class="frame__canvas">
+        <h2 class="t-h2 glance__title" id="glanceTitle">Smith at a Glance</h2>
+        <ul class="glance__stats">
+              <li class="stat"><p class="stat__value" data-count="1984" data-pre="" data-post="">1984</p><p class="stat__label">Founded</p></li>
+              <li class="stat"><p class="stat__value" data-count="3.4" data-pre="$" data-post="B">$3.4B</p><p class="stat__label">2025 Revenue</p></li>
+              <li class="stat"><p class="stat__value" data-count="800" data-pre="" data-post="+">800<b>+</b></p><p class="stat__label">Employees</p></li>
+              <li class="stat"><p class="stat__value" data-count="5" data-pre="" data-post="">5</p><p class="stat__label">Global Presence</p></li>
+        </ul>
+        <article class="factsheet">
+          <div class="factsheet__thumb"><img src="../../assets/img/logo.svg" alt="" /></div>
+          <div class="factsheet__body">
+            <h3 class="factsheet__title">Company overview, capabilities, footprint, leadership &amp; quality credentials</h3>
+            <p class="factsheet__meta">PDF · [ X MB ]</p>
+            <a href="#" class="link factsheet__link">Download Fact Sheet <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 3. PEOPLE BUSINESS (sm-module--people-business) -->
+    <section class="frame people" data-nav="light" style="--fh:988">
+      <div class="frame__canvas">
+        <h2 class="t-h2 people__title" id="peopleTitle">Business changes.<br />Relationships endure.</h2>
+        <p class="t-p1 people__text">Smith has over 40 years of experience in the electronic-component supply chain. Customers collaborate with knowledgeable professionals who understand their needs and leverage Smith’s global resources.</p>
+        <div class="people__video" data-nav="dark">
+          <img src="../../assets/img/about/people-business.jpg" alt="" />
+          <button type="button" class="people__play" aria-label="Play the Smith people-business video"><img src="../../assets/img/about/icon-play.svg" width="28" height="32" alt="" /></button>
+          <p class="people__caption">[ Smith “people business” video ]</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. BUILT DIFFERENTLY (sm-module--built-differently) -->
+    <section class="frame built grid-dots" data-nav="dark" style="--fh:730">
+      <div class="frame__canvas">
+        <h2 class="t-h2 built__title" id="builtTitle">Built differently from the beginning.</h2>
+        <ul class="pillars">
+            <li class="pillar"><i class="pillar__dot" aria-hidden="true"></i><h3 class="pillar__title">Relationships</h3><p class="pillar__text">Experienced people who know their customers and their markets.</p></li>
+            <li class="pillar"><i class="pillar__dot" aria-hidden="true"></i><h3 class="pillar__title">Intelligence</h3><p class="pillar__text">Market insight that helps customers anticipate change and make better decisions.</p></li>
+            <li class="pillar"><i class="pillar__dot" aria-hidden="true"></i><h3 class="pillar__title">Quality</h3><p class="pillar__text">Global testing infrastructure and rigorous quality controls that protect every transaction.</p></li>
+            <li class="pillar"><i class="pillar__dot" aria-hidden="true"></i><h3 class="pillar__title">Global Reach</h3><p class="pillar__text">Teams and operational capabilities across the world’s major electronics markets.</p></li>
+            <li class="pillar"><i class="pillar__dot" aria-hidden="true"></i><h3 class="pillar__title">Stability</h3><p class="pillar__text">Privately held, financially strong, and built to make decisions for the long term.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. TIMELINE (sm-module--timeline) as a depth slider — pinned; scroll or
+         drag rolls the photo stack through 3D depth, the year rolls like an
+         odometer, the index on the right jumps to any year -->
+    <section class="scene dp grid-dots" id="timeline" data-nav="dark" aria-roledescription="carousel" aria-label="Smith timeline">
+      <div class="canvas">
+        <h2 class="dp__title" id="tlTitle">Four decades of seeing what’s next.</h2>
+        <div class="dp__info">
+          <p class="dp__year odo" id="dpYear" aria-hidden="true"><span class="odo__col" data-d="1"><span class="odo__strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="odo__col" data-d="9"><span class="odo__strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="odo__col" data-d="8"><span class="odo__strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="odo__col" data-d="4"><span class="odo__strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span></p>
+          <p class="dp__text" id="dpText" aria-live="polite">Smith is founded in Houston by the Ackerley family.</p>
+          <div class="dp__controls">
+            <button type="button" class="dp__btn dp__btn--prev" id="tlPrev" aria-label="Previous year" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+            <button type="button" class="dp__btn" id="tlNext" aria-label="Next year"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+            <p class="dp__count"><span id="tlNow">01</span> / 11</p>
+          </div>
+        </div>
+        <div class="dp__stage" id="dpStage">
+          <ol class="dp__stack" id="dpStack">
+            <li class="dp-slide" data-i="0"><img src="../../assets/img/about/1984.jpg" alt="Smith in 1984" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="1"><img src="../../assets/img/about/1997.jpg" alt="Smith in 1997" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="2"><img src="../../assets/img/about/1999.jpg" alt="Smith in 1999" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="3"><img src="../../assets/img/about/2002.jpg" alt="Smith in 2002" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="4"><img src="../../assets/img/about/2005.jpg" alt="Smith in 2005" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="5"><img src="../../assets/img/about/2011.jpg" alt="Smith in 2011" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="6"><img src="../../assets/img/about/2014.jpg" alt="Smith in 2014" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="7"><img src="../../assets/img/about/2017.jpg" alt="Smith in 2017" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="8"><img src="../../assets/img/about/2022.jpg" alt="Smith in 2022" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="9"><img src="../../assets/img/about/2023.jpg" alt="Smith in 2023" loading="lazy" draggable="false" /></li>
+            <li class="dp-slide" data-i="10"><img src="../../assets/img/about/2025.jpg" alt="Smith in 2025" loading="lazy" draggable="false" /></li>
+          </ol>
+        </div>
+        <nav class="dp-index" aria-label="Timeline years">
+          <ol>
+            <li class="dp-index__item is-active"><button type="button" data-i="0" aria-label="Go to 1984"><i></i>1984</button></li>
+            <li class="dp-index__item"><button type="button" data-i="1" aria-label="Go to 1997"><i></i>1997</button></li>
+            <li class="dp-index__item"><button type="button" data-i="2" aria-label="Go to 1999"><i></i>1999</button></li>
+            <li class="dp-index__item"><button type="button" data-i="3" aria-label="Go to 2002"><i></i>2002</button></li>
+            <li class="dp-index__item"><button type="button" data-i="4" aria-label="Go to 2005"><i></i>2005</button></li>
+            <li class="dp-index__item"><button type="button" data-i="5" aria-label="Go to 2011"><i></i>2011</button></li>
+            <li class="dp-index__item"><button type="button" data-i="6" aria-label="Go to 2014"><i></i>2014</button></li>
+            <li class="dp-index__item"><button type="button" data-i="7" aria-label="Go to 2017"><i></i>2017</button></li>
+            <li class="dp-index__item"><button type="button" data-i="8" aria-label="Go to 2022"><i></i>2022</button></li>
+            <li class="dp-index__item"><button type="button" data-i="9" aria-label="Go to 2023"><i></i>2023</button></li>
+            <li class="dp-index__item"><button type="button" data-i="10" aria-label="Go to 2025"><i></i>2025</button></li>
+          </ol>
+        </nav>
+        <div hidden><template data-i="0">Smith is founded in Houston by the Ackerley family.</template><template data-i="1">Smith opens a sales and distribution hub in Hong Kong.</template><template data-i="2">Smith opens a sales and distribution hub in Amsterdam.</template><template data-i="3">Smith earns ISO 9001 certification.</template><template data-i="4">Smith’s sales exceed $500 million.</template><template data-i="5">Smith completes a green renovation of its Houston headquarters.</template><template data-i="6">A new 57,000 sq. ft. Houston operational hub extends service capabilities.</template><template data-i="7">Smith’s sales exceed $1 billion.</template><template data-i="8">Smith’s sales exceed $4 billion.</template><template data-i="9">Smith opens its fifth distribution hub, in Singapore.</template><template data-i="10">With 800 employees worldwide, Smith is the leading independent distributor of electronic components.</template></div>
+      </div>
+    </section>
+
+    <!-- 6. FRANCHISES (sm-module--franchises) -->
+    <section class="frame franchises" data-nav="light" style="--fh:566">
+      <div class="frame__canvas">
+        <h2 class="t-h2 franchises__title" id="franTitle">Global sourcing backed by trusted franchises</h2>
+        <ul class="logo-grid">
+            <li class="logo-tile"><img src="../../assets/img/about/logos/american-opto-plus.png" alt="American Opto Plus" loading="lazy" /></li>
+            <li class="logo-tile"><img src="../../assets/img/about/logos/au-optronics.png" alt="AU Optronics" loading="lazy" /></li>
+            <li class="logo-tile"><img src="../../assets/img/about/logos/cal-chip.png" alt="Cal-Chip Electronics" loading="lazy" /></li>
+            <li class="logo-tile"><img src="../../assets/img/about/logos/harvatek.png" alt="Harvatek" loading="lazy" /></li>
+            <li class="logo-tile"><img src="../../assets/img/about/logos/holy-stone.png" alt="Holy Stone International" loading="lazy" /></li>
+            <li class="logo-tile"><img src="../../assets/img/about/logos/super-micro.svg" alt="Super Micro Computer" loading="lazy" /></li>
+            <li class="logo-tile"><img src="../../assets/img/about/logos/taica.png" alt="Taica" loading="lazy" /></li>
+            <li class="logo-tile"><img src="../../assets/img/about/logos/viking.png" alt="Viking Tech America" loading="lazy" /></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 7. RECOGNITION (sm-module--recognition) -->
+    <section class="frame recog grid-dots" data-nav="dark" style="--fh:510">
+      <div class="frame__canvas">
+        <h2 class="t-h2 recog__title" id="recogTitle">Recognized across the industry.</h2>
+        <a href="#" class="link link--on-dark recog__all">View All Awards &amp; Recognition <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <ul class="awards">
+            <li class="award"><img class="award__icon" src="../../assets/img/about/icon-sun.svg" width="48" height="48" alt="" /><h3 class="award__title">#1 Independent Distributor</h3><p class="award__meta">Electronics Sourcing North America</p></li>
+            <li class="award"><img class="award__icon" src="../../assets/img/about/icon-flower.svg" width="48" height="48" alt="" /><h3 class="award__title">22× Top-Ranked Independent Distributor</h3><p class="award__meta">Supply Chain Connect, since 2000</p></li>
+            <li class="award"><img class="award__icon" src="../../assets/img/about/icon-radar.svg" width="48" height="48" alt="" /><h3 class="award__title">#8 Top International Electronic Distributor</h3><p class="award__meta">ESM China, 2022</p></li>
+            <li class="award"><img class="award__icon" src="../../assets/img/about/icon-hub.svg" width="48" height="48" alt="" /><h3 class="award__title">Best Company Culture</h3><p class="award__meta">Comparably, 2022</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 8. EXPERIENCE + EXPLORE (sm-module--experience) -->
+    <section class="frame exp" data-nav="light" style="--fh:900">
+      <div class="frame__canvas">
+        <div class="exp__intro">
+          <h2 class="t-h2" id="expTitle">Experience matters most when you keep evolving.</h2>
+          <div class="exp__stat">
+            <p class="exp__num"><span id="expNum">40</span>+</p>
+            <p class="t-p1 exp__label">Years connecting the global electronics supply chain, since 1984.</p>
+          </div>
+        </div>
+        <div class="exp__content">
+          <p class="t-p1 exp__text">Smith’s next chapter builds on principles that have sustained the company for over 40 years: strong relationships, market expertise, and adaptability. Today, these strengths are enhanced by advanced technology and global infrastructure.</p>
+          <div class="explore">
+            <h3 class="explore__title">Explore Smith</h3>
+            <ul class="explore__list">
+                <li><a href="#" class="xlink"><span class="xlink__title">Leadership</span><span class="xlink__text">Meet the people leading Smith</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+                <li><a href="#" class="xlink"><span class="xlink__title">Locations</span><span class="xlink__text">Explore Smith’s global presence</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+                <li><a href="#" class="xlink"><span class="xlink__title">Responsibility</span><span class="xlink__text">See Smith’s commitments and impact</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+                <li><a href="#" class="xlink"><span class="xlink__title">Careers</span><span class="xlink__text">Build your career at Smith</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+                <li><a href="#" class="xlink"><span class="xlink__title">Newsroom</span><span class="xlink__text">Read company news and announcements</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         FOOTER  (sm-footer)
+         ===================================================== -->
+    <footer class="footer">
+      <div class="footer__cta">
+        <p class="footer__quote">Markets move overnight.<br />So do we.</p>
+
+        <!-- one-line circuit, same motif as the About section -->
+        <svg class="footer__circuit" viewBox="0 0 1440 80" aria-hidden="true">
+          <path class="footer__circuit-line" d="M-10 60 H360 C400 60 405 20 445 20 H980 C1020 20 1025 60 1065 60 H1450" />
+          <circle class="marker marker--red" cx="700" cy="20" r="12" />
+          <g transform="translate(1250 60) rotate(45)"><rect class="marker marker--blue" x="-8.5" y="-8.5" width="17" height="17" /></g>
+          <circle class="marker marker--white" cx="180" cy="60" r="12" />
+        </svg>
+      </div>
+
+      <div class="footer__info">
+        <img class="footer__logo" src="../../assets/img/logo.svg" alt="Smith" width="141" height="48" />
+        <div class="footer__address">
+          <h3>World Headquarters</h3>
+          <p>5306 Hollister Street <span>|</span> Houston, TX 77040 <span>|</span> <a href="tel:18004687866">1.800.468.7866</a></p>
+          <a href="#" class="link link--inverse">Global Locations <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div class="footer__social">
+          <h3>Social Media</h3>
+          <ul>
+            <li><a href="#" aria-label="X"><svg viewBox="0 0 22 22" fill="currentColor" aria-hidden="true"><path d="M16.2 2.7H19L12.9 9.7l7.2 9.5h-5.6L10 13.4l-5 5.8H2.1l6.6-7.5-6.9-9h5.8l4 5.3 4.6-5.3Zm-1 14.9h1.6L6.7 4.3H5.1l10.1 13.3Z"/></svg></a></li>
+            <li><a href="#" aria-label="Facebook"><svg viewBox="0 0 22 22" fill="currentColor" aria-hidden="true"><path d="M12.3 19.2v-6.9h2.4l.4-2.7h-2.8V7.8c0-.8.3-1.3 1.4-1.3h1.5V4c-.3 0-1.1-.1-2.1-.1-2.2 0-3.6 1.3-3.6 3.7v2H7.3v2.7h2.2v6.9h2.8Z"/></svg></a></li>
+            <li><a href="#" aria-label="WeChat"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.5 4.5C5.9 4.5 3 6.9 3 9.9c0 1.7.9 3.2 2.4 4.2L4.8 16l2.3-1.2c.7.2 1.5.3 2.4.3l.5-.1a4.6 4.6 0 0 1-.2-1.3c0-3 2.8-5.3 6.3-5.3h.4c-.6-2.2-3.3-3.9-7-3.9z"/><path fill="currentColor" d="M21 13.8c0-2.4-2.4-4.3-5.3-4.3s-5.3 1.9-5.3 4.3 2.4 4.3 5.3 4.3c.6 0 1.2-.1 1.8-.3l1.9 1-.5-1.6c1.3-.8 2.1-2 2.1-3.4z"/><circle cx="7.3" cy="8.6" r=".9" fill="var(--eye)"/><circle cx="11.6" cy="8.6" r=".9" fill="var(--eye)"/><circle cx="14" cy="13" r=".75" fill="var(--eye)"/><circle cx="17.4" cy="13" r=".75" fill="var(--eye)"/></svg></a></li>
+            <li><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4.5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.9" cy="7.1" r="1" fill="currentColor" stroke="none"/></svg></a></li>
+            <li><a href="#" aria-label="LinkedIn"><svg viewBox="0 0 22 22" fill="currentColor" aria-hidden="true"><path d="M6.6 8.2h-3v10.1h3V8.2Z"/><circle cx="5.1" cy="5.05" r="1.75"/><path d="M9.1 8.2h2.8v1.5c.4-.9 1.5-1.8 3.2-1.8 2.9 0 3.5 1.9 3.5 4.4v6h-3v-5.2c0-1.1 0-2.7-1.7-2.7-1.8 0-1.9 1.3-1.9 2.7v5.2H9.1V8.2Z"/></svg></a></li>
+            <li><a href="#" aria-label="YouTube"><svg viewBox="0 0 22 22" fill="currentColor" aria-hidden="true"><path d="M19.7 6.5c-.1-.8-.8-1.4-1.6-1.6-1.5-.4-7.2-.4-7.2-.4s-5.6 0-7.1.4c-.8.2-1.5.8-1.7 1.6-.3 1.5-.3 4.4-.3 4.4s0 3 .3 4.4c.2.9.9 1.5 1.7 1.7 1.5.4 7.1.4 7.1.4s5.7 0 7.2-.4c.8-.2 1.5-.8 1.6-1.7.4-1.4.4-4.4.4-4.4s0-2.9-.4-4.4Z"/><path d="m9.1 13.7 4.8-2.7-4.8-2.8v5.5Z" fill="var(--eye)"/></svg></a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer__legal">
+        <ul>
+          <li><a href="#">Terms of Use and Privacy &amp; Cookies Policy</a></li>
+          <li><a href="#">Terms and Conditions of Sale</a></li>
+          <li><a href="#">Standards &amp; Commitments</a></li>
+          <li><a href="#">Fraud Prevention</a></li>
+        </ul>
+        <div class="footer__meta">
+          <span>© 2026 N.F. Smith &amp; Associates, L.P. All rights reserved.</span>
+          <span>Site by Isadora Agency</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- floating chat (sm-chat) -->
+  <button type="button" class="chat" id="chatBtn" aria-expanded="false" aria-controls="chatPanel">
+    <span class="chat__icon" aria-hidden="true"><svg><use href="#i-mark"/></svg></span>
+    Chat with Us
+  </button>
+
+  <section class="chat-panel" id="chatPanel" role="dialog" aria-label="Chat with Ana Souza" hidden>
+    <header class="chat-panel__head">
+      <span class="chat-panel__avatar" aria-hidden="true">AS</span>
+      <div class="chat-panel__who">
+        <h2>Ana Souza</h2>
+        <p>Account manager São Paulo · replies in minutes</p>
+      </div>
+      <button type="button" class="chat-panel__close" id="chatClose" aria-label="Close chat">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="chat-panel__thread" id="chatThread" data-lenis-prevent>
+      <p class="msg msg--them">Hi, I’m Ana from Smith. Tell me which parts you need and I’ll check availability and pricing for you.</p>
+      <div class="chat-panel__quick" id="chatQuick">
+        <button type="button">Request a Quote</button>
+        <button type="button">Check Stock</button>
+        <button type="button">Talk to a Trader</button>
+      </div>
+    </div>
+    <form class="chat-panel__composer" id="chatForm">
+      <label class="sr-only" for="chatInput">Message</label>
+      <input id="chatInput" type="text" placeholder="Type a part number or question" autocomplete="off" />
+      <button type="submit" aria-label="Send"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </form>
+  </section>
+
+
+  <script src="../../vendor/gsap.min.js"></script>
+  <script src="../../vendor/ScrollTrigger.min.js"></script>
+  <script src="../../vendor/lenis.min.js"></script>
+  <script src="../../js/about.js?v=8"></script>
+  <script src="../../js/nav-company.js?v=1"></script>
+</body>
+</html>

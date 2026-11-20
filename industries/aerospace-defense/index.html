@@ -14,7 +14,7 @@
   <link rel="preload" href="../../assets/fonts/Gilroy-Medium.woff2" as="font" type="font/woff2" crossorigin />
 
   <link rel="stylesheet" href="../../vendor/lenis.css" />
-  <link rel="stylesheet" href="../../css/style.css?v=36" />
+  <link rel="stylesheet" href="../../css/style.css?v=38" />
   <link rel="stylesheet" href="../../css/aerospace.css?v=34" />
 </head>
 <body class="page-ad">
@@ -66,7 +66,21 @@
         </div>
         <a href="#">Quality</a>
         <a href="#">Market Insights</a>
-        <a href="#">Company</a>
+        <div class="nav__drop">
+          <button type="button" class="nav__drop-btn" id="companyBtn" aria-expanded="false" aria-controls="companyMenu">Company
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
+          </button>
+          <div class="dropdown dropdown--company" id="companyMenu" hidden>
+            <p class="dropdown__title">Company</p>
+            <ul class="dropdown__list">
+              <li><a href="../../company/about/">About Smith</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Leadership</a></li>
+              <li><a href="#">Locations</a></li>
+              <li><a href="#">Newsroom</a></li>
+            </ul>
+          </div>
+        </div>
         <button class="nav__lang">EN
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
         </button>
@@ -304,5 +318,6 @@
   <script src="../../vendor/ScrollTrigger.min.js"></script>
   <script src="../../vendor/lenis.min.js"></script>
   <script src="../../js/aerospace.js?v=28"></script>
+  <script src="../../js/nav-company.js?v=1"></script>
 </body>
 </html>
