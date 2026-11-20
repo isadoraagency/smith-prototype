@@ -1,0 +1,287 @@
+/* =========================================================
+   SMITH — Services / Procurement
+   Built from Figma "services / procurement / desktop" (2633:4160).
+   Shared header, footer, buttons, links, chip and chat come from
+   style.css.
+
+   Every module is its Figma frame, laid out on a fixed canvas and
+   scaled by js/services.js so type and spacing keep their Figma
+   proportions on any desktop:
+   · pinned scenes (.scene) — 1440 × 900, scaled to fit (--s)
+   · regular modules (.frame) — 1440 × their Figma height, scaled to
+     the page width (--sw)
+   ========================================================= */
+
+:root {
+  --beige: #d5d5c9;            /* brand/lithiumBeige */
+  --blue-light: #b9caeb;       /* border/onDark */
+  --slate: #5d6276;            /* border/strong on dark */
+  --text-2: rgba(25, 33, 52, .7);
+  --glass: rgba(0, 0, 0, .5);  /* overlay/image */
+  --stat-panel: rgba(25, 33, 52, .49);
+}
+.page-svc { background: var(--paper); }
+.js .svc-hero__title, .js .svc-hero__actions { visibility: hidden; }   /* until js has split the headline */
+
+/* ---------- type: Figma text styles ---------- */
+.t-h1, .svc-hero__title { font-weight: 500; font-size: 56px; line-height: 62px; letter-spacing: -0.01em; }          /* sm/h1 */
+.hub__title, .tz__title, .lc__title, .biz__title, .conf__title { font-weight: 500; font-size: 48px; line-height: 54px; letter-spacing: -0.01em; }   /* sm/h2 */
+.lq__quote, .conf__step-title { font-weight: 400; font-size: 32px; line-height: 40px; }                           /* sm/h4 */
+.hub__detail-title, .acc__head span, .metric h3 { font-weight: 500; font-size: 24px; line-height: 30px; }          /* sm/h5 */
+.lq__content b, .hub__core span, .acc__body p { font-weight: 500; font-size: 20px; line-height: 26px; }             /* sm/h6 */
+.hub__detail-text, .tz__statements p, .conf__intro p, .mbyte p { font-weight: 400; font-size: 20px; line-height: 30px; }   /* sm/p1 */
+.metric p, .conf__step-text, .cta__copy p { font-weight: 400; font-size: 18px; line-height: 27px; }                 /* sm/p2 */
+.label { font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; }   /* sm/label */
+
+/* ---------- scaled canvases ---------- */
+.scene {
+  position: relative;
+  height: 100vh; height: 100svh; min-height: 560px;
+  overflow: hidden;
+  background: var(--navy);
+  color: #fff;
+}
+.scene--paper { background: var(--paper); color: var(--navy); }
+.canvas {
+  position: absolute; left: 50%; top: 50%;
+  width: 1440px; height: 900px;
+  transform: translate(-50%, -50%) scale(var(--s, 1));
+}
+.frame { position: relative; height: calc(var(--fh) * 1px * var(--sw, 1)); overflow: hidden; }
+.frame__canvas {
+  position: absolute; left: 0; top: 0;
+  width: 1440px; height: calc(var(--fh) * 1px);
+  transform: scale(var(--sw, 1)); transform-origin: 0 0;
+}
+
+/* photo + overlay/image (50%) + the dot grid from the Figma fills */
+.dots { position: absolute; inset: 0; overflow: hidden; }
+.dots img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; will-change: transform; }
+.dots::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(rgba(255, 255, 255, .14) 1.2px, transparent 1.7px) 12px 12px / 24px 24px, var(--glass);
+}
+
+/* split words (titles that light up / rise) */
+.wd { display: inline-block; will-change: opacity, transform; }
+.wm { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }
+
+/* nav: Services is the current page */
+.nav__menu a.is-current { color: #fff; }
+.header.is-on-light .nav__menu a.is-current { color: var(--navy); }
+
+/* =========================================================
+   1. Hero
+   ========================================================= */
+.svc-hero .hero-media { z-index: 0; }
+.svc-hero .canvas { z-index: 1; }
+.svc-hero__content { position: absolute; left: 48px; top: 470px; width: 900px; display: flex; flex-direction: column; gap: 32px; }
+.svc-hero__title { color: #fff; }
+.svc-hero__actions { display: flex; align-items: center; gap: 32px; }
+
+/* =========================================================
+   2. Leader quote — the portrait opens to the full screen
+   ========================================================= */
+/* the portrait itself is the card (Figma 48, 130, 560 × 640, radius 16 on the
+   1440 × 900 canvas); js grows its box to the full screen */
+.lq__media {
+  position: absolute; z-index: 1; overflow: hidden;
+  left: 0; top: 0; width: 100%; height: 100%;
+  border-radius: 16px;
+  will-change: left, top, width, height;
+}
+.lq__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; will-change: transform; }
+.lq__media::after { content: ""; position: absolute; inset: 0; background: var(--stat-panel); }
+.lq .canvas { z-index: 2; pointer-events: none; }
+.lq .canvas a { pointer-events: auto; }
+.lq__video {
+  position: absolute; left: 72px; top: 682px;
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 999px;
+  background: var(--glass); color: #fff;
+  font-weight: 500; font-size: 14px; line-height: 20px;
+}
+.lq__video em { font-style: normal; font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--paper); }
+.lq__video img { transition: transform .3s; }
+.lq__video:hover img { transform: scale(1.08); }
+.lq__content { position: absolute; left: 704px; top: 309px; width: 688px; margin: 0; display: flex; flex-direction: column; gap: 32px; }
+.lq__quote { margin: 0; color: var(--navy); }
+.lq__content figcaption { display: flex; flex-direction: column; gap: 4px; }
+.lq__content figcaption span { font-size: 14px; line-height: 20px; color: var(--text-2); }
+
+/* =========================================================
+   3. Capability hub
+   ========================================================= */
+/* the navy card fills the screen with the Figma margins (48 at the sides, 64 top
+   and bottom, radius 24 — all scaled with the canvas); the diagram and copy stay
+   on the centred 1440 × 900 canvas inside it */
+.hub__bg {
+  position: absolute; z-index: 0;
+  inset: calc(64px * var(--s, 1)) calc(48px * var(--s, 1));
+  border-radius: calc(24px * var(--s, 1));
+  background: var(--navy);
+}
+.hub .canvas { z-index: 1; }
+.hub__card { position: absolute; left: 48px; top: 64px; width: 1344px; height: 772px; color: #fff; }
+.hub__title { position: absolute; left: 48px; top: 48px; width: 1053px; }
+.hub__diagram { position: absolute; left: 48px; top: 174px; width: 793px; height: 550px; }
+.hub__lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.hub__line { stroke: var(--blue-light); stroke-width: 1; transition: stroke .4s, stroke-width .4s; }
+.hub__line.is-on { stroke: var(--red); stroke-width: 2; }
+.hub__core {
+  position: absolute; left: 299px; top: 187px; width: 175px; height: 175px; border-radius: 50%;
+  background: var(--navy); box-shadow: inset 0 0 0 1px var(--blue-light);
+  display: flex; align-items: center; justify-content: center; text-align: center;
+}
+.hub__core::before {             /* soft pulse from the core when the active capability changes */
+  content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--blue-light); opacity: 0;
+}
+.hub__core.is-pulse::before { animation: core-pulse 1s cubic-bezier(.2, .7, .2, 1); }
+@keyframes core-pulse { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(1.35); opacity: 0; } }
+.hub__node {
+  position: absolute; padding: 4px 8px; border-radius: 999px;
+  transform: translateX(-50%);      /* left = the pill's centre in Figma; width follows the label */
+  background: var(--navy); box-shadow: inset 0 0 0 1px var(--slate); color: var(--paper);
+  font-family: var(--mono); font-weight: 500; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+  transition: background .4s, color .4s, box-shadow .4s;
+}
+.hub__node span { display: flex; align-items: center; justify-content: center; gap: 8px; height: 100%; padding: 0 8px; }
+.hub__node i { width: 6px; height: 6px; border-radius: 50%; background: var(--red); display: none; }
+.hub__node:hover { box-shadow: inset 0 0 0 1px var(--blue-light); }
+.hub__node.is-on { background: var(--paper); color: var(--navy); box-shadow: inset 0 0 0 1px var(--red); }
+.hub__node.is-on i { display: block; }
+.hub__detail {
+  position: absolute; left: 905px; top: 273px; width: 388px; min-height: 352px;
+  padding: 32px; border-radius: 16px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--red);
+  display: flex; flex-direction: column; gap: 16px; color: var(--navy);
+}
+.hub__detail-text { color: var(--text-2); }
+.hub__detail-pos { font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; color: var(--text-2); margin-top: auto; }
+
+/* =========================================================
+   4. Time zones
+   ========================================================= */
+.tz { background: var(--navy); color: #fff; }
+.tz__title { position: absolute; left: 48px; top: 128px; width: 760px; }
+.tz__clock { position: absolute; left: 48px; top: 300px; width: 640px; height: 640px; }
+.tz__dial { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.tz__ring { fill: none; stroke: var(--slate); stroke-width: 1; }
+.tz__hours { fill: none; stroke: var(--blue); stroke-width: 12; transition: stroke .6s; }   /* rotated by its transform attribute (js) */
+.tz__hours.is-closed { stroke: var(--slate); }
+.tz__hand { stroke: var(--red); stroke-width: 2; stroke-linecap: round; }
+.tz__face { fill: var(--navy); stroke: var(--slate); stroke-width: 1; }
+.tz__readout { position: absolute; left: 210px; top: 280px; width: 220px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.tz__readout b { font-weight: 400; font-size: 32px; line-height: 40px; }
+.tz__readout span, .tz__hour { font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--paper); }
+.tz__hour { position: absolute; width: 16px; text-align: center; }
+.tz__details { position: absolute; left: 800px; top: 340px; width: 592px; display: flex; flex-direction: column; gap: 48px; }
+.tz__offices { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+.tz-office {
+  display: flex; align-items: center; gap: 12px; height: 58px; padding: 16px;
+  border-radius: 8px; background: var(--glass); box-shadow: inset 0 0 0 1px var(--slate);
+  font-size: 16px; line-height: 24px;
+}
+.tz-office i { width: 8px; height: 8px; border-radius: 50%; background: var(--slate); transition: background .4s; }
+.tz-office.is-open i { background: var(--blue); box-shadow: 0 0 0 4px rgba(44, 139, 255, .18); }
+.tz-office time { margin-left: auto; font-family: var(--mono); font-size: 16px; letter-spacing: .04em; }
+.tz__statements { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.tz__statements li { display: flex; gap: 12px; color: var(--paper); }
+.tz__check { flex: 0 0 20px; height: 20px; margin-top: 5px; fill: none; stroke: var(--blue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* =========================================================
+   5. Lifecycle
+   ========================================================= */
+.lc__media img { transform-origin: 40% 50%; }
+.lc .canvas { z-index: 1; }
+.lc__title { position: absolute; left: 48px; top: 128px; width: 622px; color: var(--paper); }
+.lc__panel { position: absolute; left: 730px; top: 129px; width: 620px; padding: 24px; border-radius: 16px; background: var(--paper); color: var(--navy); }
+.acc__item { border-bottom: 1px solid var(--beige); padding-bottom: 12px; }   /* Figma: 24 top, 12 between header and body, 24 bottom */
+.acc__item:last-child { border-bottom: 0; }
+.acc__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; padding: 24px 8px 12px; text-align: left; color: var(--navy); }
+.acc__icon { position: relative; flex: 0 0 16px; height: 16px; }
+.acc__icon::before, .acc__icon::after { content: ""; position: absolute; left: 2px; right: 2px; top: 7px; height: 1.5px; background: var(--red); transition: transform .35s; }
+.acc__icon::after { transform: rotate(90deg); }
+.acc__item.is-open .acc__icon::after { transform: rotate(0deg); }
+.acc__body { height: 0; overflow: hidden; }
+.acc__item.is-open .acc__body { height: auto; }
+.acc__body p { padding: 0 8px 12px; color: var(--text-2); }
+
+/* =========================================================
+   6. Business
+   ========================================================= */
+.biz { background: var(--paper); }
+.biz__media { position: absolute; left: 0; top: 0; width: 605px; height: 838px; overflow: hidden; will-change: clip-path; }
+.biz__media img { width: 100%; height: 100%; object-fit: cover; will-change: transform; }
+.biz__panel { position: absolute; left: 605px; top: 0; width: 835px; padding: 128px 131px 128px 48px; display: flex; flex-direction: column; gap: 48px; }
+.biz__title { color: var(--navy); width: 599px; }
+.metric { position: relative; display: flex; align-items: center; padding: 28px 0; }
+.metric::after {                 /* dotted rule (dash 1 / 5) that draws in */
+  content: ""; position: absolute; left: 0; bottom: 0; height: 1px; width: var(--rule, 100%);
+  background: linear-gradient(to right, #5f5f5f 1px, transparent 1px) 0 0 / 6px 1px repeat-x;
+}
+.metric__value { flex: 0 0 255px; font-family: var(--mono); font-weight: 500; font-size: 68px; line-height: 75.5px; color: var(--red); font-variant-numeric: tabular-nums; }
+.metric__text { display: flex; flex-direction: column; gap: 6px; }
+.metric h3 { color: var(--navy); }
+.metric p { color: var(--text-2); }
+
+/* =========================================================
+   7. Confidence
+   ========================================================= */
+.conf__intro { position: absolute; left: 48px; top: 128px; width: 813px; display: flex; flex-direction: column; gap: 24px; }
+.conf__intro p { width: 760px; color: var(--paper); }
+.conf__panel { position: absolute; left: 48px; top: 480px; width: 1344px; padding: 40px 48px; border-radius: 16px; background: var(--paper); color: var(--navy); display: flex; flex-direction: column; gap: 48px; }
+.conf__steps { position: relative; list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); height: 58px; }
+.cstep { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 16px; cursor: pointer; }
+.cstep i { width: 16px; height: 16px; border-radius: 50%; background: var(--navy); transition: background .35s, transform .35s; }
+.cstep span { font-weight: 500; font-size: 20px; line-height: 26px; }
+.cstep.is-done i, .cstep.is-on i { background: var(--red); }
+.cstep__line { position: absolute; top: 7.5px; width: 218px; height: 1px; background: var(--navy); }
+.cstep__line span { position: absolute; left: 0; top: -0.5px; height: 2px; width: 100%; background: var(--red); transform: scaleX(0); transform-origin: 0 50%; }
+.conf__detail { display: flex; gap: 64px; min-height: 106px; }
+.conf__num { flex: 0 0 82px; font-family: var(--mono); font-weight: 500; font-size: 68px; line-height: 75px; color: var(--red); }
+/* Figma: copy column (775) and the button bottom-aligned at the right */
+.conf__copy { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex: 1; }
+.conf__text { display: flex; flex-direction: column; gap: 12px; width: 775px; }
+.conf__step-text { color: var(--navy); }
+.conf__copy .btn { flex: none; }
+
+/* =========================================================
+   8. Watching
+   ========================================================= */
+.watch .canvas { z-index: 1; }
+.watch__title { position: absolute; left: 48px; top: 392px; width: 791px; font-weight: 500; font-size: 48px; line-height: 57.6px; color: #fff; }
+.mbyte { position: absolute; left: 903px; top: 180px; width: 489px; min-height: 540px; padding: 32px 24px; border-radius: 24px; background: var(--paper); color: var(--navy); display: flex; flex-direction: column; gap: 32px; }
+.mbyte__icon path { transform-box: fill-box; transform-origin: center; }
+.mbyte__content { display: flex; flex-direction: column; gap: 16px; }
+.mbyte__meta { display: flex; align-items: center; justify-content: space-between; }
+.mbyte .chip { border-color: var(--slate); }
+.mbyte time { font-family: var(--mono); font-weight: 500; font-size: 12px; line-height: 16px; letter-spacing: .08em; }
+.mbyte h3 { font-weight: 400; font-size: 32px; line-height: 41.6px; }
+.mbyte p { color: var(--text-2); }
+.mbyte .link { align-self: flex-start; margin-top: 0; }
+
+/* =========================================================
+   9. CTA
+   ========================================================= */
+.svc-cta { background: var(--paper); }   /* not .cta: that is the header button in style.css */
+.cta__row { position: absolute; left: 48px; top: 55px; width: 1344px; height: 446px; display: flex; gap: 16px; }
+.cta__card { position: relative; flex: 1; overflow: hidden; padding: 24px; border-radius: 16px; background: var(--navy); color: #fff; display: flex; flex-direction: column; justify-content: space-between; }
+.cta__copy { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; }
+.cta__copy h2 { font-weight: 400; font-size: 38px; line-height: 53.2px; }
+.cta__copy p { color: var(--paper); }
+.cta__img { position: absolute; left: -45px; top: 0; width: 744px; height: 492px; object-fit: cover; transition: transform 1.2s cubic-bezier(.2, .7, .2, 1); }
+.cta__card--supply::before { content: ""; position: absolute; inset: 0; z-index: 0; background: var(--glass); }
+.cta__card--supply:hover .cta__img { transform: scale(1.05); }
+.cta__actions { position: relative; z-index: 1; display: flex; align-items: center; gap: 24px; }
+.cta__dots { flex: 0 0 6px; }
+.cta-search { display: flex; gap: 16px; }
+.cta-search__field { flex: 0 0 476px; display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 16px; border-radius: 4px; background: #fff; box-shadow: inset 0 0 0 1px var(--navy); transition: box-shadow .25s; }
+.cta-search__field:focus-within { box-shadow: inset 0 0 0 2px var(--blue); }
+.cta-search__icon { width: 20px; height: 20px; fill: none; stroke: var(--navy); stroke-width: 1.6; stroke-linecap: round; }
+.cta-search input { flex: 1; border: 0; outline: 0; background: none; font: 400 16px/24px var(--sans); color: var(--navy); }
+.cta-search input::placeholder { color: var(--text-2); }
+.cta-search .btn { width: 113px; padding: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hub__core.is-pulse::before { animation: none; }
+}
