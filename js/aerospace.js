@@ -209,9 +209,13 @@ tabs.forEach((t, i) => t.addEventListener('click', () => setTab(i)));
 panels.forEach((p) => {
   $$('.apps__tag', p).forEach((tag, j) => {
     // hover / focus shows that part of the aircraft; a tap (touch) does the same
-    tag.addEventListener('mouseenter', () => { if (appsReady) setTag(j); });
-    tag.addEventListener('focus', () => { if (appsReady) setTag(j); });
-    tag.addEventListener('click', () => { if (appsReady) setTag(j); });
+    // (pointermove too: if the list arrives under a resting cursor, the first
+    // nudge of the mouse lights the part up without leaving and re-entering)
+    const show = () => { if (activeTag !== j || !tag.classList.contains('is-on')) setTag(j); };
+    tag.addEventListener('pointerenter', show);
+    tag.addEventListener('pointermove', show);
+    tag.addEventListener('focus', show);
+    tag.addEventListener('click', show);
   });
   // leaving the list puts the whole aircraft back
   p.addEventListener('mouseleave', () => setTag(-1));
@@ -245,7 +249,13 @@ const appsTl = gsap.timeline({
     trigger: apps, start: 'top top', end: '+=170%', pin: true, scrub: 1,
     onUpdate: (st) => {
       const ready = appsTl.duration() * st.progress > 2.7;
-      if (ready !== appsReady) { appsReady = ready; if (!ready) setTag(-1); }
+      if (ready !== appsReady) {
+        appsReady = ready;
+        if (!ready) { setTag(-1); return; }
+        // the list just finished arriving: honour an item already under the cursor
+        const hovered = $$('.apps__tag', panels[activeTab]).findIndex((t) => t.matches(':hover'));
+        if (hovered > -1) setTag(hovered);
+      }
     },
   },
 });
