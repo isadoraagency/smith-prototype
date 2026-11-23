@@ -1314,3 +1314,7 @@ body.is-leaving { opacity: 0; }
   text-decoration-thickness: 2px; text-underline-offset: 8px;
 }
 .dropdown__list a[aria-current="page"] { color: var(--link-blue); }
+
+/* ---------- Industries dropdown: two columns, read top to bottom (Figma sm-nav__dropdown) ---------- */
+#industriesMenu { width: 592px; }
+#industriesMenu .dropdown__list { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(6, auto); grid-auto-flow: column; column-gap: 16px; row-gap: 4px; }

@@ -667,7 +667,8 @@ function setDropdown(open) {
 }
 indBtn.addEventListener('click', (e) => { e.stopPropagation(); setDropdown(indBtn.getAttribute('aria-expanded') !== 'true'); });
 document.addEventListener('click', (e) => { if (!indMenu.hidden && !indMenu.contains(e.target)) setDropdown(false); });
-indMenu.querySelector('.dropdown__all').addEventListener('click', () => setDropdown(false));
+const indAll = indMenu.querySelector('.dropdown__all');   // the menu no longer has a View All link
+if (indAll) indAll.addEventListener('click', () => setDropdown(false));
 
 // Chat panel
 const chatBtn = document.getElementById('chatBtn');
