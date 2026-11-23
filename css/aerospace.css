@@ -411,7 +411,7 @@
   transform: translate(-50%, -50%) scale(var(--s, 1));
 }
 .market__title {
-  position: absolute; left: 48px; top: 64px;
+  position: absolute; left: 48px; right: 48px; top: 64px; text-align: center;   /* Figma: centred */
   font-weight: 500; font-size: 48px; line-height: 54px; letter-spacing: -0.01em;   /* sm/h2 */
 }
 .market__title .wd--muted { color: var(--beige); }   /* starts beige, ends white (js) */
@@ -455,43 +455,44 @@
 .mcard__read svg { color: var(--blue); transition: transform .25s; }
 .mcard:hover .mcard__read svg { transform: translateX(4px); }
 .market__actions {
-  position: absolute; left: 48px; bottom: 64px;   /* left-aligned with the title and first card, clear of the chat button */
-  display: flex; align-items: center; gap: 40px;
+  position: absolute; left: 48px; right: 48px; bottom: 64px;   /* centred (on-scroll-3), from the start */
+  display: flex; align-items: center; justify-content: center; gap: 40px;
 }
 
 /* =========================================================
    8. Conversion (alt 2)
    ========================================================= */
-.convert { min-height: 600px; padding: 64px 56px; }
+.convert { position: relative; overflow: hidden; min-height: 600px; padding: 64px 56px; }
 /* Market → Conversion: the paper section (and the footer after it) slides up
    over the last screen of the Market pin while the scene recedes beneath */
+/* Conversion rises over the last (all-paper) screen of the Market pin: same paper, so it
+   reads as the next content scrolling in, with no blank screen and no seam */
 #contact { z-index: 2; margin-top: calc(-1 * max(100svh, 680px)); }
 #contact + .footer, #contact ~ .footer { position: relative; z-index: 2; }
 .convert__title .wd { display: inline-block; will-change: opacity; }
-.convert__media img { will-change: transform; }
 .convert .section__title { max-width: 658px; }
-.convert__row { position: relative; z-index: 1; display: flex; gap: 16px; max-width: 724px; margin-top: 208px; }
-.convert__row .cta-card { flex: 1; }
-.convert__media { position: absolute; right: var(--gutter); top: 40px; width: 440px; height: 520px; margin: 0; border-radius: 24px; overflow: hidden; }
-.convert__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.convert__caption {
-  position: absolute; left: 24px; bottom: 24px;
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 24px 14px 20px; border-radius: 16px;
-  background: var(--navy); color: #fff;
+/* alt 3: the gripper photo sits behind (Figma: 1636 × 921 at 112, -103, blend darken
+   so its white drops into the paper); the row is centred, 358px from the top */
+/* the image blends against its own paper, so it matches the page even while
+   Conversion is see-through over the Market pin and fading in */
+.convert__backdrop { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: var(--paper); isolation: isolate; pointer-events: none; }
+.convert__bg {
+  position: absolute; left: 7.78%; top: -7.15vw; width: 113.6%; height: auto;
+  mix-blend-mode: darken; will-change: transform;
 }
-.convert__caption > i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
-.convert__caption span { display: flex; flex-direction: column; gap: 4px; }
-.convert__caption b { font-weight: 500; font-size: 20px; line-height: 26px; }
-.convert__caption em { font-style: normal; font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--paper); }
+.convert__title { position: relative; z-index: 1; }
+.convert__row { position: relative; z-index: 1; display: flex; gap: 16px; width: 724px; max-width: 100%; margin: 186px auto 0; }
+.convert__specialist { flex: 1; display: flex; align-items: center; gap: 16px; }
+.convert__avatar { flex: none; width: 100px; height: 100px; border-radius: 50%; border: 3px solid #fff; object-fit: cover; }
+.convert__specialist .cta-card { flex: 1; height: 100px; padding: 0 24px; }   /* Figma: 100px tall, text centred */
+.convert__specialist .cta-card p { flex: 1; line-height: 26px; }
+.convert__specialist .btn { flex: none; box-shadow: 0 0 39px rgba(22, 134, 255, .27); }   /* Figma: soft blue glow */
 
 /* ---------- narrower screens: stack the regular sections ---------- */
 @media (max-width: 1100px) {
   .quality__body { grid-template-columns: 1fr; }
   .quality__head .btn { margin-top: 8px; }
-  .convert { padding-bottom: 600px; }
-  .convert__media { left: var(--gutter); right: auto; top: auto; bottom: 40px; width: min(440px, calc(100% - 2 * var(--gutter))); }
-}
+  }
 
 @media (prefers-reduced-motion: reduce) {
   .ad-callout i, .argus__status i { animation: none; }
@@ -502,3 +503,34 @@
 
 /* chat button rides above the realities CTA cards while they show */
 .chat.is-raised { transform: translateY(calc(-140px * var(--s, 1))); }
+
+/* Quality standards: a still list — the description opens on hover / focus / tap */
+.quality__list .std { gap: 0; cursor: default; outline: none; }
+.quality__list .std p {
+  display: grid; grid-template-rows: 0fr; opacity: 0;
+  transition: grid-template-rows .45s cubic-bezier(.2, .7, .2, 1), opacity .3s ease, margin-top .45s cubic-bezier(.2, .7, .2, 1);
+}
+.quality__list .std p > span { overflow: hidden; }
+.quality__list .std.is-on p { grid-template-rows: 1fr; opacity: 1; margin-top: 8px; }
+.quality__list .std h3 { transition: color .3s; }
+.quality__list .std:focus-visible h3 { text-decoration: underline; text-decoration-color: #2c8bff; text-underline-offset: 4px; }
+
+/* Market → Conversion: a paper card rises into the frame and grows to fill it */
+.market__fill { position: absolute; inset: -1px; z-index: 6; background: var(--paper); visibility: hidden; will-change: clip-path; }
+
+/* the featured card grows (on-scroll-3) from the top of the rail */
+.mfeat { will-change: width, height, transform; }
+.market__track { align-items: flex-start; }
+.market__track .sep { align-self: flex-start; height: 444px; }   /* sm-board-dots: card height, a dot at its top and bottom */
+
+/* Conversion over the Market pin: see-through until it reaches the top */
+#contact.section--paper { background: transparent; }
+#contact.section--paper.is-solid { background: var(--paper); }
+
+@media (max-width: 1100px) {
+  .convert__row { margin-top: 96px; }
+  .convert__backdrop { opacity: .35; }
+}
+@media (max-width: 720px) {
+  .convert__specialist { flex-direction: column; align-items: flex-start; }
+}

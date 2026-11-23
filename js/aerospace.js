@@ -439,62 +439,26 @@ $$('.reveal').forEach((el) => {
   gsap.from(el, { y: 40, autoAlpha: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' } });
 });
 const stds = $$('.std');
-// Rotating-cylinder list (as in the Services prototype): the standards ride a
-// drum seen side-on. The front one is full size with the red node; the others
-// curve away above and below, shrinking, sliding back and fading. The section
-// pins while the scroll holds on each standard and then rolls to the next
-// near the end of its step; on the way in the drum rolls up into place.
+// Quality standards: a still list. Each standard shows its title; hovering,
+// focusing or tapping one reveals its description and turns its node red.
 const stdList = $('.quality__list');
 const quality = $('#quality');
-const CYL = { R: 146, TH: 0.5, DX: 16, DESC: 60 };   // Figma: 70px title pitch, +60 for the description
-const stdDesc = stds.map((n) => $('p', n));
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-const smooth = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
-let stdActive = -1;
-function rollStds(af) {
-  stds.forEach((n, i) => {
-    const a = (i - af) * CYL.TH;
-    const co = Math.abs(a) < Math.PI / 2 ? Math.cos(a) : 0;
-    const sc = 1 - 0.6 * Math.pow(1 - co, 1.3);   // neighbours stay ~full size (Figma), further ones shrink
-    gsap.set(n, {
-      // placed by the title row (the description hangs below it); standards
-      // below the front one make room for its description as they pass it
-      y: CYL.R * Math.sin(clamp(a, -Math.PI / 2, Math.PI / 2)) - 15
-         + clamp(i - af, 0, 1) * CYL.DESC - CYL.DESC / 2,
-      x: -(1 - co) * CYL.DX,
-      rotationX: -a * 25,                 // the face tilts with the drum
-      scale: sc,
-      autoAlpha: clamp(co * 1.35 - 0.25, 0, 1),
-    });
-    // the description belongs to the front standard only (Figma: the others are node + title)
-    gsap.set(stdDesc[i], { autoAlpha: clamp(1 - Math.abs(i - af) * 2.2, 0, 1) });
-  });
-  const act = clamp(Math.round(af), 0, stds.length - 1);
-  if (act !== stdActive) {
-    stdActive = act;
-    stds.forEach((n, i) => n.classList.toggle('is-on', i === act));
-  }
-}
+stds.forEach((n) => {
+  n.tabIndex = 0;
+  const on = () => stds.forEach((m) => m.classList.toggle('is-on', m === n));
+  n.addEventListener('mouseenter', on);
+  n.addEventListener('focus', on);
+  n.addEventListener('click', () => (n.classList.contains('is-on') ? n.classList.remove('is-on') : on()));
+});
+stdList.addEventListener('mouseleave', () => stds.forEach((m) => m.classList.remove('is-on')));
+stdList.addEventListener('focusout', (e) => { if (!stdList.contains(e.relatedTarget)) stds.forEach((m) => m.classList.remove('is-on')); });
 // from the moment it reaches the top the section carries its own paper (until
 // then its first screen is see-through over the Realities fill)
 ScrollTrigger.create({ trigger: quality, start: 'top top', end: 'max', toggleClass: { targets: quality, className: 'is-solid' } });
 let qualityPin = null;
-// the pinned cylinder needs the two-column module to fit the screen
-if (reduceMotion || window.innerWidth < 1100) {
-  stds.forEach((n, i) => n.classList.toggle('is-on', i === 0));
-} else {
-  stdList.classList.add('is-cyl');
-  gsap.set(stds, { transformPerspective: 900 });
-  let pinned = false;
-  // approach: the drum rolls up into place as the section rises
-  ScrollTrigger.create({
-    trigger: quality, start: 'top 85%', end: 'top top',
-    onUpdate: (st) => { if (!pinned) rollStds(-1.4 * (1 - st.progress)); },
-  });
-  rollStds(-1.4);
-  // pinned: hold on each standard, roll to the next in the last 28% of its step
-  // exit: the ARGUS card's content dissolves while its navy grows from the
-  // card to the whole screen; the Market scene starts under the same navy
+if (!reduceMotion && window.innerWidth >= 1100) {
+  // a short hold on the module, then the exit:
   const argusCard = $('.argus');
   const qFill = $('.quality__fill');
   const cardClipQ = () => {
@@ -509,23 +473,14 @@ if (reduceMotion || window.innerWidth < 1100) {
     .fromTo(qFill, { clipPath: cardClipQ }, { clipPath: 'inset(0px 0px 0px 0px round 0px)', duration: 0.8, ease: 'power3.inOut', immediateRender: false }, 0.2)
     // once covered, the section itself turns navy so no paper edge can show at the hand-over
     .to(quality, { backgroundColor: '#00253e', duration: 0.01 }, 0.99);
-  const CYL_PART = stds.length * 0.8, EXIT_PART = 1.1;   // in screen heights
-  const CYL_FRAC = CYL_PART / (CYL_PART + EXIT_PART);
+  const HOLD_PART = 0.6, EXIT_PART = 1.1;   // in screen heights
+  const HOLD_FRAC = HOLD_PART / (HOLD_PART + EXIT_PART);
   qualityPin = ScrollTrigger.create({
-    trigger: quality, start: 'top top', end: () => '+=' + Math.round(window.innerHeight * (CYL_PART + EXIT_PART)),
+    trigger: quality, start: 'top top', end: () => '+=' + Math.round(window.innerHeight * (HOLD_PART + EXIT_PART)),
     pin: true, anticipatePin: 1,
-    onToggle: (st) => { pinned = st.isActive || st.progress >= 1; },
     onRefresh: () => exitTl.invalidate(),
-    onUpdate: (st) => {
-      pinned = st.progress > 0;
-      const z = clamp(st.progress / CYL_FRAC, 0, 1) * stds.length;
-      const fl = Math.floor(z);
-      rollStds(Math.min(stds.length - 1, fl + smooth((z - fl - 0.72) / 0.28)));
-      exitTl.progress(clamp((st.progress - CYL_FRAC) / (1 - CYL_FRAC), 0, 1));
-    },
+    onUpdate: (st) => exitTl.progress(clamp((st.progress - HOLD_FRAC) / (1 - HOLD_FRAC), 0, 1)),
   });
-  // from the moment it pins the section carries its own paper (until then its
-  // first screen is see-through over the Realities fill)
 }
 
 /* ---------------------------------------------------------
@@ -609,9 +564,22 @@ planeFrames.forEach((img) => img.addEventListener('load', () => { if (planeDrawn
 window.addEventListener('resize', sizePlane);
 sizePlane();
 
+
+// Market exit helpers (canvas units unless noted)
+const feat = $('#marketFeat');
+const featX = (w) => 720 - (feat.offsetLeft + w / 2);                       // track x that centres the featured card
+const fillGrow = { p: 0 };
+let featBox = null;   // the grown card's box on screen, measured as the fill takes over
+function paintFill() {
+  const fill = $('.market__fill');
+  const m = market.getBoundingClientRect();
+  if (!featBox || fillGrow.p === 0) { const c = feat.getBoundingClientRect(); featBox = { t: c.top - m.top, l: c.left - m.left, b: m.bottom - c.bottom, r: m.right - c.right }; }
+  const k = 1 - fillGrow.p, rad = 16 * canvasS() * k;
+  fill.style.clipPath = `inset(${featBox.t * k}px ${featBox.r * k}px ${featBox.b * k}px ${featBox.l * k}px round ${rad}px)`;
+}
 const marketTl = gsap.timeline({
   defaults: { ease: 'none' },
-  scrollTrigger: { trigger: market, start: 'top top', end: '+=560%', pin: true, scrub: 1.5, invalidateOnRefresh: true },
+  scrollTrigger: { trigger: market, start: 'top top', end: '+=700%', pin: true, scrub: 1.5, invalidateOnRefresh: true },
 });
 marketTl
   .fromTo('.market__cover', { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.7, ease: 'power1.inOut' }, 0)
@@ -624,12 +592,27 @@ marketTl
   .to(planeState, { f: PLANE_N - 1, duration: 2.4, ease: 'sine.inOut', onUpdate: () => drawPlane() }, 1.9)
   .fromTo(track, { x: () => screenRight() }, { x: 0, duration: 1.4, ease: 'power2.out' }, 3.0)
   .to('.market__actions', { autoAlpha: 1, y: 0, duration: 0.5 }, 4.1)
-  .to(track, { x: () => travel(), duration: 1.2 }, 4.5)
-  .to({}, { duration: 0.3 })
-  // last screen of the pin: Conversion slides up over the scene, which
-  // recedes (scales back, darkens) beneath it
-  .to('.market__stage', { scale: 0.9, duration: 1.3, ease: 'power1.in' }, '>')
-  .to('.market__shade', { opacity: 0.55, duration: 1.3, ease: 'power1.in' }, '<');
+  // on-scroll-2: the rail travels until the featured card (last) sits centred;
+  // the actions move to the centre with it
+  .to(track, { x: () => featX(723), duration: 1.6, ease: 'power2.inOut' }, 4.5)
+  // on-scroll-3: the title and the other cards clear, the featured card grows
+  .to('.market__title', { autoAlpha: 0, y: -24, duration: 0.6, ease: 'power1.in' }, 6.0)
+  .to('.market__track .mcard', { autoAlpha: 0, duration: 0.6, ease: 'power1.in' }, 6.0)
+  .to(feat, { width: 841, height: 640, y: -166, duration: 1.1, ease: 'power2.inOut' }, 6.2)
+  // the board dots either side keep to the card's height as it grows
+  .to([feat.previousElementSibling, feat.nextElementSibling], { height: 640, y: -166, duration: 1.1, ease: 'power2.inOut' }, 6.2)
+  .to(track, { x: () => featX(841), duration: 1.1, ease: 'power2.inOut' }, 6.2)
+  .to({}, { duration: 0.2 })
+  // exit: the card's content dissolves and its paper grows to fill the screen
+  // (the card-expand used for Realities → Quality and ARGUS → Market)
+  .to(feat.children, { autoAlpha: 0, filter: 'blur(6px)', duration: 0.3, stagger: 0.03, ease: 'power1.in' }, '>')
+  .to('.market__actions, .market__track .sep', { autoAlpha: 0, duration: 0.3, ease: 'power1.in' }, '<')
+  .set('.market__fill', { autoAlpha: 1 }, '>-0.15')
+  .set(feat, { autoAlpha: 0 }, '<')
+  .fromTo(fillGrow, { p: 0 }, { p: 1, duration: 0.8, ease: 'power3.inOut', immediateRender: false, onUpdate: paintFill }, '<');
+// hold the paper for the last screen of the pin: Conversion rises into it
+marketTl.to({}, { duration: marketTl.duration() * 0.35 / 6.65 });   // the last 0.35 of the pin's 7 screens: the paper is
+// complete and Conversion's content fades in near the top as it settles (10b)
 
 /* ---------------------------------------------------------
    10b. Conversion — arrives over Market: its top corners flatten
@@ -637,6 +620,19 @@ marketTl
         the specialist photo wipes up into its frame
    --------------------------------------------------------- */
 const convert = $('#contact');
+// while it overlaps the Market pin Conversion is see-through (the expanded
+// paper shows behind it); it takes its own paper once it reaches the top
+ScrollTrigger.create({ trigger: convert, start: 'top top', end: 'max', toggleClass: { targets: convert, className: 'is-solid' } });
+if (!reduceMotion) {
+  // the content counter-moves as the section rises, so it appears near the top
+  // of the screen and settles in place instead of rising from mid-screen
+  gsap.fromTo($$('#contact > :not(.convert__backdrop)'), { autoAlpha: 0, y: () => -window.innerHeight * 0.3 }, {
+    autoAlpha: 1, y: 0, ease: 'none',
+    scrollTrigger: { trigger: convert, start: 'top 35%', end: 'top top', scrub: true, invalidateOnRefresh: true },
+  });
+  // the photo fades in on its paper backdrop (the backdrop itself stays put)
+  gsap.fromTo('.convert__bg', { opacity: 0 }, { opacity: 1, ease: 'none', scrollTrigger: { trigger: convert, start: 'top 35%', end: 'top top', scrub: true } });
+}
 const convertTitle = $('.convert__title');
 convertTitle.innerHTML = wrapWords(convertTitle.textContent.replace(/&/g, '&amp;'));
 if (!reduceMotion) {
@@ -644,10 +640,10 @@ if (!reduceMotion) {
     opacity: 1, stagger: 0.12, ease: 'none',
     scrollTrigger: { trigger: convert, start: 'top 80%', end: 'top 15%', scrub: true },
   });
-  gsap.timeline({ scrollTrigger: { trigger: convert, start: 'top 90%', end: 'top 5%', scrub: true } })
-    .fromTo('.convert__media', { clipPath: 'inset(100% 0% 0% 0% round 24px)' }, { clipPath: 'inset(0% 0% 0% 0% round 24px)', duration: 1, ease: 'power2.out' }, 0)
-    .fromTo('.convert__media img', { scale: 1.25 }, { scale: 1, duration: 1, ease: 'power2.out' }, 0)
-    .fromTo('.convert__caption', { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.35, ease: 'power2.out' }, 0.65);
+  // the gripper settles from a slight zoom; the specialist's avatar pops in
+  gsap.timeline({ scrollTrigger: { trigger: convert, start: 'top 60%', end: 'top -10%', scrub: true } })
+    .fromTo('.convert__bg', { scale: 1.12, xPercent: 3 }, { scale: 1, xPercent: 0, duration: 1, ease: 'power2.out' }, 0)
+    .fromTo('.convert__avatar', { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.4, ease: 'back.out(2)' }, 0.35);
 }
 
 /* ---------------------------------------------------------
