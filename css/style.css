@@ -1318,3 +1318,135 @@ body.is-leaving { opacity: 0; }
 /* ---------- Industries dropdown: two columns, read top to bottom (Figma sm-nav__dropdown) ---------- */
 #industriesMenu { width: 592px; }
 #industriesMenu .dropdown__list { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(6, auto); grid-auto-flow: column; column-gap: 16px; row-gap: 4px; }
+
+/* =========================================================
+   Header — Figma sm-nav-desktop, layout=hybrid
+   logo + site switch | [Services · Industries · Market Insights · Log in] | Menu | Talk to an Expert
+   ========================================================= */
+.logo img { width: 165px; }                               /* 165×56: the logo leads the bar */
+.nav__right { display: flex; align-items: center; gap: 16px; }
+.nav__brand { gap: 24px; }
+
+/* site switch: names the other site (sm-site-switch) */
+.site-switch {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 44px; padding: 0 16px 0 14px;
+  border: 1px solid rgba(235, 232, 224, .85); border-radius: 8px;
+  font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink);
+  transition: background-color .25s, color .35s, border-color .35s;
+}
+.site-switch:hover { background: rgba(255, 255, 255, .14); }
+.site-switch__icon { flex: none; }
+
+/* the links pill, as in the original header (overlay/image 50%) */
+.nav__menu { gap: 16px; height: 44px; padding: 8px 16px; border-radius: 8px; background: rgba(0, 0, 0, .5); font-size: 14px; letter-spacing: .06em; }
+.nav__login { display: inline-flex; align-items: center; gap: 8px; }
+.nav__login svg { flex: none; }
+
+/* Menu / Close button */
+.menu-btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  height: 50px; padding: 0 16px 0 20px;
+  border: 1px solid currentColor; border-radius: 8px;
+  font-family: var(--mono); font-size: 14px; line-height: 20px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink);
+  transition: background-color .25s, color .35s;
+}
+.menu-btn:hover { background: rgba(255, 255, 255, .1); }
+.menu-btn__close { display: none; color: var(--red); }
+.menu-btn[aria-expanded="true"] .menu-btn__open { display: none; }
+.menu-btn[aria-expanded="true"] .menu-btn__close { display: block; }
+.menu-btn:focus-visible, .site-switch:focus-visible { outline: 2px solid #2c8bff; outline-offset: 3px; }
+
+/* over light sections */
+.header.is-on-light .site-switch { border-color: var(--navy); color: var(--navy); }
+.header.is-on-light .site-switch:hover { background: rgba(0, 37, 62, .08); }
+.header.is-on-light .menu-btn { color: var(--navy); }
+.header.is-on-light .menu-btn:hover { background: rgba(0, 37, 62, .06); }
+.header.is-on-light .nav__menu { background: rgba(0, 37, 62, .06); color: var(--navy); }
+.header.is-on-light .nav__menu a:hover, .header.is-on-light .nav__drop-btn:hover { color: var(--navy); }
+.header::before { height: 92px; }
+.burger { display: none !important; }
+
+/* ---------- full-screen menu (state=open) ---------- */
+.site-menu {
+  position: fixed; inset: 0; z-index: 1;
+  background: var(--navy); color: #fff;
+  overflow-y: auto; overscroll-behavior: contain;
+  pointer-events: auto;
+}
+.site-menu[hidden] { display: none; }
+.menu-lock, .menu-lock body { overflow: hidden; }
+.header.is-menu-open .nav__menu { visibility: hidden; }
+.header.is-menu-open::before { opacity: 0; }
+.site-menu__inner {
+  min-height: 100%;
+  display: grid; grid-template-columns: 560px 1fr; grid-template-rows: 1fr auto;
+  column-gap: 96px;
+  padding: 160px 48px 40px;
+}
+.site-menu__primary { grid-row: 1; border-right: 1px solid rgba(255, 255, 255, .18); padding-right: 48px; }
+.site-menu__item {
+  display: inline-flex; align-items: center; gap: 20px;
+  padding: 8px 0;
+  font-family: var(--sans); font-weight: 500; font-size: 48px; line-height: 64px; letter-spacing: -.01em;
+  color: rgba(255, 255, 255, .5); text-align: left; text-transform: none;
+  transition: color .3s;
+}
+.site-menu__arrow { width: 32px; height: 32px; fill: none; stroke: var(--red); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: translateX(-8px); transition: opacity .3s, transform .35s cubic-bezier(.2, .7, .2, 1); }
+.site-menu__item:hover, .site-menu__item:focus-visible, .site-menu__item.is-active { color: #fff; }
+.site-menu__item.is-active .site-menu__arrow { opacity: 1; transform: none; }
+.site-menu__item:focus-visible { outline: 2px solid #2c8bff; outline-offset: 4px; border-radius: 4px; }
+.site-menu__panels { grid-row: 1; padding-top: 8px; }
+.site-menu__title { font-weight: 500; font-size: 24px; line-height: 30px; margin-bottom: 24px; }
+.site-menu__panel ul { list-style: none; max-width: 688px; border-top: 1px solid rgba(255, 255, 255, .18); }
+.site-menu__panel--cols ul { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(6, auto); grid-auto-flow: column; column-gap: 32px; border-top: 0; }
+.site-menu__panel--cols li:nth-child(6n+1) { border-top: 1px solid rgba(255, 255, 255, .18); }
+.site-menu__panel li { border-bottom: 1px solid rgba(255, 255, 255, .18); }
+.site-menu__panel a {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px 0; font-size: 20px; line-height: 30px; color: var(--paper);
+  transition: color .25s;
+}
+.site-menu__panel a .site-menu__arrow { width: 16px; height: 16px; stroke-width: 1.6; }
+.site-menu__panel a:hover, .site-menu__panel a:focus-visible { color: #fff; }
+.site-menu__panel a:hover .site-menu__arrow, .site-menu__panel a:focus-visible .site-menu__arrow { opacity: 1; transform: none; }
+.site-menu__util {
+  grid-column: 1 / -1; grid-row: 2;
+  display: flex; align-items: center; gap: 32px;
+  margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, .18);
+  font-family: var(--mono); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--paper);
+}
+.site-menu__login { display: none; align-items: center; gap: 8px; }
+
+/* ---------- narrower screens ---------- */
+@media (max-width: 1240px) {
+  .nav__menu { display: none; }                 /* the links live in the Menu */
+}
+@media (max-width: 960px) {
+  .nav { justify-content: space-between; }
+  .cta { margin-left: 0; }
+  .site-menu__inner { grid-template-columns: 1fr; padding: 120px 24px 32px; row-gap: 32px; }
+  .site-menu__primary { border-right: 0; padding-right: 0; }
+  .site-menu__item { font-size: 36px; line-height: 48px; }
+  .site-menu__panels { grid-row: auto; }
+  .site-menu__util { grid-row: auto; }
+  .site-menu__login { display: inline-flex; }
+}
+@media (max-width: 720px) {
+  .logo img { width: 125px; }
+  .site-switch, .cta { display: none; }
+  .menu-btn { height: 44px; padding: 0 12px 0 16px; }
+  .site-menu__inner { padding-top: 96px; }
+  .site-menu__item { font-size: 28px; line-height: 36px; }
+  .site-menu__panel--cols ul { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; }
+  .site-menu__panel--cols li:nth-child(6n+1) { border-top: 0; }
+  .site-menu__panel--cols li:first-child { border-top: 1px solid rgba(255, 255, 255, .18); }
+}
+/* phones: the bar has no room for the CTA, so the menu carries it (as in sm-nav-mobile) */
+.site-menu__cta { display: none; }
+@media (max-width: 720px) {
+  .site-menu .site-menu__cta { display: inline-flex; width: 100%; justify-content: center; }
+  .site-menu__util { flex-wrap: wrap; row-gap: 24px; }
+}

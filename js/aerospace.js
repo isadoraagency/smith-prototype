@@ -774,3 +774,18 @@ window.addEventListener('pageshow', () => document.body.classList.remove('is-lea
 })();
 
 if (document.fonts) document.fonts.ready.then(() => ScrollTrigger.refresh());
+
+/* ---------------------------------------------------------
+   Lift the chat button above the realities CTA cards while
+   they are on screen (they sit 48px from the bottom edge)
+   --------------------------------------------------------- */
+(() => {
+  const cta = document.querySelector('.real__cta');
+  const chat = document.getElementById('chatBtn');
+  if (!cta || !chat) return;
+  let on = false;
+  gsap.ticker.add(() => {
+    const v = cta.style.visibility !== 'hidden' && parseFloat(cta.style.opacity || '0') > 0.05;
+    if (v !== on) { on = v; chat.classList.toggle('is-raised', on); }
+  });
+})();

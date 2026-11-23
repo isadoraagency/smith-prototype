@@ -277,7 +277,17 @@
 .real__dots { position: absolute; left: 1344px; top: 400px; display: flex; flex-direction: column; gap: 14px; }
 .real__dots i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--blue-light); transition: background .3s, border-color .3s; }
 .real__dots i.is-on { background: var(--red); border-color: var(--red); }
-.real__cta { position: absolute; left: 479px; top: 760px; width: 441px; }
+/* two sm-cta-card cards (Figma 2746:5194): 660 × 98, 24px apart, 48px from the bottom */
+.real__cta { position: absolute; left: 48px; top: 754px; width: 1344px; display: flex; gap: 24px; }
+.ctacard {
+  flex: 1; display: flex; align-items: center; gap: 24px;
+  padding: 24px; border-radius: 16px; border: 1px solid transparent;
+  background: rgba(0, 0, 0, .5); color: #fff;
+  transition: border-color .3s;
+}
+.ctacard:hover, .ctacard:focus-within { border-color: #b9caeb; }
+.ctacard__text { flex: 1; font-weight: 500; font-size: 20px; line-height: 26px; }
+.ctacard .btn { flex: none; padding-left: 20px; padding-right: 20px; letter-spacing: .06em; }   /* Figma button widths (277px) so each line fits */
 /* Realities → Quality: the last card's paper grows until it is the Quality
    background (clip-path tweened in js from the card's rect to the full scene) */
 .real__fill {
@@ -489,3 +499,6 @@
 /* two flags sit close on the narrower card scan: the second label goes above its box */
 .argus__flag--up em { position: absolute; left: 0; bottom: 100%; margin: 0 0 8px; }
 .nowrap { white-space: nowrap; }
+
+/* chat button rides above the realities CTA cards while they show */
+.chat.is-raised { transform: translateY(calc(-140px * var(--s, 1))); }
