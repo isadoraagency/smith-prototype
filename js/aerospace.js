@@ -516,23 +516,9 @@ window.addEventListener('resize', sizePlane);
 sizePlane();
 
 
-// Market exit helpers (canvas units unless noted)
-const feat = $('#marketFeat');
-const featX = (w) => 720 - (feat.offsetLeft + w / 2);                       // track x that centres the featured card
-const fillGrow = { p: 0 };
-let featBox = null;   // the grown card's box on screen, measured as the fill takes over
-function paintFill() {
-  const fill = $('.market__fill');
-  const m = market.getBoundingClientRect();
-  if (!featBox || fillGrow.p === 0) { const c = feat.getBoundingClientRect(); featBox = { t: c.top - m.top, l: c.left - m.left, b: m.bottom - c.bottom, r: m.right - c.right }; }
-  const k = 1 - fillGrow.p, rad = 16 * canvasS() * k;
-  fill.style.clipPath = `inset(${featBox.t * k}px ${featBox.r * k}px ${featBox.b * k}px ${featBox.l * k}px round ${rad}px)`;
-}
 const marketTl = gsap.timeline({
   defaults: { ease: 'none' },
-  // scrub: true — the timeline follows Lenis' smoothed scroll exactly, so the
-  // card has always finished growing when the pin releases
-  scrollTrigger: { trigger: market, start: 'top top', end: '+=700%', pin: true, scrub: true, invalidateOnRefresh: true },
+  scrollTrigger: { trigger: market, start: 'top top', end: '+=600%', pin: true, scrub: 1, invalidateOnRefresh: true },
 });
 marketTl
   .fromTo('.market__cover', { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.7, ease: 'power1.inOut' }, 0)
@@ -541,52 +527,32 @@ marketTl
     opacity: 1, color: '#ffffff',   // every word ends fully white
     stagger: 0.14, duration: 0.4,
   }, 0.4)
-  // the airliner pulls away out of frame, then the cards arrive
+  // the airliner pulls away out of frame, then the cards arrive, featured first
   .to(planeState, { f: PLANE_N - 1, duration: 2.4, ease: 'sine.inOut', onUpdate: () => drawPlane() }, 1.9)
   .fromTo(track, { x: () => screenRight() }, { x: 0, duration: 1.4, ease: 'power2.out' }, 3.0)
   .to('.market__actions', { autoAlpha: 1, y: 0, duration: 0.5 }, 4.1)
-  // on-scroll-2: the rail travels until the featured card (last) sits centred;
-  // the actions move to the centre with it
-  .to(track, { x: () => featX(723), duration: 1.6, ease: 'power2.inOut' }, 4.5)
-  // on-scroll-3: the title and the other cards clear, the featured card grows
-  .to('.market__title', { autoAlpha: 0, y: -24, duration: 0.6, ease: 'power1.in' }, 6.0)
-  .to('.market__track .mcard', { autoAlpha: 0, duration: 0.6, ease: 'power1.in' }, 6.0)
-  .to(feat, { width: 841, height: 640, y: -166, duration: 1.1, ease: 'power2.inOut' }, 6.2)
-  // the board dots either side keep to the card's height as it grows
-  .to([feat.previousElementSibling, feat.nextElementSibling], { height: 640, y: -166, duration: 1.1, ease: 'power2.inOut' }, 6.2)
-  .to(track, { x: () => featX(841), duration: 1.1, ease: 'power2.inOut' }, 6.2)
-  .to({}, { duration: 0.2 })
-  // exit: the card's content dissolves and its paper grows to fill the screen
-  // (the card-expand used for Realities → Quality and ARGUS → Market)
-  .to(feat.children, { autoAlpha: 0, filter: 'blur(6px)', duration: 0.3, stagger: 0.03, ease: 'power1.in' }, '>')
-  .to('.market__actions, .market__track .sep', { autoAlpha: 0, duration: 0.3, ease: 'power1.in' }, '<')
-  .set('.market__fill', { autoAlpha: 1 }, '>-0.15')
-  .set(feat, { autoAlpha: 0 }, '<')
-  .fromTo(fillGrow, { p: 0 }, { p: 1, duration: 0.8, ease: 'power3.inOut', immediateRender: false, onUpdate: paintFill }, '<');
-// hold the paper for the last screen of the pin: Conversion rises into it
-marketTl.to({}, { duration: marketTl.duration() * 0.1 / 6.9 });   // a beat of finished paper before the pin releases
+  // the cards rest as in Figma: featured card fully in view, the rest running off the right
+  .to({}, { duration: 1.5 });
+// last screen of the pin (1 of 6): Conversion slides up over the scene,
+// which only darkens a little beneath it
+marketTl.to('.market__shade', { opacity: 0.4, duration: marketTl.duration() / 5, ease: 'power1.in' });
 
 /* ---------------------------------------------------------
-   10b. Conversion — the featured card's paper has become its
-        background; once that is complete the section's content
-        animates in place: the gripper settles, the title and the
-        specialist row rise in, the avatar pops
+   10b. Conversion — slides up over the Market scene; its content
+        animates in as it arrives: the gripper settles, the title
+        and the specialist row rise in, the avatar pops
    --------------------------------------------------------- */
 const convert = $('#contact');
 const convertTitle = $('.convert__title');
 convertTitle.innerHTML = wrapWords(convertTitle.textContent.replace(/&/g, '&amp;'));
-// while it overlaps the Market pin Conversion is see-through (the expanded
-// paper shows behind it); it takes its own paper once it reaches the top
-ScrollTrigger.create({ trigger: convert, start: 'top top', end: 'max', toggleClass: { targets: convert, className: 'is-solid' } });
 if (!reduceMotion) {
   const convIn = gsap.timeline({ paused: true })
     .fromTo('.convert__bg', { opacity: 0, scale: 1.08, xPercent: 2 }, { opacity: 1, scale: 1, xPercent: 0, duration: 1.4, ease: 'power3.out' }, 0)
     .fromTo('.convert__title .wd', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.04, ease: 'expo.out' }, 0.1)
     .fromTo('.convert__row', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out' }, 0.35)
     .fromTo('.convert__avatar', { scale: 0.6 }, { scale: 1, duration: 0.7, ease: 'back.out(2)' }, 0.5);
-  // nothing of Conversion shows while the card is still growing
   ScrollTrigger.create({
-    trigger: convert, start: 'top 2px',
+    trigger: convert, start: 'top 55%',
     onEnter: () => convIn.play(),
     onLeaveBack: () => convIn.reverse(),
   });
