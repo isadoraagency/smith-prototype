@@ -1418,3 +1418,5 @@ body.is-leaving { opacity: 0; }
 }
 .header.is-menu-open .ticker { visibility: hidden; }   /* homepage ticker stays out of the open menu */
 .nav__right { margin-left: auto; }   /* Menu / CTA always on the right, even when the brand shrinks on phones */
+/* client preview: Solar is not shared yet — the toggle option is shown but inactive */
+.switch__btn.is-disabled { pointer-events: none; opacity: .5; }
