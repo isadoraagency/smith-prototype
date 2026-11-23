@@ -147,8 +147,8 @@ stageTl
 
 /* ---------------------------------------------------------
    6. Applications — intro title → tabs, panel and aircraft;
-      categories autoplay (and follow hover) to light up the
-      matching part of the aircraft.
+      categories light up the matching part of the aircraft
+      on hover / focus.
    --------------------------------------------------------- */
 const apps = $('#apps');
 const tabs = $$('.apps__tab');
@@ -157,11 +157,7 @@ const visuals = $$('.apps__visual');
 const highlights = $$('.hl');
 let activeTab = 0;
 let activeTag = 0;
-let autoplay = null;
-let hovering = false;
 let appsReady = false;
-let appsVisible = false;
-let appsPinned = false;
 
 gsap.set('.apps__ui, .apps__visual[data-visual="0"]', { autoAlpha: 0 });
 visuals[0].classList.add('is-active');
@@ -186,16 +182,6 @@ function setTag(j) {
   tags.forEach((t, i) => t.classList.toggle('is-on', i === j));
   showHighlight(j);
 }
-function stopAutoplay() { if (autoplay) { autoplay.kill(); autoplay = null; } }
-function startAutoplay() {
-  stopAutoplay();
-  if (!appsReady || hovering || !appsVisible || appsPinned) return;
-  autoplay = gsap.delayedCall(2.8, () => {
-    const n = $$('.apps__tag', panels[activeTab]).length;
-    setTag((activeTag + 1) % n);
-    startAutoplay();
-  });
-}
 function setTab(i) {
   if (i === activeTab) return;
   activeTab = i;
@@ -217,18 +203,19 @@ function setTab(i) {
       if (paths.length) gsap.fromTo(paths, { attr: { 'stroke-dashoffset': 1 } }, { ...DRAWN, duration: 1.2, stagger: 0.08, ease: 'power2.out' });
     }
   });
-  setTag(0);
-  startAutoplay();
+  setTag(-1);
 }
 tabs.forEach((t, i) => t.addEventListener('click', () => setTab(i)));
 panels.forEach((p) => {
   $$('.apps__tag', p).forEach((tag, j) => {
-    tag.addEventListener('mouseenter', () => { hovering = true; stopAutoplay(); setTag(j); });
-    tag.addEventListener('focus', () => { hovering = true; stopAutoplay(); setTag(j); });
-    tag.addEventListener('click', () => setTag(j));
+    // hover / focus shows that part of the aircraft; a tap (touch) does the same
+    tag.addEventListener('mouseenter', () => { if (appsReady) setTag(j); });
+    tag.addEventListener('focus', () => { if (appsReady) setTag(j); });
+    tag.addEventListener('click', () => { if (appsReady) setTag(j); });
   });
-  p.addEventListener('mouseleave', () => { hovering = false; startAutoplay(); });
-  p.addEventListener('focusout', () => { hovering = false; startAutoplay(); });
+  // leaving the list puts the whole aircraft back
+  p.addEventListener('mouseleave', () => setTag(-1));
+  p.addEventListener('focusout', (e) => { if (!p.contains(e.relatedTarget)) setTag(-1); });
 });
 highlights.forEach((h) => gsap.set(h, { autoAlpha: 0 }));
 
@@ -251,47 +238,23 @@ if (!reduceMotion) {
   });
 }
 
-const APPS_STEPS = 4.5;   // timeline units given to stepping through the list
 const appsTl = gsap.timeline({
   defaults: { ease: 'none' },
   scrollTrigger: {
-    // the pin lasts long enough to step through every category with the scroll
-    // (reveal = first 3 units, then one step per category), so the whole list is
-    // seen before the page moves on; autoplay takes over once unpinned
-    trigger: apps, start: 'top top', end: '+=340%', pin: true, scrub: 1,
-    onToggle: (st) => { appsPinned = st.isActive; if (appsPinned) stopAutoplay(); else startAutoplay(); },
+    // the pin only covers the reveal; the list is explored by hovering it
+    trigger: apps, start: 'top top', end: '+=170%', pin: true, scrub: 1,
     onUpdate: (st) => {
-      const t = appsTl.duration() * st.progress;
-      const ready = t > 2.7;
-      if (ready !== appsReady) {
-        appsReady = ready;
-        if (ready) setTag(activeTag); else { stopAutoplay(); showHighlight(-1); }
-      }
-      if (ready && !hovering) {
-        const n = $$('.apps__tag', panels[activeTab]).length;
-        const idx = Math.max(0, Math.min(n - 1, Math.floor((t - 3) / (APPS_STEPS / n))));
-        if (idx !== activeTag) setTag(idx);
-      }
+      const ready = appsTl.duration() * st.progress > 2.7;
+      if (ready !== appsReady) { appsReady = ready; if (!ready) setTag(-1); }
     },
   },
-});
-// Autoplay runs whenever the revealed aircraft is on screen — including after the
-// pin releases and the section scrolls on (stopping on the pin's onLeave killed it
-// the moment the reveal finished).
-ScrollTrigger.create({
-  // the section is pinned, so its own bottom doesn't include the pin distance:
-  // stay active until the pin has ended and the section has scrolled off
-  trigger: apps, start: 'top bottom', end: () => appsTl.scrollTrigger.end + window.innerHeight,
-  invalidateOnRefresh: true,
-  onToggle: (st) => { appsVisible = st.isActive; if (appsVisible) startAutoplay(); else stopAutoplay(); },
 });
 appsTl
   .fromTo('.apps__intro', { autoAlpha: 1, y: 0 }, { autoAlpha: 0, y: -60, duration: 1 }, 0.4)
   .fromTo('.apps__top', { autoAlpha: 0.55, scale: 1, rotate: 0 }, { autoAlpha: 0, scale: 0.7, rotate: 18, duration: 1.4, ease: 'power2.in' }, 0.3)
   .fromTo('.apps__visual[data-visual="0"]', { autoAlpha: 0, scale: 1.15, x: 80 }, { autoAlpha: 1, scale: 1, x: 0, duration: 1.4, ease: 'power2.out' }, 1.1)
   .fromTo('.apps__ui', { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 1, ease: 'power2.out' }, 1.6)
-  .to({}, { duration: 0.4 })                    // 3.0: revealed
-  .to({}, { duration: APPS_STEPS });           // one step per category
+  .to({}, { duration: 0.6 });                  // 3.0: revealed, held briefly
 // keep the visual's own transform free for the scrubbed entrance
 gsap.set('.apps__visual[data-visual="0"]', { transformOrigin: '70% 50%' });
 
