@@ -1324,7 +1324,7 @@ body.is-leaving { opacity: 0; }
    logo 165×56 + Electronics/Solar toggle | EN · Menu · Talk to an Expert
    ========================================================= */
 .header { padding-top: 24px; }                              /* 104px bar: 56px logo, 24px above/below */
-.logo img { width: 165px; }
+.logo img { width: 120px; }   /* sm-nav-desktop v2: logo 120×41 */
 .nav__brand { gap: 24px; }
 .switch { height: 44px; align-items: center; }
 .nav__right { display: flex; align-items: center; gap: 28px; }
@@ -1406,7 +1406,7 @@ body.is-leaving { opacity: 0; }
 }
 @media (max-width: 720px) {
   .header { padding-top: 11px; }
-  .logo img { width: 125px; }
+  .logo img { width: 120px; }
   .switch, .cta, .nav__right .nav__lang { display: none; }
   .menu-btn { height: 44px; padding: 0 12px 0 16px; }
   .site-menu__inner { padding: 96px 16px 32px; }
