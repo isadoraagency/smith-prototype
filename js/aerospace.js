@@ -579,7 +579,9 @@ function paintFill() {
 }
 const marketTl = gsap.timeline({
   defaults: { ease: 'none' },
-  scrollTrigger: { trigger: market, start: 'top top', end: '+=700%', pin: true, scrub: 1.5, invalidateOnRefresh: true },
+  // scrub: true — the timeline follows Lenis' smoothed scroll exactly, so the
+  // card has always finished growing when the pin releases
+  scrollTrigger: { trigger: market, start: 'top top', end: '+=700%', pin: true, scrub: true, invalidateOnRefresh: true },
 });
 marketTl
   .fromTo('.market__cover', { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.7, ease: 'power1.inOut' }, 0)
@@ -611,39 +613,32 @@ marketTl
   .set(feat, { autoAlpha: 0 }, '<')
   .fromTo(fillGrow, { p: 0 }, { p: 1, duration: 0.8, ease: 'power3.inOut', immediateRender: false, onUpdate: paintFill }, '<');
 // hold the paper for the last screen of the pin: Conversion rises into it
-marketTl.to({}, { duration: marketTl.duration() * 0.35 / 6.65 });   // the last 0.35 of the pin's 7 screens: the paper is
-// complete and Conversion's content fades in near the top as it settles (10b)
+marketTl.to({}, { duration: marketTl.duration() * 0.1 / 6.9 });   // a beat of finished paper before the pin releases
 
 /* ---------------------------------------------------------
-   10b. Conversion — arrives over Market: its top corners flatten
-        as it reaches the top, the title lights up word by word,
-        the specialist photo wipes up into its frame
+   10b. Conversion — the featured card's paper has become its
+        background; once that is complete the section's content
+        animates in place: the gripper settles, the title and the
+        specialist row rise in, the avatar pops
    --------------------------------------------------------- */
 const convert = $('#contact');
+const convertTitle = $('.convert__title');
+convertTitle.innerHTML = wrapWords(convertTitle.textContent.replace(/&/g, '&amp;'));
 // while it overlaps the Market pin Conversion is see-through (the expanded
 // paper shows behind it); it takes its own paper once it reaches the top
 ScrollTrigger.create({ trigger: convert, start: 'top top', end: 'max', toggleClass: { targets: convert, className: 'is-solid' } });
 if (!reduceMotion) {
-  // the content counter-moves as the section rises, so it appears near the top
-  // of the screen and settles in place instead of rising from mid-screen
-  gsap.fromTo($$('#contact > :not(.convert__backdrop)'), { autoAlpha: 0, y: () => -window.innerHeight * 0.3 }, {
-    autoAlpha: 1, y: 0, ease: 'none',
-    scrollTrigger: { trigger: convert, start: 'top 35%', end: 'top top', scrub: true, invalidateOnRefresh: true },
+  const convIn = gsap.timeline({ paused: true })
+    .fromTo('.convert__bg', { opacity: 0, scale: 1.08, xPercent: 2 }, { opacity: 1, scale: 1, xPercent: 0, duration: 1.4, ease: 'power3.out' }, 0)
+    .fromTo('.convert__title .wd', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.04, ease: 'expo.out' }, 0.1)
+    .fromTo('.convert__row', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out' }, 0.35)
+    .fromTo('.convert__avatar', { scale: 0.6 }, { scale: 1, duration: 0.7, ease: 'back.out(2)' }, 0.5);
+  // nothing of Conversion shows while the card is still growing
+  ScrollTrigger.create({
+    trigger: convert, start: 'top 2px',
+    onEnter: () => convIn.play(),
+    onLeaveBack: () => convIn.reverse(),
   });
-  // the photo fades in on its paper backdrop (the backdrop itself stays put)
-  gsap.fromTo('.convert__bg', { opacity: 0 }, { opacity: 1, ease: 'none', scrollTrigger: { trigger: convert, start: 'top 35%', end: 'top top', scrub: true } });
-}
-const convertTitle = $('.convert__title');
-convertTitle.innerHTML = wrapWords(convertTitle.textContent.replace(/&/g, '&amp;'));
-if (!reduceMotion) {
-  gsap.fromTo('.convert__title .wd', { opacity: 0.15 }, {
-    opacity: 1, stagger: 0.12, ease: 'none',
-    scrollTrigger: { trigger: convert, start: 'top 80%', end: 'top 15%', scrub: true },
-  });
-  // the gripper settles from a slight zoom; the specialist's avatar pops in
-  gsap.timeline({ scrollTrigger: { trigger: convert, start: 'top 60%', end: 'top -10%', scrub: true } })
-    .fromTo('.convert__bg', { scale: 1.12, xPercent: 3 }, { scale: 1, xPercent: 0, duration: 1, ease: 'power2.out' }, 0)
-    .fromTo('.convert__avatar', { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.4, ease: 'back.out(2)' }, 0.35);
 }
 
 /* ---------------------------------------------------------

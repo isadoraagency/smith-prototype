@@ -387,7 +387,7 @@
 /* =========================================================
    7. Market intelligence (pinned, cards travel in)
    ========================================================= */
-.market { position: relative; height: 100vh; height: 100svh; min-height: 680px; overflow: hidden; background: var(--cobalt); color: #fff; }
+.market { position: relative; z-index: 1; height: 100vh; height: 100svh; min-height: 680px; overflow: hidden; background: var(--cobalt); color: #fff; }
 /* dusk sky; the airliner is an image sequence drawn on the canvas above it
    (it flies out of frame with the scroll); the overlay token sits on top */
 .market__bg {
@@ -468,7 +468,7 @@
 /* Conversion rises over the last (all-paper) screen of the Market pin: same paper, so it
    reads as the next content scrolling in, with no blank screen and no seam */
 #contact { z-index: 2; margin-top: calc(-1 * max(100svh, 680px)); }
-#contact + .footer, #contact ~ .footer { position: relative; z-index: 2; }
+#contact + .footer, #contact ~ .footer { position: relative; z-index: 0; }   /* stays under the pinned Market scene while Conversion overlaps it */
 .convert__title .wd { display: inline-block; will-change: opacity; }
 .convert .section__title { max-width: 658px; }
 /* alt 3: the gripper photo sits behind (Figma: 1636 × 921 at 112, -103, blend darken
@@ -534,3 +534,6 @@
 @media (max-width: 720px) {
   .convert__specialist { flex-direction: column; align-items: flex-start; }
 }
+
+/* the backdrop only exists once Conversion owns the screen (the grown card is paper until then) */
+#contact:not(.is-solid) .convert__backdrop { visibility: hidden; }
