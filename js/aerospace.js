@@ -296,28 +296,15 @@ appsTl
 gsap.set('.apps__visual[data-visual="0"]', { transformOrigin: '70% 50%' });
 
 /* ---------------------------------------------------------
-   7. Realities — title over the nose wireframe, then the
-      sm-realities-card stack: each scroll step sends the front
-      card away and brings the next one forward.
+   7. Realities — title over the nose wireframe, then the four
+      sm-realities-cards rise in side by side (Figma 2555:4677);
+      the last card grows into the Quality background.
    --------------------------------------------------------- */
 const rcards = $$('.rcard');
-const rdots = $$('.real__dots i');
-const SLOT = [
-  { scale: 1, y: 0, opacity: 1 },
-  { scale: 0.94, y: -24, opacity: 0.7 },
-  { scale: 0.88, y: -48, opacity: 0.45 },
-  { scale: 0.82, y: -72, opacity: 0.25 },
-];
-rcards.forEach((c, i) => { gsap.set(c, { ...SLOT[i], zIndex: 10 - i, '--c': 1 }); c.classList.toggle('is-back', i > 0); });
-gsap.set('.real__stack, .real__dots, .real__cta', { autoAlpha: 0 });
+const rseps = $$('.real__track .board-dots');
+gsap.set(rcards, { '--c': 1 });
+gsap.set('.real__track, .real__cta', { autoAlpha: 0 });
 
-let realStep = -1;
-function setRealStep(k) {
-  if (k === realStep) return;
-  realStep = k;
-  rdots.forEach((d, i) => d.classList.toggle('is-on', i === Math.max(0, k)));
-  rcards.forEach((c, i) => c.classList.toggle('is-back', i !== Math.max(0, k)));
-}
 // Realities intro title: words (the muted half keeps its beige) that light up
 // one by one with the scroll once the section is pinned, like the overview
 // statement under the hero
@@ -332,12 +319,7 @@ realTitle.innerHTML = Array.from(realTitle.childNodes).map((n) => (n.nodeType ==
 const realTl = gsap.timeline({
   defaults: { ease: 'power2.inOut' },
   scrollTrigger: {
-    trigger: '#realities', start: 'top top', end: '+=540%', pin: true, scrub: 1, invalidateOnRefresh: true,
-    onUpdate: (st) => {
-      const t = realTl.duration() * st.progress;
-      // card k leaves at 3.3 + k·1.2; the next one counts as front halfway through
-      setRealStep(t < 3.7 ? 0 : Math.min(rcards.length - 1, 1 + Math.floor((t - 3.7) / 1.2)));
-    },
+    trigger: '#realities', start: 'top top', end: '+=420%', pin: true, scrub: 1, invalidateOnRefresh: true,
   },
 });
 realTl
@@ -347,31 +329,29 @@ realTl
   }, 0)
   .fromTo('.real__title', { autoAlpha: 1, y: 0 }, { autoAlpha: 0, y: -50, duration: 0.8 }, 1.6)
   .fromTo('.real__nose', { opacity: 0.2, scale: 1 }, { opacity: 0.12, scale: 1.06, duration: 1.4 }, 1.6)
-  .fromTo('.real__stack', { autoAlpha: 0, y: 80 }, { autoAlpha: 1, y: 0, duration: 1, ease: 'power3.out' }, 2.3)
-  .fromTo('.real__dots, .real__cta', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6 }, 2.7);
-// steps 1–3: front card leaves upward, the rest move one slot forward
-for (let k = 0; k < rcards.length - 1; k++) {
-  const at = 3.3 + k * 1.2;
-  realTl.to(rcards[k], { y: -220, rotate: -6, opacity: 0, duration: 0.8 }, at);
-  for (let i = k + 1; i < rcards.length; i++) realTl.to(rcards[i], { ...SLOT[i - k - 1], duration: 0.8 }, at + 0.1);
-}
+  // the four cards rise in one after another, the board-dots draw between them
+  .set('.real__track', { autoAlpha: 1 }, 2.2)
+  .fromTo(rcards, { autoAlpha: 0, y: 80 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.18, ease: 'power3.out' }, 2.2)
+  .fromTo(rseps, { autoAlpha: 0, scaleY: 0 }, { autoAlpha: 1, scaleY: 1, duration: 0.6, stagger: 0.18, ease: 'power2.out' }, 2.5)
+  .fromTo('.real__cta', { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 2.9)
+  .to({}, { duration: 1.2 });   // all four cards held, readable
 // last step: the front card's colour expands to fill the scene and becomes the
 // Quality section's background (same --paper), so the next section arrives
 // without a seam. The card's rect is computed from the 1440×900 canvas maths.
 const realScene2 = $('#realities');
 const realFill = $('.real__fill');
+const lastCard = rcards[rcards.length - 1];
+// the last card's rect inside the pinned scene, measured live
 const cardClip = () => {
   const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s')) || 1;
-  const W = realScene2.clientWidth, H = realScene2.clientHeight;
-  const l = W / 2 + (520 - 720) * s, t = H / 2 + (208 - 450) * s;
-  const w = 359 * s, h = 444 * s;
-  return `inset(${t}px ${W - l - w}px ${H - t - h}px ${l}px round ${24 * s}px)`;
+  const c = lastCard.getBoundingClientRect(), m = realScene2.getBoundingClientRect();
+  return `inset(${c.top - m.top}px ${m.right - c.right}px ${m.bottom - c.bottom}px ${c.left - m.left}px round ${24 * s}px)`;
 };
-const lastCard = rcards[rcards.length - 1];
 realTl
-  .to({}, { duration: 0.5 })
+  // the other cards step back so the last one carries the move alone
+  .to([...rcards.slice(0, -1), ...rseps], { autoAlpha: 0, y: -24, duration: 0.5, stagger: 0.05, ease: 'power1.in' })
   // the card's paper grows into the whole scene while its text dissolves
-  // (through a custom property, so the stack's own .is-back hiding is never
+  // (through a custom property, so the cards' own opacity is never
   // overridden); the Quality section rises over it during the last screen
   // of the pin, its elements revealing on their own scroll triggers
   .set(realFill, { autoAlpha: 1 }, '>')
@@ -379,7 +359,7 @@ realTl
   .fromTo(lastCard, { '--c': 1 }, { '--c': 0, duration: 0.5, ease: 'power1.in', immediateRender: false }, '<')
   .fromTo($$('.rcard__dot, h3, p', lastCard), { filter: 'blur(0px)' }, { filter: 'blur(6px)', duration: 0.5, ease: 'power1.in', immediateRender: false }, '<')
   .to(lastCard, { boxShadow: '0 30px 60px rgba(0, 10, 20, 0)', duration: 0.4 }, '<')
-  .to('.real__dots, .real__cta', { autoAlpha: 0, duration: 0.4 }, '<')
+  .to('.real__cta', { autoAlpha: 0, duration: 0.4 }, '<')
   .to({}, { duration: 0.9 });
 
 /* ---------------------------------------------------------

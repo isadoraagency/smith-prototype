@@ -245,15 +245,15 @@
 .real__title .wd { display: inline-block; will-change: opacity; }
 .real__title { text-shadow: 0 0 3px var(--navy), 0 0 12px var(--navy), 0 0 28px rgba(0, 37, 62, .85); }   /* readable over the full aircraft */
 .real__title .wd--muted { color: var(--beige); }   /* starts beige, ends white (js) */
-.real__stack { position: absolute; left: 520px; top: 208px; width: 359px; height: 444px; }
+/* Figma 2555:4677: four cards in a row, board-dots between (like sm-module--impact) */
+.real__track { position: absolute; left: 48px; top: 141px; width: 1344px; height: 480px; display: flex; gap: 12px; }
 .rcard {
-  position: absolute; inset: 0;
+  position: relative; flex: 1 1 0; min-width: 0;
   padding: 32px 24px;
   border-radius: 24px;
   background: var(--paper);
   color: var(--navy);
   display: flex; flex-direction: column; gap: 16px;
-  transform-origin: 50% 0;
   will-change: transform, opacity;
   box-shadow: 0 30px 60px rgba(0, 10, 20, .25);
 }
@@ -273,10 +273,6 @@
 .rcard h3 { font-weight: 400; font-size: 32px; line-height: 40px; }
 .rcard p { margin-top: auto; font-weight: 400; font-size: 20px; line-height: 30px; }   /* sits on the bottom padding, never runs into it */
 .rcard > * { opacity: var(--c, 1); transition: opacity .3s; }
-.rcard.is-back > * { opacity: 0; }
-.real__dots { position: absolute; left: 1344px; top: 400px; display: flex; flex-direction: column; gap: 14px; }
-.real__dots i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--blue-light); transition: background .3s, border-color .3s; }
-.real__dots i.is-on { background: var(--red); border-color: var(--red); }
 /* two sm-cta-card cards (Figma 2746:5194): 660 × 98, 24px apart, 48px from the bottom */
 .real__cta { position: absolute; left: 48px; top: 754px; width: 1344px; display: flex; gap: 24px; }
 .ctacard {
