@@ -13,7 +13,7 @@
   <link rel="preload" href="assets/fonts/Gilroy-Medium.woff2" as="font" type="font/woff2" crossorigin />
 
   <link rel="stylesheet" href="vendor/lenis.css" />
-  <link rel="stylesheet" href="css/style.css?v=41" />
+  <link rel="stylesheet" href="css/style.css?v=42" />
 </head>
 <body>
 
@@ -30,14 +30,20 @@
   <header class="header">
     <div class="nav">
       <div class="nav__brand">
-        <a href="#" class="logo" aria-label="Smith home"><img src="assets/img/logo.svg" alt="Smith" width="165" height="56" /></a>
-        <a class="site-switch" href="solar/" data-site-switch aria-label="Go to Smith Solar"><svg class="site-switch__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 2.25V3.75M3.98559 5.48559L2.92493 4.42493M14.0143 5.48559L15.075 4.42493M4.5 11.25C4.5 8.76472 6.51472 6.75 9 6.75C11.4853 6.75 13.5 8.76472 13.5 11.25M4.5 11.25H13.5M4.5 11.25H1.5M13.5 11.25H16.5M14.25 14.25H3.75" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Solar</span></a>
+        <a href="#" class="logo" aria-label="Smith home"><img src="assets/img/logo.svg" alt="Smith" width="94" height="32" /></a>
+        <nav class="switch" aria-label="Business unit">
+          <a class="switch__btn is-active" href="./" aria-current="page">Electronics</a>
+          <a class="switch__btn" href="solar/" data-site-switch>
+            <!-- sun icon, from the Smith Solar nav toggle -->
+            <svg class="switch__icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 2.25V3.75M3.98559 5.48559L2.92493 4.42493M14.0143 5.48559L15.075 4.42493M4.5 11.25C4.5 8.76472 6.51472 6.75 9 6.75C11.4853 6.75 13.5 8.76472 13.5 11.25M4.5 11.25H13.5M4.5 11.25H1.5M13.5 11.25H16.5M14.25 14.25H3.75" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Solar
+          </a>
+        </nav>
       </div>
 
-      <div class="nav__right">
-        <nav class="nav__menu" aria-label="Main">
-          <a href="services/procurement/">Services</a>
-          <div class="nav__drop">
+      <nav class="nav__menu" aria-label="Main">
+        <a href="services/procurement/">Services</a>
+        <div class="nav__drop">
           <button type="button" class="nav__drop-btn" id="industriesBtn" aria-expanded="false" aria-controls="industriesMenu">Industries
             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
           </button>
@@ -59,98 +65,33 @@
             </ul>
           </div>
         </div>
-          <a href="#">Market Insights</a>
-          <a href="#" class="nav__login"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c.8-4.2 4-6.5 8-6.5s7.2 2.3 8 6.5"/></svg><span>Log in</span></a>
-        </nav>
-        <button type="button" class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="siteMenu"><span class="menu-btn__label">Menu</span><svg class="menu-btn__open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><svg class="menu-btn__close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-        <a href="#contact" class="cta">Talk to an Expert</a>
-      </div>
-    </div>
-    <!-- full-screen menu (sm-nav-desktop, state=open) — js/nav-menu.js -->
-    <div class="site-menu" id="siteMenu" role="dialog" aria-modal="true" aria-label="Menu" hidden data-lenis-prevent>
-      <div class="site-menu__inner">
-        <nav class="site-menu__primary" aria-label="Menu">
-          <ul>
-            <li><button type="button" class="site-menu__item" data-panel="services" aria-controls="panel-services">Services<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button></li>
-            <li><button type="button" class="site-menu__item" data-panel="products" aria-controls="panel-products">Products<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button></li>
-            <li><button type="button" class="site-menu__item" data-panel="industries" aria-controls="panel-industries">Industries<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button></li>
-            <li><button type="button" class="site-menu__item" data-panel="quality" aria-controls="panel-quality">Quality<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button></li>
-            <li><button type="button" class="site-menu__item" data-panel="insights" aria-controls="panel-insights">Market Insights<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button></li>
-            <li><button type="button" class="site-menu__item" data-panel="company" aria-controls="panel-company">Company<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button></li>
-          </ul>
-        </nav>
-        <div class="site-menu__panels">
-          <div class="site-menu__panel" id="panel-services" data-panel="services" hidden>
-            <p class="site-menu__title">Services</p>
-            <ul>
-              <li><a href="services/procurement/">Procurement<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Supply Chain Solutions<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Data Center Services<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="solar/">Solar<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-            </ul>
-          </div>
-          <div class="site-menu__panel" id="panel-products" data-panel="products" hidden>
-            <p class="site-menu__title">Products</p>
-            <ul>
-              <li><a href="#">Franchise Lines<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Find Parts on SmithTrade™<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Sell Excess Inventory<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-            </ul>
-          </div>
-          <div class="site-menu__panel site-menu__panel--cols" id="panel-industries" data-panel="industries" hidden>
-            <p class="site-menu__title">Industries</p>
-            <ul>
-              <li><a href="industries/aerospace-defense/">Aerospace and Defense<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Automation<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Automotive<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Computing<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Consumer Electronics<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Data Center<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">E-Commerce<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Education<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Gaming<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">IoT (Internet of Things)<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Medical<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Oil/Gas<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-            </ul>
-          </div>
-          <div class="site-menu__panel" id="panel-quality" data-panel="quality" hidden>
-            <p class="site-menu__title">Quality</p>
-            <ul>
-              <li><a href="#">Smith Quality<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Operations<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Intelligent Quality Systems<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Functionality Test Lab<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Authenticity Test Lab<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Certifications<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-            </ul>
-          </div>
-          <div class="site-menu__panel" id="panel-insights" data-panel="insights" hidden>
-            <p class="site-menu__title">Market Insights</p>
-            <ul>
-              <li><a href="#">Blog<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Success Stories<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Market Intelligence<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">News<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-            </ul>
-          </div>
-          <div class="site-menu__panel" id="panel-company" data-panel="company" hidden>
-            <p class="site-menu__title">Company</p>
-            <ul>
-              <li><a href="company/about/">About Smith<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Careers<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Leadership<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Locations<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
-              <li><a href="#">Newsroom<svg class="site-menu__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a></li>
+        <a href="#">Quality</a>
+        <a href="#">Market Insights</a>
+        <div class="nav__drop">
+          <button type="button" class="nav__drop-btn" id="companyBtn" aria-expanded="false" aria-controls="companyMenu">Company
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
+          </button>
+          <div class="dropdown dropdown--company" id="companyMenu" hidden>
+            <p class="dropdown__title">Company</p>
+            <ul class="dropdown__list">
+              <li><a href="company/about/">About Smith</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Leadership</a></li>
+              <li><a href="#">Locations</a></li>
+              <li><a href="#">Newsroom</a></li>
             </ul>
           </div>
         </div>
-        <div class="site-menu__util">
-          <a href="#" class="site-menu__login"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c.8-4.2 4-6.5 8-6.5s7.2 2.3 8 6.5"/></svg><span>Log in</span></a>
-          <span class="site-menu__lang">EN · Language</span>
-          <a href="#contact" class="cta site-menu__cta">Talk to an Expert</a>
-        </div>
-      </div>
+        <button class="nav__lang">EN
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
+        </button>
+        <a href="#" class="nav__icon" aria-label="Account">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c.8-4.2 4-6.5 8-6.5s7.2 2.3 8 6.5"/></svg>
+        </a>
+      </nav>
+
+      <a href="#contact" class="cta">Talk to an Expert</a>
+      <button class="burger" aria-label="Open menu"><span></span><span></span></button>
     </div>
 
     <!-- hides as soon as the user starts scrolling (see js/main.js) -->
@@ -683,6 +624,5 @@
   <script src="vendor/lenis.min.js"></script>
   <script src="js/main.js?v=38"></script>
   <script src="js/nav-company.js?v=1"></script>
-  <script src="js/nav-menu.js?v=4"></script>
 </body>
 </html>
