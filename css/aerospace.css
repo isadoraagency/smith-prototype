@@ -407,7 +407,7 @@
   transform: translate(-50%, -50%) scale(var(--s, 1));
 }
 .market__title {
-  position: absolute; left: 48px; right: 48px; top: 64px; text-align: center;   /* Figma: centred */
+  position: absolute; left: 48px; right: 48px; top: 64px; text-align: left;   /* Figma: left-aligned at 48 */
   font-weight: 500; font-size: 48px; line-height: 54px; letter-spacing: -0.01em;   /* sm/h2 */
 }
 .market__title .wd--muted { color: var(--beige); }   /* starts beige, ends white (js) */
@@ -451,8 +451,8 @@
 .mcard__read svg { color: var(--blue); transition: transform .25s; }
 .mcard:hover .mcard__read svg { transform: translateX(4px); }
 .market__actions {
-  position: absolute; left: 48px; right: 48px; bottom: 64px;   /* centred (on-scroll-3), from the start */
-  display: flex; align-items: center; justify-content: center; gap: 40px;
+  position: absolute; left: 48px; right: 48px; bottom: 64px;   /* Figma: left-aligned at 48, 64 from the bottom */
+  display: flex; align-items: center; justify-content: flex-start; gap: 40px;
 }
 
 /* =========================================================
@@ -473,6 +473,7 @@
 .convert__bg {
   position: absolute; left: 7.78%; top: -7.15vw; width: 113.6%; height: auto;
   mix-blend-mode: darken; will-change: transform;
+  transform-origin: 50% 55%;   /* zooms in on the chip in the gripper */
 }
 .convert__title { position: relative; z-index: 1; }
 .convert__row { position: relative; z-index: 1; display: flex; gap: 16px; width: 724px; max-width: 100%; margin: 186px auto 0; }

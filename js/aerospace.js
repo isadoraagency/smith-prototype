@@ -546,8 +546,13 @@ const convert = $('#contact');
 const convertTitle = $('.convert__title');
 convertTitle.innerHTML = wrapWords(convertTitle.textContent.replace(/&/g, '&amp;'));
 if (!reduceMotion) {
+  // the gripper photo is there from the start and slowly zooms in with the
+  // scroll, from the moment the section starts sliding up until it leaves
+  gsap.fromTo('.convert__bg', { scale: 1 }, {
+    scale: 1.08, ease: 'none',
+    scrollTrigger: { trigger: convert, start: 'top bottom', end: 'bottom top', scrub: true },
+  });
   const convIn = gsap.timeline({ paused: true })
-    .fromTo('.convert__bg', { opacity: 0, scale: 1.08, xPercent: 2 }, { opacity: 1, scale: 1, xPercent: 0, duration: 1.4, ease: 'power3.out' }, 0)
     .fromTo('.convert__title .wd', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.04, ease: 'expo.out' }, 0.1)
     .fromTo('.convert__row', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out' }, 0.35)
     .fromTo('.convert__avatar', { scale: 0.6 }, { scale: 1, duration: 0.7, ease: 'back.out(2)' }, 0.5);
