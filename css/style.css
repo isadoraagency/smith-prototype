@@ -1420,3 +1420,5 @@ body.is-leaving { opacity: 0; }
 .nav__right { margin-left: auto; }   /* Menu / CTA always on the right, even when the brand shrinks on phones */
 /* client preview: Solar is not shared yet — the toggle option is shown but inactive */
 .switch__btn.is-disabled { pointer-events: none; opacity: .5; }
+/* client preview: links to pages that are not shared yet do nothing — no hover, no click, no focus */
+.is-inert { pointer-events: none; cursor: default; }
