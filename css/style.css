@@ -1318,3 +1318,103 @@ body.is-leaving { opacity: 0; }
 /* ---------- Industries dropdown: two columns, read top to bottom (Figma sm-nav__dropdown) ---------- */
 #industriesMenu { width: 592px; }
 #industriesMenu .dropdown__list { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(6, auto); grid-auto-flow: column; column-gap: 16px; row-gap: 4px; }
+
+/* =========================================================
+   Header — Figma sm-nav-desktop v2 (Option C)
+   logo 165×56 + Electronics/Solar toggle | EN · Menu · Talk to an Expert
+   ========================================================= */
+.header { padding-top: 24px; }                              /* 104px bar: 56px logo, 24px above/below */
+.logo img { width: 165px; }
+.nav__brand { gap: 24px; }
+.switch { height: 44px; align-items: center; }
+.nav__right { display: flex; align-items: center; gap: 28px; }
+.nav__menu, .nav__icon, .burger { display: none !important; }
+.nav__right .nav__lang { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-weight: 400; font-size: 16px; letter-spacing: .1em; color: var(--ink); }
+
+/* Menu / Close button */
+.menu-btn {
+  display: inline-flex; align-items: center; gap: 16px;
+  height: 50px; padding: 0 16px 0 20px;
+  border: 1px solid currentColor; border-radius: 8px;
+  font-family: var(--mono); font-size: 14px; line-height: 20px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink);
+  transition: background-color .25s, color .35s;
+}
+.menu-btn:hover { background: rgba(255, 255, 255, .1); }
+.menu-btn__close { display: none; }
+.menu-btn[aria-expanded="true"] { gap: 12px; }
+.menu-btn[aria-expanded="true"] .menu-btn__open { display: none; }
+.menu-btn[aria-expanded="true"] .menu-btn__close { display: block; }
+.menu-btn:focus-visible { outline: 2px solid #2c8bff; outline-offset: 3px; }
+
+/* over light sections */
+.header.is-on-light .menu-btn, .header.is-on-light .nav__right .nav__lang { color: var(--navy); }
+.header.is-on-light .menu-btn:hover { background: rgba(0, 37, 62, .06); }
+.header::before { height: 104px; }
+
+/* ---------- full-screen menu (state=open) ---------- */
+.site-menu {
+  position: fixed; inset: 0; z-index: 1;
+  background: var(--navy); color: #fff;
+  overflow-y: auto; overscroll-behavior: contain;
+  pointer-events: auto;
+}
+.site-menu[hidden] { display: none; }
+.menu-lock, .menu-lock body { overflow: hidden; }
+.header.is-menu-open::before { opacity: 0; }
+.site-menu__inner {
+  min-height: 100%;
+  display: grid; grid-template-columns: 560px minmax(0, 688px); column-gap: 96px; align-items: start;
+  padding: 176px 48px 64px;
+}
+/* left: the top-level items (Figma: 40/46 Medium, 8px apart) */
+.site-menu__primary { display: inline-flex; flex-direction: column; gap: 8px; justify-self: start; }
+.site-menu__item, .site-menu__login {
+  display: inline-flex; align-items: center; gap: 20px;
+  padding: 8px 0;
+  font-family: var(--sans); font-weight: 500; font-size: 40px; line-height: 46px; letter-spacing: -.0125em;
+  color: #fff; text-align: left; text-transform: none;
+}
+.site-menu__arrow { width: 32px; height: 32px; fill: none; stroke: var(--red); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: translateX(-8px); transition: opacity .3s, transform .35s cubic-bezier(.2, .7, .2, 1); }
+.site-menu__item.is-active .site-menu__arrow, .site-menu__item:hover .site-menu__arrow { opacity: 1; transform: none; }
+.site-menu__item:focus-visible, .site-menu__login:focus-visible { outline: 2px solid #2c8bff; outline-offset: 4px; border-radius: 4px; }
+/* Log in, under a rule as wide as the list */
+.site-menu__login-row { border-top: 1px solid #b9caeb; }
+.site-menu__login { width: 100%; }
+.site-menu__user { width: 40px; height: 40px; flex: none; }
+.site-menu__login:hover span { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 8px; }
+/* right: the active item's links (Figma: title 24/30, links 20/30, rules #b9caeb) */
+.site-menu__panels { padding-top: 8px; }
+.site-menu__title { font-weight: 500; font-size: 24px; line-height: 30px; margin-bottom: 24px; }
+.site-menu__panel ul { list-style: none; max-width: 688px; border-top: 1px solid #b9caeb; }
+.site-menu__panel--cols ul { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(6, auto); grid-auto-flow: column; column-gap: 32px; border-top: 0; }
+.site-menu__panel--cols li:nth-child(6n+1) { border-top: 1px solid #b9caeb; }
+.site-menu__panel li { border-bottom: 1px solid #b9caeb; }
+.site-menu__panel a {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px 0; font-weight: 400; font-size: 20px; line-height: 30px; color: var(--paper);
+  transition: color .25s;
+}
+.site-menu__panel a .site-menu__arrow { width: 16px; height: 16px; stroke-width: 1.6; }
+.site-menu__panel a:hover, .site-menu__panel a:focus-visible, .site-menu__panel a[aria-current="page"] { color: #fff; }
+.site-menu__panel a:hover .site-menu__arrow, .site-menu__panel a:focus-visible .site-menu__arrow { opacity: 1; transform: none; }
+
+/* ---------- narrower screens ---------- */
+@media (max-width: 1100px) {
+  .site-menu__inner { grid-template-columns: 1fr; padding: 128px 32px 40px; row-gap: 40px; }
+  .site-menu__item, .site-menu__login { font-size: 32px; line-height: 40px; }
+}
+@media (max-width: 720px) {
+  .header { padding-top: 11px; }
+  .logo img { width: 125px; }
+  .switch, .cta, .nav__right .nav__lang { display: none; }
+  .menu-btn { height: 44px; padding: 0 12px 0 16px; }
+  .site-menu__inner { padding: 96px 16px 32px; }
+  .site-menu__item, .site-menu__login { font-size: 28px; line-height: 36px; }
+  .site-menu__user { width: 32px; height: 32px; }
+  .site-menu__panel--cols ul { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; }
+  .site-menu__panel--cols li:nth-child(6n+1) { border-top: 0; }
+  .site-menu__panel--cols li:first-child { border-top: 1px solid #b9caeb; }
+}
+.header.is-menu-open .ticker { visibility: hidden; }   /* homepage ticker stays out of the open menu */
+.nav__right { margin-left: auto; }   /* Menu / CTA always on the right, even when the brand shrinks on phones */

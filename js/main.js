@@ -665,9 +665,9 @@ function setDropdown(open) {
   if (open) reveal(indMenu, { autoAlpha: 0, y: -8 });
   else conceal(indMenu, { y: -8 });
 }
-indBtn.addEventListener('click', (e) => { e.stopPropagation(); setDropdown(indBtn.getAttribute('aria-expanded') !== 'true'); });
-document.addEventListener('click', (e) => { if (!indMenu.hidden && !indMenu.contains(e.target)) setDropdown(false); });
-const indAll = indMenu.querySelector('.dropdown__all');   // the menu no longer has a View All link
+if (indBtn) indBtn.addEventListener('click', (e) => { e.stopPropagation(); setDropdown(indBtn.getAttribute('aria-expanded') !== 'true'); });
+if (indMenu) document.addEventListener('click', (e) => { if (!indMenu.hidden && !indMenu.contains(e.target)) setDropdown(false); });
+const indAll = indMenu && indMenu.querySelector('.dropdown__all');   // the menu no longer has a View All link
 if (indAll) indAll.addEventListener('click', () => setDropdown(false));
 
 // Chat panel
@@ -728,7 +728,7 @@ document.addEventListener('keydown', (e) => {
   const modal = document.querySelector('.modal:not([hidden])');
   if (modal) return closeModal(modal);
   if (!chatPanel.hidden) return setChat(false);
-  if (!indMenu.hidden) { setDropdown(false); indBtn.focus(); }
+  if (indMenu && !indMenu.hidden) { setDropdown(false); indBtn.focus(); }
 });
 
 /* ---------------------------------------------------------

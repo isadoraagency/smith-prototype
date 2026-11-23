@@ -601,10 +601,10 @@ function setDropdown(open) {
   indBtn.setAttribute('aria-expanded', String(open));
   if (open) reveal(indMenu, { autoAlpha: 0, y: -8 }); else conceal(indMenu, { y: -8 });
 }
-indBtn.addEventListener('click', (e) => { e.stopPropagation(); setDropdown(indBtn.getAttribute('aria-expanded') !== 'true'); });
-document.addEventListener('click', (e) => { if (!indMenu.hidden && !indMenu.contains(e.target)) setDropdown(false); });
+if (indBtn) indBtn.addEventListener('click', (e) => { e.stopPropagation(); setDropdown(indBtn.getAttribute('aria-expanded') !== 'true'); });
+if (indMenu) document.addEventListener('click', (e) => { if (!indMenu.hidden && !indMenu.contains(e.target)) setDropdown(false); });
 // already on this page: close the menu and glide to the top
-const selfLink = indMenu.querySelector('a[aria-current="page"]');
+const selfLink = indMenu && indMenu.querySelector('a[aria-current="page"]');
 if (selfLink) selfLink.addEventListener('click', (e) => {
   e.preventDefault(); setDropdown(false);
   if (lenis) lenis.scrollTo(0, { duration: 1.4 }); else window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -635,7 +635,7 @@ $('#chatForm').addEventListener('submit', (e) => { e.preventDefault(); sendChat(
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (!chatPanel.hidden) return setChat(false);
-  if (!indMenu.hidden) { setDropdown(false); indBtn.focus(); }
+  if (indMenu && !indMenu.hidden) { setDropdown(false); indBtn.focus(); }
 });
 
 // in-page anchors glide with Lenis
