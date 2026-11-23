@@ -120,6 +120,7 @@
 .dp.grid-dots::before { background-size: 24px 24px; }
 .dp::before { display: none; }
 .dp.grid-dots::before { display: block; }
+.grid-dots::before, .dp::before { display: none !important; }   /* dot pattern retired */
 
 /* type: Figma text styles */
 .t-h2 { font-weight: 500; font-size: 48px; line-height: 54px; letter-spacing: -0.01em; }   /* sm/h2 */

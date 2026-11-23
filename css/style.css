@@ -118,7 +118,7 @@ ul { list-style: none; }
   padding: 0 26px;
   display: inline-flex;
   align-items: center;
-  border-radius: 4px;
+  border-radius: 8px;   /* same corners as .btn */
   transition: filter .2s;
 }
 .cta:hover { filter: brightness(1.08); }
@@ -378,7 +378,6 @@ ul { list-style: none; }
   content: "";
   position: absolute; inset: 0;
   background:
-    radial-gradient(rgba(255, 255, 255, .16) 1px, transparent 1.6px) 0 0 / 22px 22px,
     linear-gradient(180deg, rgba(0, 37, 62, .55), rgba(0, 37, 62, .4) 60%, rgba(0, 37, 62, .6));
 }
 .insights__title {
@@ -556,7 +555,7 @@ ul { list-style: none; }
   --text-soft: rgba(25, 33, 52, .7);   /* sm-service-card description */
   --link-blue: #0b63ce;                /* secondary buttons on light cards */
   --overlay: rgba(25, 33, 52, .5);     /* overlay/image token, 50% */
-  --dots: radial-gradient(rgba(255, 255, 255, .1) 1px, transparent 1.4px) 0 0 / 16px 16px;
+  --dots: linear-gradient(transparent, transparent);   /* dot pattern retired */
   --section-y: 64px;
   --radius-card: 24px;
 }
@@ -1309,6 +1308,7 @@ body.is-leaving { opacity: 0; }
 
 /* ---------- Company dropdown + current page in the nav (Figma sm-nav__link state=current) ---------- */
 .dropdown--company { width: 280px; }
+#servicesMenu { width: 340px; }   /* "Operational Capabilities" on one line */
 .nav__menu > a[aria-current="page"], .nav__drop-btn.is-current {
   color: #fff; text-decoration: underline; text-decoration-color: var(--red);
   text-decoration-thickness: 2px; text-underline-offset: 8px;

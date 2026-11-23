@@ -14,8 +14,8 @@
   <link rel="preload" href="../../assets/fonts/Gilroy-Medium.woff2" as="font" type="font/woff2" crossorigin />
 
   <link rel="stylesheet" href="../../vendor/lenis.css" />
-  <link rel="stylesheet" href="../../css/style.css?v=42" />
-  <link rel="stylesheet" href="../../css/services.css?v=8" />
+  <link rel="stylesheet" href="../../css/style.css?v=44" />
+  <link rel="stylesheet" href="../../css/services.css?v=9" />
 </head>
 <body class="page-svc">
 
@@ -44,7 +44,21 @@
       </div>
 
       <nav class="nav__menu" aria-label="Main">
-        <a href="./" aria-current="page" class="is-current">Services</a>
+        <div class="nav__drop">
+          <button type="button" class="nav__drop-btn is-current" id="servicesBtn" aria-expanded="false" aria-controls="servicesMenu">Services
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
+          </button>
+          <div class="dropdown dropdown--company" id="servicesMenu" hidden>
+            <p class="dropdown__title">Services</p>
+            <ul class="dropdown__list">
+              <li><a href="../../services/procurement/" aria-current="page">Procurement</a></li>
+              <li><a href="#">Supply Chain</a></li>
+              <li><a href="#">Operational Capabilities</a></li>
+              <li><a href="#">Targeted Solutions</a></li>
+              <li><a href="#">SmithTrade™ Marketplace</a></li>
+            </ul>
+          </div>
+        </div>
         <div class="nav__drop">
           <button type="button" class="nav__drop-btn" id="industriesBtn" aria-expanded="false" aria-controls="industriesMenu">Industries
             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg>
@@ -338,6 +352,6 @@
   <script src="../../vendor/ScrollTrigger.min.js"></script>
   <script src="../../vendor/lenis.min.js"></script>
   <script src="../../js/services.js?v=8"></script>
-  <script src="../../js/nav-company.js?v=1"></script>
+  <script src="../../js/nav-company.js?v=2"></script>
 </body>
 </html>

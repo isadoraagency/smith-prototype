@@ -77,13 +77,13 @@ heroTitle.innerHTML = heroTitle.innerHTML
 const heroWords = $$('.wd', heroTitle);
 const introNav = gsap.utils.toArray('.nav > *, .chat');
 const heroImg = $('#heroMedia img');
-if (reduceMotion) gsap.set('#heroTitle, #heroCopy .btn, #heroCallout', { visibility: 'visible' });
+if (reduceMotion) gsap.set('#heroTitle, #heroCopy .btn', { visibility: 'visible' });
 
 if (!reduceMotion) {
   gsap.set(heroWords, { yPercent: 110 });
   gsap.set(heroTitle, { visibility: 'visible' });   // hidden by CSS until split (no flash of the full headline)
   gsap.set(heroImg, { scale: 1.18 });
-  gsap.set('#heroCopy .btn, #heroCallout', { autoAlpha: 0, y: 16 });
+  gsap.set('#heroCopy .btn', { autoAlpha: 0, y: 16 });
   gsap.set(introNav, { y: -24, autoAlpha: 0 });
   const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
   Promise.race([fontsReady, new Promise((r) => setTimeout(r, 1200))]).then(() => {
@@ -92,7 +92,6 @@ if (!reduceMotion) {
       .to(heroImg, { scale: 1, duration: 2.4 }, 0)
       .to(introNav, { y: 0, autoAlpha: 1, stagger: 0.07, duration: 1.2, clearProps: 'transform,opacity,visibility' }, 0.2)
       .to('#heroCopy .btn', { autoAlpha: 1, y: 0, duration: 1 }, 0.6)
-      .to('#heroCallout', { autoAlpha: 1, y: 0, duration: 1 }, 1.1);
   });
 }
 
@@ -135,7 +134,6 @@ const stageTl = gsap.timeline({
 });
 stageTl
   .to('#heroCopy', { autoAlpha: 0, y: -60, duration: 0.8 }, 0)
-  .to('#heroCallout', { autoAlpha: 0, duration: 0.4 }, 0)
   .to(heroMedia, { clipPath: () => circleTarget().clip, duration: 1.6, ease: 'power1.inOut' }, 0)
   .to(heroMedia, { x: () => circleTarget().x, y: () => circleTarget().y, scale: () => circleTarget().scale, duration: 2.2, ease: 'power2.inOut' }, 0.6)
   // keep the plane in the middle of the circle as it shrinks

@@ -59,7 +59,7 @@
 .dots img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; will-change: transform; }
 .dots::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(rgba(255, 255, 255, .14) 1.2px, transparent 1.7px) 12px 12px / 24px 24px, var(--glass);
+  background: var(--glass);
 }
 
 /* split words (titles that light up / rise) */

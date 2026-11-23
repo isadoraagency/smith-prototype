@@ -98,7 +98,7 @@
 .ov__line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .ov__path { fill: none; stroke: var(--cyan); stroke-width: 3; }
 .ov__marker {
-  position: absolute; left: 941px; top: 196px;
+  position: absolute; left: 941px; top: 200.5px;   /* centre on the line (y 212.5) */
   width: 24px; height: 24px;
   background: var(--blue);
   transform: rotate(45deg) scale(0);
