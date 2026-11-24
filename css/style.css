@@ -1386,13 +1386,11 @@ body.is-leaving { opacity: 0; }
 /* right: the active item's links (Figma: title 24/30, links 20/30, rules #b9caeb) */
 .site-menu__panels { padding-top: 8px; }
 .site-menu__title { font-weight: 500; font-size: 24px; line-height: 30px; margin-bottom: 24px; }
-.site-menu__panel ul { list-style: none; max-width: 688px; border-top: 1px solid #b9caeb; }
+.site-menu__panel ul { list-style: none; max-width: 688px; }
 .site-menu__panel--cols ul { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(6, auto); grid-auto-flow: column; column-gap: 32px; border-top: 0; }
-.site-menu__panel--cols li:nth-child(6n+1) { border-top: 1px solid #b9caeb; }
-.site-menu__panel li { border-bottom: 1px solid #b9caeb; }
 .site-menu__panel a {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 16px 0; font-weight: 400; font-size: 20px; line-height: 30px; color: var(--paper);
+  display: flex; align-items: center; justify-content: flex-start; gap: 16px;
+  padding: 8px 0; font-weight: 400; font-size: 20px; line-height: 30px; color: var(--paper);
   transition: color .25s;
 }
 .site-menu__panel a .site-menu__arrow { width: 16px; height: 16px; stroke-width: 1.6; }
@@ -1413,8 +1411,6 @@ body.is-leaving { opacity: 0; }
   .site-menu__item, .site-menu__login { font-size: 28px; line-height: 36px; }
   .site-menu__user { width: 32px; height: 32px; }
   .site-menu__panel--cols ul { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; }
-  .site-menu__panel--cols li:nth-child(6n+1) { border-top: 0; }
-  .site-menu__panel--cols li:first-child { border-top: 1px solid #b9caeb; }
 }
 .header.is-menu-open .ticker { visibility: hidden; }   /* homepage ticker stays out of the open menu */
 .nav__right { margin-left: auto; }   /* Menu / CTA always on the right, even when the brand shrinks on phones */
@@ -1425,9 +1421,7 @@ body.is-leaving { opacity: 0; }
 
 /* menu: Company panel in two groups (About Us · Our Values) */
 .site-menu__groups { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; max-width: 688px; align-items: start; }
-.site-menu__group-title { font-weight: 500; font-size: 20px; line-height: 30px; color: #fff; padding-bottom: 12px; }
-.site-menu__panel .site-menu__group-title a { padding: 0; font-weight: 500; color: #fff; justify-content: flex-start; gap: 12px; }
-.site-menu__panel .site-menu__group-title a:hover .site-menu__arrow, .site-menu__panel .site-menu__group-title a:focus-visible .site-menu__arrow { opacity: 1; transform: none; }
+.site-menu__group-title { font-weight: 500; font-size: 24px; line-height: 30px; color: #fff; padding-bottom: 12px; }
 @media (max-width: 720px) {
   .site-menu__groups { grid-template-columns: 1fr; row-gap: 32px; }
 }
