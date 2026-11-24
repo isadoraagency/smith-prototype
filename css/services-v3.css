@@ -1,0 +1,230 @@
+/* =========================================================
+   SMITH — Services / Procurement v3
+   Built from the Figma frame "services / procurement / desktop V2"
+   (Smith-2026-Production branch) and its annotations.
+   · one background layer (.sv-bg) whose colour is scrubbed between
+     scenes, so sections never meet at a hard edge
+   · 01: a camera flies to each capability card in turn (CSS 3D)
+   · 03: a circuit-board assembly rendered with three.js (WebGL)
+   Loaded after style.css + services.css (header, footer, CTA,
+   buttons, chip and market note come from those).
+   ========================================================= */
+
+.page-sv3 { background: var(--navy); color: #fff; }
+.sv { position: relative; isolation: isolate; }
+.sv-bg { position: fixed; inset: 0; z-index: -1; background: var(--navy); pointer-events: none; }
+
+.sv-h2 { font-weight: 500; font-size: clamp(32px, 3.33vw, 48px); line-height: 1.125; letter-spacing: -0.01em; }
+.sv .label { font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; }
+.sv .wd { display: inline-block; }
+.sv .wm { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }
+
+/* every pinned scene fills the screen */
+.sv-intro, .sv-clock, .sv-cycle, .sv-proof, .sv-quality {
+  position: relative; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden;
+}
+
+/* ---------- 01: the field of capabilities ---------- */
+.sv-space { position: absolute; inset: 0; perspective: 1000px; perspective-origin: 50% 50%; overflow: hidden; }
+.sv-world { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+.sv-card {
+  position: absolute; left: 50%; top: 50%; margin: 0;
+  width: var(--w0, 438px); aspect-ratio: 4 / 5; translate: -50% -50%;
+  border-radius: 16px; overflow: hidden; background: #0d1a2b;
+  backface-visibility: hidden; will-change: transform, opacity;
+}
+.sv-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sv-card__shade { position: absolute; inset: 0; background: var(--overlay, rgba(25, 33, 52, .5)); }
+
+.sv-statement {
+  position: absolute; left: 50%; top: 54%; z-index: 3; width: min(838px, calc(100vw - 96px)); translate: -50% -50%;
+  font-weight: 500; font-size: clamp(34px, 3.9vw, 56px); line-height: 1.107; letter-spacing: -0.01em; text-align: center;
+}
+.sv-caption {
+  position: absolute; left: 48px; bottom: 76px; z-index: 3; width: min(520px, calc(100vw - 96px));
+  display: flex; flex-direction: column; gap: 12px; visibility: hidden;
+}
+.sv-caption__title { font-weight: 500; font-size: clamp(28px, 2.8vw, 40px); line-height: 1.15; }
+.sv-caption__text { font-size: 20px; line-height: 30px; color: rgba(240, 241, 235, .85); }
+.sv-progress { position: absolute; right: 32px; bottom: 50px; z-index: 3; display: flex; align-items: center; gap: 8px; visibility: hidden; color: rgba(240, 241, 235, .85); }
+.sv-progress b { font-weight: 400; color: #fff; }
+.sv-ticks { list-style: none; display: flex; gap: 8px; }
+.sv-ticks li { width: 28px; height: 2px; background: rgba(185, 202, 235, .3); transition: background .4s; }
+.sv-ticks li.is-on { background: var(--red); }
+/* screen-reader list; shown as text when motion is reduced */
+.sv-caps { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Todd: a layer of 01 that opens out of the last card */
+.sv-voice { position: absolute; inset: 0; z-index: 5; visibility: hidden; }
+.sv-voice__media { position: absolute; inset: 0; overflow: hidden; }
+.sv-voice__media img { width: 125%; max-width: none; height: 100%; margin-left: -25%; object-fit: cover; object-position: 30% 30%; display: block; }
+.sv-voice__shade { position: absolute; inset: 0; background: var(--navy); opacity: .66; }
+.sv-voice__content {
+  position: absolute; right: 48px; top: 50%; translate: 0 -50%; width: min(640px, calc(100vw - 96px)); margin: 0;
+  display: flex; flex-direction: column; gap: 32px;
+}
+.sv-quote { margin: 0; font-weight: 400; font-size: clamp(26px, 2.5vw, 36px); line-height: 1.3; color: #fff; }
+.sv-voice__content figcaption { display: flex; flex-direction: column; gap: 4px; }
+.sv-voice__content figcaption b { font-weight: 500; font-size: 20px; line-height: 26px; }
+.sv-voice__content figcaption span { font-size: 18px; line-height: 27px; color: rgba(240, 241, 235, .75); }
+.sv-pill {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 12px; padding: 9px 20px 9px 9px; border-radius: 999px;
+  background: rgba(0, 0, 0, .5); box-shadow: inset 0 0 0 1px rgba(185, 202, 235, .35); color: #fff; font-size: 16px; line-height: 20px;
+  transition: box-shadow .3s;
+}
+.sv-pill:hover { box-shadow: inset 0 0 0 1px #fff; }
+.sv-pill__play { flex: 0 0 32px; width: 32px; height: 32px; display: block; transition: scale .3s; }
+.sv-pill__play svg { width: 100%; height: 100%; display: block; }
+.sv-pill__play circle { fill: var(--red); }
+.sv-pill__play path { fill: #fff; }
+.sv-pill:hover .sv-pill__play { scale: 1.08; }
+.sv-pill em { font-style: normal; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--blue-light, #b9caeb); }
+
+/* ---------- 02: always on ---------- */
+.sv-clock.tz { background: transparent; }
+.sv-clock__inner { position: absolute; inset: 0; perspective: 1200px; }
+.sv-clock__title { position: absolute; left: 48px; top: calc(128px * var(--sy, 1)); width: min(760px, calc(100vw - 96px)); }
+.sv-offices.tz__offices {
+  position: absolute; left: 48px; right: 48px; top: calc(268px * var(--sy, 1));
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.sv-offices .tz-office {
+  height: 32px; padding: 0 12px; gap: 8px; border-radius: 8px; background: rgba(0, 0, 0, .5); box-shadow: none;
+  font-size: 16px; line-height: 20px;
+}
+.sv-offices .tz-office time { margin-left: 4px; }
+.sv-clock__body {
+  position: absolute; left: 50%; top: calc(332px * var(--sy, 1)); translate: -50% 0;
+  display: flex; align-items: center; gap: 80px; width: max-content;
+}
+.sv-clock__dial-wrap { position: relative; flex: none; width: calc(640px * var(--dk, 1)); height: calc(640px * var(--dk, 1)); transform-style: preserve-3d; }
+.sv-dial.tz__clock { position: absolute; left: 0; top: 0; width: 640px; height: 640px; transform-origin: 0 0; scale: var(--dk, 1); }
+.sv-dial .tz__readout { left: 210px; top: 280px; }
+.sv-dial .tz__hour { translate: -50% -50%; }
+.sv-checks { list-style: none; display: flex; flex-direction: column; gap: 16px; width: 438px; }
+.sv-checks li { display: flex; gap: 12px; font-size: 20px; line-height: 30px; color: rgba(240, 241, 235, .9); }
+.sv-checks svg { flex: 0 0 20px; height: 20px; margin-top: 2px; fill: none; stroke: var(--blue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- 03: the lifecycle (WebGL) ---------- */
+.sv-cycle__gl { position: absolute; inset: 0; }
+.sv-cycle__gl canvas { display: block; width: 100% !important; height: 100% !important; }
+.sv-cycle__shade { position: absolute; inset: 0; pointer-events: none; background: rgba(0, 18, 33, .18); }
+.sv-cycle__copy { position: absolute; left: 48px; bottom: 48px; width: min(517px, calc(100vw - 96px)); z-index: 2; display: flex; flex-direction: column; gap: 8px; }
+.sv-cycle__text { font-size: 20px; line-height: 30px; color: rgba(240, 241, 235, .88); }
+.sv-ticker { position: absolute; right: 110px; top: calc(131px * var(--sy, 1)); z-index: 2; width: 257px; }
+.sv-ticker__list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.sv-ticker__list button {
+  position: relative; display: block; padding: 0; text-align: left; color: rgba(185, 202, 235, .6);
+  font-family: var(--mono); font-size: 14px; line-height: 20px; letter-spacing: .1em; text-transform: uppercase;
+  transition: color .35s;
+}
+.sv-ticker__list button::before {
+  content: ""; position: absolute; left: -24px; top: 7px; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--red); box-shadow: 0 0 0 4px rgba(213, 59, 45, .28); opacity: 0; scale: .2; transition: opacity .35s, scale .35s;
+}
+.sv-ticker__list button:hover, .sv-ticker__list button:focus-visible { color: #fff; }
+.sv-ticker__list button.is-on { color: #fff; }
+.sv-ticker__list button.is-on::before { opacity: 1; scale: 1; }
+.sv-ticker__line {
+  position: absolute; left: 0; top: 0; width: 508px; height: 74px; overflow: visible; pointer-events: none;
+  fill: none; stroke: rgba(255, 255, 255, .35); stroke-width: 1; vector-effect: non-scaling-stroke;
+}
+
+/* ---------- 04: proof (on paper) ---------- */
+.sv-proof { color: var(--navy); }
+.sv-proof__inner { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 560fr) minmax(0, 712fr); gap: 72px; align-items: center; padding: 104px 48px 48px; }
+.sv-proof__media { height: min(78vh, 700px); border-radius: 16px; overflow: hidden; will-change: clip-path; }
+.sv-proof__media img { width: 100%; height: 100%; object-fit: cover; object-position: 30% 50%; display: block; will-change: transform; }
+.sv-proof__panel { display: flex; flex-direction: column; gap: 62px; }
+.sv-metrics { display: flex; flex-direction: column; }
+.sv-metric { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; padding: 30px 0 40px; border-top: 1px solid rgba(25, 33, 52, .16); }
+.sv-metric b { font-family: var(--mono); font-weight: 400; font-size: clamp(48px, 4.4vw, 64px); line-height: 1; color: var(--red); font-variant-numeric: tabular-nums; padding-top: 10px; }
+.sv-metric h3 { font-weight: 500; font-size: 24px; line-height: 30px; margin-bottom: 6px; }
+.sv-metric p { font-size: 18px; line-height: 27px; color: rgba(25, 33, 52, .7); }
+
+/* ---------- 05: confidence ---------- */
+.sv-quality__title { position: absolute; left: 48px; top: calc(120px * var(--sy, 1)); width: min(760px, calc(100vw - 96px)); z-index: 2; }
+.sv-line { position: absolute; left: 0; right: 0; top: 50%; height: 0; }
+.sv-line__track { position: absolute; left: 0; top: 0; height: 0; will-change: transform; }
+.sv-line__base { position: absolute; left: -100vw; width: calc(100% + 200vw); top: -1px; height: 1px; background: rgba(185, 202, 235, .28); }
+.sv-line__lit { position: absolute; left: 0; top: -1.5px; height: 3px; width: 0; background: var(--blue); }
+.sv-step { position: absolute; top: 0; left: calc(var(--i) * var(--gap)); display: grid; place-items: center; translate: -50% -50%; }
+.sv-step i {
+  display: block; width: 40px; height: 40px; border-radius: 50%; background: var(--navy); box-shadow: inset 0 0 0 2px rgba(185, 202, 235, .85);
+  transition: background .4s, box-shadow .4s, border-radius .4s, rotate .4s, scale .4s;
+}
+.sv-step::before {
+  content: ""; position: absolute; width: 88px; height: 88px; border-radius: 50%; background: rgba(213, 59, 45, .2);
+  scale: .3; opacity: 0; transition: scale .5s, opacity .4s;
+}
+.sv-step.is-past i { background: var(--blue); box-shadow: none; }
+.sv-step.is-on i { background: var(--red); box-shadow: none; border-radius: 0; rotate: 45deg; scale: .9; }
+.sv-step.is-on::before { scale: 1; opacity: 1; }
+.sv-step em {
+  position: absolute; top: 38px; white-space: nowrap; font-style: normal; font-family: var(--mono); font-size: 28px; line-height: 34px;
+  letter-spacing: .08em; text-transform: uppercase; color: rgba(185, 202, 235, .55); transition: color .4s;
+}
+.sv-step.is-on em { color: #fff; }
+.sv-quality__text {
+  position: absolute; left: calc(50% - 56px); top: calc(50% + 118px); width: min(439px, calc(100vw - 96px)); z-index: 2;
+  font-size: 20px; line-height: 30px; color: rgba(240, 241, 235, .88);
+}
+.sv-quality__btn { position: absolute; left: 50%; bottom: calc(60px * var(--sy, 1)); translate: -50% 0; z-index: 2; }
+
+/* ---------- 06: watching ---------- */
+.sv-watch { position: relative; min-height: 100vh; overflow: hidden; perspective: 1200px; }
+.sv-watch__media { position: absolute; inset: -8% 0; will-change: transform; }
+.sv-watch__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sv-watch__shade { position: absolute; inset: 0; background: rgba(0, 0, 0, .5); }
+.sv-watch__inner { position: relative; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 489px; gap: 48px; align-items: center; padding: 120px 48px 96px; }
+.sv-watch .sv-byte { position: relative; left: auto; top: auto; min-height: 0; transform-origin: 50% 100%; will-change: transform; }
+
+/* ---------- 07: CTA cards rise out of depth ---------- */
+.sv-cta { background: var(--paper); perspective: 1400px; }
+.sv-cta .cta__card { will-change: transform; }
+
+/* ---------- smaller screens ---------- */
+@media (max-width: 1100px) {
+  .sv-clock__body { gap: 40px; }
+  .sv-checks { width: 340px; }
+  .sv-checks li { font-size: 17px; line-height: 26px; }
+  .sv-ticker { right: 48px; }
+}
+@media (max-width: 900px) {
+  .sv-clock__body { top: auto; bottom: 32px; }
+  .sv-checks { display: none; }
+  .sv-proof__inner { grid-template-columns: 1fr; gap: 24px; padding: 96px 24px 24px; align-content: center; }
+  .sv-proof__media { height: 30vh; }
+  .sv-proof__panel { gap: 24px; }
+  .sv-metric { grid-template-columns: 120px 1fr; padding: 14px 0; gap: 16px; }
+  .sv-metric b { font-size: 40px; padding-top: 0; }
+  .sv-metric p { display: none; }
+  .sv-watch__inner { grid-template-columns: 1fr; }
+  .sv-ticker { left: 48px; right: auto; top: 104px; }
+  .sv-ticker__line { display: none; }
+}
+@media (max-width: 720px) {
+  .sv-caption, .sv-clock__title, .sv-quality__title, .sv-cycle__copy { left: 16px; right: 16px; width: auto; }
+  .sv-offices.tz__offices { left: 16px; right: 16px; }
+  .sv-statement { width: calc(100vw - 32px); }
+  .sv-caption { bottom: 88px; }
+  .sv-caption__text, .sv-cycle__text, .sv-quality__text { font-size: 16px; line-height: 24px; }
+  .sv-progress { left: 16px; right: auto; bottom: 48px; }
+  .sv-voice__content { left: 16px; right: 16px; width: auto; top: auto; bottom: 40px; translate: none; gap: 20px; }
+  .sv-quote { font-size: 22px; }
+  .sv-ticker { left: 40px; }
+  .sv-ticker__list { gap: 10px; }
+  .sv-ticker__list button { font-size: 12px; }
+  .sv-step em { font-size: 20px; }
+  .sv-quality__text { left: 24px; width: calc(100vw - 48px); }
+  .sv-watch__inner { padding: 96px 16px 64px; }
+}
+
+/* ---------- reduced motion: a calm, static page ---------- */
+.sv-static .sv-intro, .sv-static .sv-clock, .sv-static .sv-cycle, .sv-static .sv-proof, .sv-static .sv-quality { height: auto; min-height: 100vh; overflow: visible; }
+.sv-static .sv-space, .sv-static .sv-caption, .sv-static .sv-progress { display: none; }
+.sv-static .sv-statement { position: relative; left: auto; top: auto; translate: none; margin: 0 auto; padding: 40vh 0 64px; }
+.sv-static .sv-voice { position: relative; visibility: visible; height: 100vh; }
+.sv-static .sv-caps { position: static; width: auto; height: auto; clip: auto; white-space: normal; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; list-style: none; padding: 0 48px 96px; }
+.sv-static .sv-caps li { display: flex; flex-direction: column; gap: 8px; }
+.sv-static .sv-caps b { font-weight: 500; font-size: 24px; }
