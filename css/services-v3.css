@@ -56,8 +56,9 @@
 
 /* Todd: a layer of 01 that opens out of the last card */
 .sv-voice { position: absolute; inset: 0; z-index: 5; visibility: hidden; }
-.sv-voice__media { position: absolute; inset: 0; overflow: hidden; }
-.sv-voice__media img { width: 125%; max-width: none; height: 100%; margin-left: -25%; object-fit: cover; object-position: 30% 30%; display: block; }
+/* sized and placed by js: it starts as Todd's card and grows to the full screen */
+.sv-voice__media { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; }
+.sv-voice__media img { position: absolute; left: -25%; top: 0; width: 125%; max-width: none; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
 .sv-voice__shade { position: absolute; inset: 0; background: var(--navy); opacity: .66; }
 .sv-voice__content {
   position: absolute; right: 48px; top: 50%; translate: 0 -50%; width: min(640px, calc(100vw - 96px)); margin: 0;
@@ -106,13 +107,21 @@
 .sv-checks svg { flex: 0 0 20px; height: 20px; margin-top: 2px; fill: none; stroke: var(--blue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ---------- 03: the lifecycle (WebGL) ---------- */
-.sv-cycle__gl { position: absolute; inset: 0; }
-.sv-cycle__gl canvas { display: block; width: 100% !important; height: 100% !important; }
-.sv-cycle__shade { position: absolute; inset: 0; pointer-events: none; background: rgba(0, 18, 33, .18); }
+/* the component: a 1440 × 900 stage (as in Homepage R3) scaled to fit, in CSS 3D */
+.sv-comp { position: absolute; inset: 0; perspective: 1700px; perspective-origin: 52% 46%; overflow: hidden; }
+.sv-comp__world {
+  position: absolute; left: 50%; top: 46%; width: 1440px; height: 900px; margin: -466px 0 0 -724px;
+  transform-style: preserve-3d; transform-origin: 724px 466px; scale: var(--cs, 1); translate: 4% 0; will-change: transform, opacity; opacity: 0;
+}
+.sv-comp__img { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; max-width: none; will-change: transform, opacity; }
+.sv-comp__layer { opacity: 0; }
+.sv-comp__shadow { position: absolute; left: 474px; top: 610px; width: 520px; height: 90px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 8, 18, .55), rgba(0, 8, 18, 0)); filter: blur(6px); }
+.sv-cycle__shade { position: absolute; inset: 0; pointer-events: none; background: transparent; }
 .sv-cycle__copy { position: absolute; left: 48px; bottom: 48px; width: min(517px, calc(100vw - 96px)); z-index: 2; display: flex; flex-direction: column; gap: 8px; }
 .sv-cycle__text { font-size: 20px; line-height: 30px; color: rgba(240, 241, 235, .88); }
 .sv-ticker { position: absolute; right: 110px; top: calc(131px * var(--sy, 1)); z-index: 2; width: 257px; }
 .sv-ticker__list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.sv-ticker__list li { will-change: transform; }
 .sv-ticker__list button {
   position: relative; display: block; padding: 0; text-align: left; color: rgba(185, 202, 235, .6);
   font-family: var(--mono); font-size: 14px; line-height: 20px; letter-spacing: .1em; text-transform: uppercase;
@@ -126,7 +135,7 @@
 .sv-ticker__list button.is-on { color: #fff; }
 .sv-ticker__list button.is-on::before { opacity: 1; scale: 1; }
 .sv-ticker__line {
-  position: absolute; left: 0; top: 0; width: 508px; height: 74px; overflow: visible; pointer-events: none;
+  position: absolute; left: -26px; top: 0; width: 560px; height: 74px; overflow: visible; pointer-events: none;
   fill: none; stroke: rgba(255, 255, 255, .35); stroke-width: 1; vector-effect: non-scaling-stroke;
 }
 
@@ -134,7 +143,7 @@
 .sv-proof { color: var(--navy); }
 .sv-proof__inner { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 560fr) minmax(0, 712fr); gap: 72px; align-items: center; padding: 104px 48px 48px; }
 .sv-proof__media { height: min(78vh, 700px); border-radius: 16px; overflow: hidden; will-change: clip-path; }
-.sv-proof__media img { width: 100%; height: 100%; object-fit: cover; object-position: 30% 50%; display: block; will-change: transform; }
+.sv-proof__media video { width: 100%; height: 100%; object-fit: cover; object-position: 62% 50%; display: block; will-change: transform; }
 .sv-proof__panel { display: flex; flex-direction: column; gap: 62px; }
 .sv-metrics { display: flex; flex-direction: column; }
 .sv-metric { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; padding: 30px 0 40px; border-top: 1px solid rgba(25, 33, 52, .16); }
@@ -161,15 +170,16 @@
 .sv-step.is-on i { background: var(--red); box-shadow: none; border-radius: 0; rotate: 45deg; scale: .9; }
 .sv-step.is-on::before { scale: 1; opacity: 1; }
 .sv-step em {
-  position: absolute; top: 38px; white-space: nowrap; font-style: normal; font-family: var(--mono); font-size: 28px; line-height: 34px;
+  position: absolute; top: 52px; white-space: nowrap; font-style: normal; font-family: var(--mono); font-size: 24px; line-height: 30px;
   letter-spacing: .08em; text-transform: uppercase; color: rgba(185, 202, 235, .55); transition: color .4s;
 }
 .sv-step.is-on em { color: #fff; }
 .sv-quality__text {
-  position: absolute; left: calc(50% - 56px); top: calc(50% + 118px); width: min(439px, calc(100vw - 96px)); z-index: 2;
-  font-size: 20px; line-height: 30px; color: rgba(240, 241, 235, .88);
+  position: absolute; left: calc(50% - 56px); top: calc(50% + 116px); width: min(520px, calc(100vw - 96px)); z-index: 2;
+  font-size: 24px; line-height: 32px; color: #fff;
 }
 .sv-quality__btn { position: absolute; left: 50%; bottom: calc(60px * var(--sy, 1)); translate: -50% 0; z-index: 2; }
+.sv-quality__btn span, .sv-quality__btn:hover span { background: transparent; }
 
 /* ---------- 06: watching ---------- */
 .sv-watch { position: relative; min-height: 100vh; overflow: hidden; perspective: 1200px; }
@@ -182,6 +192,7 @@
 /* ---------- 07: CTA cards rise out of depth ---------- */
 .sv-cta { background: var(--paper); perspective: 1400px; }
 .sv-cta .cta__card { will-change: transform; }
+.sv-cta .cta-search__field { border-radius: 8px; }
 
 /* ---------- smaller screens ---------- */
 @media (max-width: 1100px) {
@@ -202,6 +213,7 @@
   .sv-watch__inner { grid-template-columns: 1fr; }
   .sv-ticker { left: 48px; right: auto; top: 104px; }
   .sv-ticker__line { display: none; }
+  .sv-comp__world { top: 52%; translate: 0 0; }
 }
 @media (max-width: 720px) {
   .sv-caption, .sv-clock__title, .sv-quality__title, .sv-cycle__copy { left: 16px; right: 16px; width: auto; }
@@ -216,6 +228,7 @@
   .sv-ticker__list { gap: 10px; }
   .sv-ticker__list button { font-size: 12px; }
   .sv-step em { font-size: 20px; }
+  .sv-quality__text { font-size: 20px; line-height: 28px; }
   .sv-quality__text { left: 24px; width: calc(100vw - 48px); }
   .sv-watch__inner { padding: 96px 16px 64px; }
 }

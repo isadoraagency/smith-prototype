@@ -147,20 +147,27 @@ function paintMetrics(t) {
 }
 
 /* =========================================================
-   03 — the circuit-board assembly (three.js)
-   Runs with or without scroll motion: it is the section's image.
+   03 — the component (layered renders in CSS 3D, as on the
+   Homepage R3 prototype): the assembled shot crossfades into
+   its three layers, which open out in depth. Each lifecycle
+   stage closes the layers, turns the assembly to a new angle
+   and opens it again. It plays on its own while on screen and
+   follows hover / focus on the ticker.
    ========================================================= */
 // set up after the pinned scenes above it, so its triggers include their pin spacing
 function initCycle() {
-  const host = $('#svGl');
   const stages = fromTemplate('#svStages');
   const buttons = $$('#svTickerList button');
+  const items = buttons.map((b) => b.parentElement);
   const line = $('#svTickerLine');
-  let on = 0;
+  const GAP = 24;                                   // extra room under the active stage, for the line
+  let on = buttons.findIndex((b) => b.dataset.start !== undefined);
+  if (on < 0) on = 0;
 
   const placeLine = (animate) => {
-    const b = buttons[on], box = $('#svTicker').getBoundingClientRect(), r = b.getBoundingClientRect();
-    const y = r.bottom - box.top + 7;
+    items.forEach((li, i) => gsap.to(li, { y: i > on ? GAP : 0, duration: animate ? 0.6 : 0, ease: 'power3.out' }));
+    const li = items[on];
+    const y = li.offsetTop + li.offsetHeight + 16 + 2;   // halfway into the widened gap
     gsap.to(line, { y, duration: animate ? 0.6 : 0, ease: 'power3.out' });
   };
   const paint = (animate = true) => {
@@ -168,8 +175,8 @@ function initCycle() {
     placeLine(animate);
   };
 
-  let spinTo = () => {};
-  function go(i, { user = false } = {}) {
+  const comp = buildComponent();
+  function go(i) {
     if (i === on) return;
     on = i;
     paint();
@@ -177,28 +184,21 @@ function initCycle() {
       $('#svStageTitle').textContent = stages[on].title;
       $('#svStageText').textContent = stages[on].text;
     });
-    spinTo(user);
+    comp.turn(on);
   }
-
-  // --- the WebGL scene ---------------------------------------
-  let gl = null;
-  try {
-    if (window.THREE && host) gl = buildScene(host);
-  } catch (e) { gl = null; }
-  if (gl) spinTo = () => gl.spin();
 
   // --- autoplay + hover / focus -----------------------------
   let inView = false, hovering = false, timer = 0;
-  const DWELL = 4200;
+  const DWELL = 5200;
   const schedule = () => {
     clearTimeout(timer);
     if (!inView || hovering || reduceMotion || document.hidden) return;
     timer = setTimeout(() => { go((on + 1) % stages.length); schedule(); }, DWELL);
   };
   buttons.forEach((b, i) => {
-    b.addEventListener('mouseenter', () => go(i, { user: true }));
-    b.addEventListener('focus', () => go(i, { user: true }));
-    b.addEventListener('click', () => go(i, { user: true }));
+    b.addEventListener('mouseenter', () => go(i));
+    b.addEventListener('focus', () => go(i));
+    b.addEventListener('click', () => go(i));
   });
   const ticker = $('#svTicker');
   ticker.addEventListener('mouseenter', () => { hovering = true; clearTimeout(timer); });
@@ -212,212 +212,102 @@ function initCycle() {
   });
   ScrollTrigger.create({
     trigger: '#lifecycle', start: 'top bottom', end: 'bottom top',
-    onToggle: (st) => gl && gl.setRunning(st.isActive),
+    onToggle: (st) => comp.setRunning(st.isActive),
   });
-  window.addEventListener('resize', () => { placeLine(false); gl && gl.resize(); });
+  window.addEventListener('resize', () => { placeLine(false); comp.fit(); });
   if (document.fonts) document.fonts.ready.then(() => placeLine(false));
   paint(false);
-
-  return { gl };
+  comp.turn(on, true);
 }
 
-function buildScene(host) {
-  const T = window.THREE;
-  const renderer = new T.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.outputEncoding = T.sRGBEncoding;
-  renderer.toneMapping = T.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.95;
-  renderer.setClearColor(0x000000, 0);
-  host.appendChild(renderer.domElement);
+function buildComponent() {
+  const host = $('#svComp');
+  const world = $('#svCompWorld');
+  const asm = $('#svCompAsm');
+  const shadow = $('#svCompShadow');
+  const layers = $$('.sv-comp__layer', world).map((el) => ({ el, cx: +el.dataset.cx, cy: +el.dataset.cy, cz: +el.dataset.cz }));
+  const E = (x) => x * x * (3 - 2 * x);
 
-  const scene = new T.Scene();
-  const camera = new T.PerspectiveCamera(30, 1, 0.1, 100);
-  camera.position.set(0, 0.5, 12.5);
+  // one pose per stage: the assembly is turned to a new angle each time
+  const POSES = [
+    { rx: 4, ry: -10, rz: 6 },
+    { rx: -2, ry: 12, rz: -5 },
+    { rx: 8, ry: -16, rz: 9 },
+    { rx: 0, ry: 16, rz: -8 },
+    { rx: 5, ry: -4, rz: 3 },
+  ];
+  // cin: arrival, sw: assembled shot → layers, ex: layers open out
+  const s = { cin: 0, sw: 0, ex: 0, rx: POSES[0].rx, ry: POSES[0].ry, rz: POSES[0].rz, px: 0, py: 0 };
 
-  /* studio reflections: a few soft light panels baked into an env map */
-  const pmrem = new T.PMREMGenerator(renderer);
-  const env = new T.Scene();
-  env.background = new T.Color(0x050d18);
-  const panel = (w, h, color, pos, look) => {
-    const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ color, side: T.DoubleSide }));
-    m.position.set(...pos); m.lookAt(...look); env.add(m);
-  };
-  panel(8, 3, new T.Color(2.4, 2.4, 2.5), [0, 6, 2], [0, 0, 0]);      // overhead softbox
-  panel(2, 8, new T.Color(0.35, 0.8, 2.0), [-7, 0, 1], [0, 0, 0]);   // blue strip, left
-  panel(2, 8, new T.Color(1.4, 1.5, 1.7), [7, 1, -2], [0, 0, 0]);   // cool strip, right
-  panel(10, 2, new T.Color(0.2, 0.35, 0.7), [0, -5, 3], [0, 0, 0]);  // floor bounce
-  scene.environment = pmrem.fromScene(env, 0.035).texture;
-
-  scene.add(new T.HemisphereLight(0x9fc3ff, 0x0a1626, 0.55));
-  const key = new T.DirectionalLight(0xfff4e6, 2.0); key.position.set(-4, 6, 6); scene.add(key);
-  const rim = new T.DirectionalLight(0x2c8bff, 1.4); rim.position.set(6, 2, -6); scene.add(rim);
-  const warm = new T.PointLight(0xffb37a, 0.5, 30); warm.position.set(3, -3, 5); scene.add(warm);
-
-  /* canvas textures: board traces and the machined plate */
-  const tex = (w, h, draw) => {
-    const c = document.createElement('canvas'); c.width = w; c.height = h;
-    draw(c.getContext('2d'), w, h);
-    const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; t.anisotropy = 8; return t;
-  };
-  let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  const boardMap = tex(1024, 1024, (g, w, h) => {
-    g.fillStyle = '#0d1826'; g.fillRect(0, 0, w, h);
-    g.strokeStyle = 'rgba(96,130,170,.55)'; g.lineCap = 'round';
-    for (let i = 0; i < 160; i++) {
-      let x = rnd() * w, y = rnd() * h; g.lineWidth = 2 + rnd() * 4; g.beginPath(); g.moveTo(x, y);
-      for (let k = 0; k < 4; k++) { if (rnd() > 0.5) x += (rnd() - 0.5) * 300; else y += (rnd() - 0.5) * 300; g.lineTo(x, y); }
-      g.stroke();
-    }
-    g.fillStyle = 'rgba(200,170,90,.85)';
-    for (let i = 0; i < 260; i++) { const s = 6 + rnd() * 8; g.fillRect(rnd() * w, rnd() * h, s, s * (0.6 + rnd())); }
-    g.strokeStyle = 'rgba(160,180,200,.35)'; g.lineWidth = 6; g.strokeRect(14, 14, w - 28, h - 28);
-  });
-  const plateMap = tex(1024, 1024, (g, w, h) => {
-    g.fillStyle = '#5a6472'; g.fillRect(0, 0, w, h);
-    for (let i = 0; i < 3000; i++) { g.fillStyle = `rgba(255,255,255,${rnd() * 0.05})`; g.fillRect(rnd() * w, rnd() * h, rnd() * 60, 1); }
-    g.fillStyle = '#10151c';
-    for (let r = 0; r < 6; r++) for (let c = 0; c < 4; c++) { g.beginPath(); g.arc(560 + c * 60, 260 + r * 60, 14, 0, Math.PI * 2); g.fill(); }
-    for (let i = 0; i < 14; i++) { g.beginPath(); g.arc(150 + rnd() * 300, 200 + rnd() * 600, 10 + rnd() * 14, 0, Math.PI * 2); g.fill(); }
-    g.strokeStyle = '#2a313b'; g.lineWidth = 10;
-    g.beginPath(); g.moveTo(820, 120); g.lineTo(820, 500); g.lineTo(700, 640); g.lineTo(700, 900); g.stroke();
-    g.font = '600 64px "JetBrains Mono", monospace'; g.fillStyle = '#1b2129';
-    g.fillText('5.8S', 780, 110); g.fillText('BTN', 120, 940); g.fillText('LED', 360, 940);
-  });
-
-  const M = {
-    board: new T.MeshStandardMaterial({ map: boardMap, color: 0xffffff, roughness: 0.5, metalness: 0.25 }),
-    edge: new T.MeshStandardMaterial({ color: 0x0b131d, roughness: 0.6, metalness: 0.2 }),
-    chip: new T.MeshStandardMaterial({ color: 0x0b0e13, roughness: 0.35, metalness: 0.4 }),
-    silver: new T.MeshStandardMaterial({ color: 0xaab4c2, roughness: 0.3, metalness: 1, envMapIntensity: 0.8 }),
-    plate: new T.MeshStandardMaterial({ map: plateMap, color: 0x8c96a6, roughness: 0.36, metalness: 0.9 }),
-    brass: new T.MeshStandardMaterial({ color: 0xc7892c, roughness: 0.24, metalness: 1, envMapIntensity: 0.8 }),
-    screw: new T.MeshStandardMaterial({ color: 0x23272e, roughness: 0.3, metalness: 0.9, envMapIntensity: 0.6 }),
-    blue: new T.MeshStandardMaterial({ color: 0x2c8bff, roughness: 0.3, metalness: 0.6, emissive: 0x0a2f66, emissiveIntensity: 0.4 }),
-    washer: new T.MeshStandardMaterial({ color: 0x9aa6b6, roughness: 0.3, metalness: 1 }),
-  };
-
-  /* the assembly: three layers stacked along x, faces in the y/z plane */
-  const rig = new T.Group(); scene.add(rig);         // carries scroll tilt + spin
-  const asm = new T.Group(); rig.add(asm);           // fixed three-quarter view
-  asm.rotation.set(0.12, -0.78, 0.06);
-  const box = (sx, sy, sz, mat) => new T.Mesh(new T.BoxGeometry(sx, sy, sz), mat);
-  const faceMats = (face, side) => [face, side, side, side, side, side]; // +x face mapped
-
-  // layer A: dense board
-  const layerA = new T.Group(); asm.add(layerA);
-  layerA.add(new T.Mesh(new T.BoxGeometry(0.08, 2.3, 2.9), faceMats(M.board, M.edge)));
-  for (let i = 0; i < 46; i++) {
-    const w = 0.08 + rnd() * 0.32, h = 0.08 + rnd() * 0.3, d = 0.03 + rnd() * 0.08;
-    const c = box(d, h, w, rnd() > 0.85 ? M.silver : M.chip);
-    c.position.set(0.04 + d / 2, (rnd() - 0.5) * 2, (rnd() - 0.5) * 2.5); layerA.add(c);
+  function fit() {
+    const w = vw(), h = vh();
+    const k = w < 720 ? w / 900 : Math.min(w / 1440, h / 900);
+    world.style.setProperty('--cs', k.toFixed(4));
   }
-  const big = box(0.1, 0.62, 0.62, M.chip); big.position.set(0.09, 0.2, -0.3); layerA.add(big);
+  fit();
 
-  // layer B: a narrow sub-board of silver parts
-  const layerB = new T.Group(); asm.add(layerB);
-  layerB.add(new T.Mesh(new T.BoxGeometry(0.06, 1.9, 1.2), faceMats(M.board, M.edge)));
-  for (let i = 0; i < 34; i++) {
-    const s = 0.06 + rnd() * 0.18, d = 0.04 + rnd() * 0.16;
-    const c = box(d, s, s * (0.6 + rnd()), rnd() > 0.3 ? M.silver : M.chip);
-    c.position.set((rnd() > 0.5 ? 1 : -1) * (0.03 + d / 2), (rnd() - 0.5) * 1.7, (rnd() - 0.5) * 1.0); layerB.add(c);
+  function paint(t = 0) {
+    const cin = E(s.cin), ex = E(s.ex), sw = s.sw;
+    const float = Math.sin(t * 0.9) * 6;
+    const sc = (0.78 + 0.22 * cin) * (1 + 0.06 * ex);
+    const rx = s.rx + 14 * (1 - cin) + s.py * -5;
+    const ry = s.ry + 16 * (1 - cin) + s.px * 7;
+    const rz = s.rz - 6 * (1 - cin);
+    const ty = 70 * (1 - cin) + float * cin;
+    world.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg) scale(${sc.toFixed(4)})`;
+    world.style.opacity = cin.toFixed(3);
+    asm.style.opacity = (1 - sw).toFixed(3);
+    shadow.style.opacity = (1 - 0.75 * ex).toFixed(3);
+    shadow.style.transform = `scale(${(1 + 0.6 * ex).toFixed(3)}, ${(1 - 0.3 * ex).toFixed(3)})`;
+    layers.forEach(({ el, cx, cy, cz }) => {
+      const dx = (724 - cx) * 0.94 * (1 - ex) + (cx - 709) * 0.22 * ex;
+      const dy = (466 - cy) * 0.94 * (1 - ex) + (cy - 423) * 0.22 * ex;
+      el.style.opacity = sw.toFixed(3);
+      el.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, ${(cz * ex * 1.6).toFixed(1)}px)`;
+    });
   }
 
-  // layer C: machined plate
-  const layerC = new T.Group(); asm.add(layerC);
-  layerC.add(new T.Mesh(new T.BoxGeometry(0.16, 2.3, 2.7), faceMats(M.plate, M.screw)));
-  [[0.8, 1.05], [-0.85, -1.0], [0.5, -0.9]].forEach(([y, z]) => { const b = new T.Mesh(new T.CylinderGeometry(0.16, 0.16, 0.12, 24), M.brass); b.rotation.z = Math.PI / 2; b.position.set(0.12, y, z); layerC.add(b); });
+  // scroll: it rises in assembled, then opens into its layers as the section settles
+  if (!reduceMotion) {
+    gsap.timeline({ scrollTrigger: { trigger: '#lifecycle', start: 'top 85%', end: 'top 0%', scrub: 0.8 } })
+      .fromTo(s, { cin: 0 }, { cin: 1, duration: 0.55, ease: 'none' }, 0)
+      .fromTo(s, { sw: 0 }, { sw: 1, duration: 0.25, ease: 'none' }, 0.5)
+      .fromTo(s, { ex: 0 }, { ex: 1, duration: 0.45, ease: 'none' }, 0.55);
+  } else { s.cin = 1; s.sw = 1; s.ex = 1; }
 
-  // brass standoffs between A and B, screws + washers beyond C
-  const corners = [[0.95, 1.25], [-0.95, 1.25], [0.95, -1.25], [-0.95, -1.25]];
-  const standoffs = corners.map(([y, z]) => {
-    const s = new T.Mesh(new T.CylinderGeometry(0.11, 0.11, 0.5, 6), M.brass); s.rotation.z = Math.PI / 2; s.position.set(0, y, z); asm.add(s); return s;
-  });
-  const screws = corners.map(([y, z]) => {
-    const g = new T.Group();
-    const shaft = new T.Mesh(new T.CylinderGeometry(0.045, 0.045, 0.55, 16), M.screw); shaft.rotation.z = Math.PI / 2; g.add(shaft);
-    for (let k = 0; k < 7; k++) { const th = new T.Mesh(new T.TorusGeometry(0.05, 0.012, 6, 16), M.screw); th.rotation.y = Math.PI / 2; th.position.x = -0.22 + k * 0.06; g.add(th); }
-    const head = new T.Mesh(new T.CylinderGeometry(0.12, 0.12, 0.1, 24), M.screw); head.rotation.z = Math.PI / 2; head.position.x = 0.31; g.add(head);
-    const cap = new T.Mesh(new T.CylinderGeometry(0.075, 0.075, 0.02, 20), M.blue); cap.rotation.z = Math.PI / 2; cap.position.x = 0.365; g.add(cap);
-    g.position.set(0, y * 0.95, z * 0.9); asm.add(g); return g;
-  });
-  const washers = corners.map(([y, z]) => { const w = new T.Mesh(new T.TorusGeometry(0.11, 0.035, 10, 24), M.washer); w.rotation.y = Math.PI / 2; w.position.set(0, y * 0.95, z * 0.9); asm.add(w); return w; });
-
-  // a soft pool of light under the assembly to ground it
-  const pool = new T.Mesh(new T.PlaneGeometry(14, 6), new T.MeshBasicMaterial({
-    transparent: true, depthWrite: false, opacity: 0.55,
-    map: tex(512, 256, (g, w, h) => { const r = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2); r.addColorStop(0, 'rgba(120,160,220,.55)'); r.addColorStop(1, 'rgba(120,160,220,0)'); g.fillStyle = r; g.fillRect(0, 0, w, h); }),
-  }));
-  pool.rotation.x = -Math.PI / 2; pool.position.y = -2.3; scene.add(pool);
-
-  /* explode amount e: 0 = assembled, 1 = the open view in the photo */
-  const st = { e: 0, pulse: 0, spin: 0, tiltX: 0, tiltY: 0, enter: 0 };
-  function layout() {
-    const s = 0.45 + (st.e + st.pulse) * 1.15;
-    layerA.position.x = -1.7 * s;
-    standoffs.forEach((o) => { o.position.x = -1.05 * s; });
-    layerB.position.x = -0.25 * s;
-    layerC.position.x = 1.1 * s;
-    washers.forEach((o) => { o.position.x = 1.55 * s; });
-    screws.forEach((o) => { o.position.x = 2.05 * s; });
-  }
-  layout();
-
-  /* one full turn per stage; the parts open out mid-turn */
-  // quick hovers across the list add turns to the one in progress instead of restarting it
-  let target = 0;
-  function spin() {
-    target = Math.max(target, Math.ceil(st.spin / (Math.PI * 2) - 0.001) * Math.PI * 2) + Math.PI * 2;
-    gsap.to(st, { spin: target, duration: 2.2, ease: 'power3.inOut', overwrite: 'auto' });
-    gsap.to(st, { pulse: 0.28, duration: 1.0, ease: 'power2.out', overwrite: 'auto', onComplete: () => gsap.to(st, { pulse: 0, duration: 1.2, ease: 'power2.inOut' }) });
+  // a stage change: close, turn to the stage's angle, open again
+  let tl = null;
+  function turn(i, instant = false) {
+    const p = POSES[i % POSES.length];
+    if (instant || reduceMotion) { Object.assign(s, p); paint(); return; }
+    if (tl) tl.kill();
+    tl = gsap.timeline()
+      .to(s, { ex: 0, duration: 0.55, ease: 'power2.in' }, 0)
+      .to(s, { sw: 0, duration: 0.25, ease: 'none' }, 0.4)
+      .to(s, { rx: p.rx, ry: p.ry, rz: p.rz, duration: 1.3, ease: 'power3.inOut' }, 0.3)
+      .to(s, { sw: 1, duration: 0.25, ease: 'none' }, 1.15)
+      .to(s, { ex: 1, duration: 0.9, ease: 'power3.out' }, 1.2);
   }
 
-  /* pointer: the assembly leans toward the cursor */
+  // pointer: the assembly leans toward the cursor
   const ptr = { x: 0, y: 0 };
   host.parentElement.addEventListener('pointermove', (ev) => {
-    const r = host.getBoundingClientRect();
-    ptr.x = ((ev.clientX - r.left) / r.width - 0.5) * 2; ptr.y = ((ev.clientY - r.top) / r.height - 0.5) * 2;
+    ptr.x = (ev.clientX / vw() - 0.5) * 2; ptr.y = (ev.clientY / vh() - 0.5) * 2;
   });
 
-  /* scroll: the assembly opens up and turns into view as the section arrives */
-  if (!reduceMotion) {
-    gsap.fromTo(st, { e: 0, enter: 0 }, { e: 1, enter: 1, ease: 'none', scrollTrigger: { trigger: '#lifecycle', start: 'top 85%', end: 'top 5%', scrub: 0.8 } });
-  } else { st.e = 1; st.enter = 1; }
-
-  let w = 0, h = 0, rigX = 0.9, rigY = 0;
-  function resize() {
-    w = host.clientWidth; h = host.clientHeight;
-    if (!w || !h) return;
-    const narrow = w < 720;
-    rigX = narrow ? 0 : 0.9; rigY = narrow ? 0.4 : 0;
-    pool.visible = !narrow;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    // keep the assembly framed on narrow screens
-    camera.position.z = w / h < 1 ? 12.5 / Math.max(w / h, 0.55) * 0.9 : 12.5;
-    camera.updateProjectionMatrix();
-  }
-  resize();
-
-  let running = false, raf = 0, t0 = performance.now();
-  function frame(now) {
-    raf = running ? requestAnimationFrame(frame) : 0;
-    const t = (now - t0) / 1000;
-    layout();
-    st.tiltX += (ptr.y * 0.12 - st.tiltX) * 0.05;
-    st.tiltY += (ptr.x * 0.2 - st.tiltY) * 0.05;
-    rig.rotation.set(st.tiltX + (1 - st.enter) * 0.5, st.spin + st.tiltY + (1 - st.enter) * -1.2, 0);
-    rig.position.set(rigX, rigY + Math.sin(t * 0.8) * 0.06 + (1 - st.enter) * -0.6, 0);
-    rig.scale.setScalar(0.85 + st.enter * 0.15);
-    renderer.render(scene, camera);
-  }
+  let running = false;
+  const t0 = performance.now();
+  const tick = () => {
+    s.px += (ptr.x - s.px) * 0.06; s.py += (ptr.y - s.py) * 0.06;
+    paint((performance.now() - t0) / 1000);
+  };
   function setRunning(v) {
     if (v === running) return;
     running = v;
-    if (v) { resize(); raf = requestAnimationFrame(frame); } else cancelAnimationFrame(raf);
+    if (v) gsap.ticker.add(tick); else gsap.ticker.remove(tick);
   }
-  if (reduceMotion) { layout(); rig.rotation.set(0, 0, 0); rig.position.set(0.9, 0, 0); renderer.render(scene, camera); }
-  return { spin, setRunning, resize };
+  paint();
+  return { turn, setRunning, fit };
 }
 
 if (!reduceMotion) {
@@ -510,11 +400,8 @@ if (!reduceMotion) {
       }
     }
   }
-  const endInset = () => {
-    const w = G.endW, h = w * 1.25;
-    const x = (vw() - w) / 2, y = (vh() - h) / 2;
-    return `inset(${y}px ${x}px ${y}px ${x}px round 16px)`;
-  };
+  // where Todd's card sits when the camera stops: the voice layer starts exactly there
+  const endBox = () => { const w = G.endW, h = w * 1.25; return { left: (vw() - w) / 2, top: (vh() - h) / 2, width: w, height: h }; };
 
   // arrival: the field drifts in out of depth, the headline rises
   gsap.set([caption, progress], { autoAlpha: 0 });
@@ -532,8 +419,13 @@ if (!reduceMotion) {
     .to(cam, { f: 7, duration: FLY, onUpdate: paintWorld }, 0.2)
     // Todd's card opens to the full screen and becomes the quote's backdrop
     .set(voice, { autoAlpha: 1 }, 0.2 + FLY)
-    .fromTo('#svVoiceMedia', { clipPath: endInset }, { clipPath: 'inset(0px 0px 0px 0px round 0px)', duration: 1.1, ease: 'power2.inOut', immediateRender: false }, 0.2 + FLY)
-    .fromTo('#svVoiceMedia img', { scale: 1.15, x: () => vw() * 0.15, y: () => vh() * 0.3 }, { scale: 1, x: 0, y: 0, duration: 1.4, ease: 'power2.inOut', immediateRender: false }, 0.2 + FLY)
+    // the card grows into the full screen; the photo keeps its framing and only widens
+    // to make room for the quote (no zoom or jump into a crop)
+    .fromTo('#svVoiceMedia', {
+      left: () => endBox().left, top: () => endBox().top, width: () => endBox().width, height: () => endBox().height, borderRadius: 16,
+    }, { left: 0, top: 0, width: () => vw(), height: () => vh(), borderRadius: 0, duration: 1.4, ease: 'power2.inOut', immediateRender: false }, 0.2 + FLY)
+    .fromTo('#svVoiceMedia img', { width: '100%', left: '0%', objectPosition: '50% 50%' },
+      { width: () => (vw() < 720 ? '100%' : '125%'), left: () => (vw() < 720 ? '0%' : '-25%'), objectPosition: '50% 30%', duration: 1.4, ease: 'power2.inOut', immediateRender: false }, 0.2 + FLY)
     .fromTo('#svVoiceShade', { opacity: 0 }, { opacity: 0.66, duration: 1, immediateRender: false }, 0.7 + FLY)
     .fromTo('#svQuote', { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.5, immediateRender: false }, 1.0 + FLY)
     .fromTo(quoteWords, { opacity: 0.12 }, { opacity: 1, stagger: 0.06, duration: 0.3, immediateRender: false }, 1.3 + FLY)
@@ -541,7 +433,7 @@ if (!reduceMotion) {
     // the photo sinks into the night for the clock
     .to('#svVoiceContent', { autoAlpha: 0, y: -60, duration: 0.7, ease: 'power2.in' }, 4.1 + FLY)
     .to('#svVoiceShade', { opacity: 1, duration: 0.9 }, 4.2 + FLY)
-    .to('#svVoiceMedia img', { scale: 1.08, duration: 0.9 }, 4.2 + FLY)
+    .to('#svVoiceMedia img', { scale: 1.06, duration: 0.9 }, 4.2 + FLY)
     .to({}, { duration: 0.2 });
   gsap.set('#svVoiceContent figcaption, .sv-pill, #svQuote', { autoAlpha: 0 });
   gsap.set(quoteWords, { opacity: 0.12 });
@@ -594,7 +486,7 @@ if (!reduceMotion) {
   gsap.fromTo(bg, { backgroundColor: NAVY }, { backgroundColor: PAPER, ease: 'none', immediateRender: false, scrollTrigger: { trigger: proof, start: 'top 90%', end: 'top 30%', scrub: true } });
   gsap.timeline({ scrollTrigger: { trigger: proof, start: 'top 75%', end: 'top top', scrub: 0.6 } })
     .fromTo(proofMedia, { clipPath: 'inset(100% 0% 0% 0% round 16px)' }, { clipPath: 'inset(0% 0% 0% 0% round 16px)', duration: 1, ease: 'power2.out' }, 0)
-    .fromTo('#svProofMedia img', { scale: 1.3, yPercent: 8 }, { scale: 1, yPercent: 0, duration: 1.2, ease: 'power2.out' }, 0)
+    .fromTo('#svProofMedia video', { scale: 1.3, yPercent: 8 }, { scale: 1, yPercent: 0, duration: 1.2, ease: 'power2.out' }, 0)
     .fromTo(bizTitle, { opacity: 0.12 }, { opacity: 1, stagger: 0.08, ease: 'none', duration: 0.8 }, 0.3);
   const mc = { t: 0 };
   gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: proof, start: 'top top', end: '+=160%', pin: true, scrub: 0.6 } })
