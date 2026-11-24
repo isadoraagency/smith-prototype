@@ -1380,7 +1380,7 @@ body.is-leaving { opacity: 0; }
 .site-menu__item:focus-visible, .site-menu__login:focus-visible { outline: 2px solid #2c8bff; outline-offset: 4px; border-radius: 4px; }
 /* Log in, under a rule as wide as the list */
 .site-menu__login-row { border-top: 1px solid #b9caeb; }
-.site-menu__login { width: 100%; }
+.site-menu__login { width: 100%; padding-top: 16px; }
 .site-menu__user { width: 40px; height: 40px; flex: none; }
 .site-menu__login:hover span { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 8px; }
 /* right: the active item's links (Figma: title 24/30, links 20/30, rules #b9caeb) */
