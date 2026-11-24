@@ -21,9 +21,9 @@
   const keepDark = new MutationObserver(() => { if (header.classList.contains('is-on-light')) header.classList.remove('is-on-light'); });
 
   function show(key) {
-    items.forEach((it) => it.classList.toggle('is-active', it.dataset.panel === key));
+    items.forEach((it) => it.classList.toggle('is-active', !!key && it.dataset.panel === key));
     panels.forEach((p) => {
-      const on = p.dataset.panel === key;
+      const on = !!key && p.dataset.panel === key;
       if (on && p.hidden) {
         p.hidden = false;
         if (hasGsap && !reduce) gsap.fromTo(p.querySelectorAll('.site-menu__title, li'), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.45, stagger: 0.025, ease: 'power3.out', overwrite: true });
@@ -78,9 +78,10 @@
 
   btn.addEventListener('click', () => (isOpen ? close() : open()));
   items.forEach((it) => {
-    it.addEventListener('mouseenter', () => show(it.dataset.panel));
-    it.addEventListener('focus', () => show(it.dataset.panel));
-    it.addEventListener('click', () => show(it.dataset.panel));
+    const key = it.dataset.panel || null;   // direct links (no panel) clear the right side
+    it.addEventListener('mouseenter', () => show(key));
+    it.addEventListener('focus', () => show(key));
+    if (key) it.addEventListener('click', () => show(key));
   });
   menu.addEventListener('click', (e) => { if (e.target.closest('a')) close(); });
   document.addEventListener('keydown', (e) => {
