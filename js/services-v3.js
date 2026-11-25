@@ -360,9 +360,9 @@ if (!reduceMotion) {
     // caption + ticks while the camera holds on the capabilities
     const best = Math.abs(cam.f - 1) < 0.24 ? sel : -1;
     if ((best < 0) !== (capOn < 0)) {
-      if (best < 0) gsap.to([caption, progress], { autoAlpha: 0, duration: 0.3, overwrite: true });
+      if (best < 0) { gsap.to([caption, progress], { autoAlpha: 0, duration: 0.3, overwrite: true }); stopAuto(); }
       else {
-        showCap(best);
+        showCap(best); startAuto();
         gsap.fromTo(caption, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.5, overwrite: true });
         gsap.to(progress, { autoAlpha: 1, duration: 0.4, overwrite: true });
       }
@@ -383,7 +383,26 @@ if (!reduceMotion) {
       onComplete: () => { nav.from = null; } });
     $('#svCapN').textContent = String(i + 1).padStart(2, '0');
     swap(['#svCapTitle', '#svCapText'], () => showCap(sel));
+    if (capOn >= 0) startAuto();
   }
+  /* autoplay: while the camera holds on the capabilities it moves on by
+     itself; the active tick fills red to show the time left. Hovering or
+     focusing the ticks pauses it, a click picks up from that capability. */
+  const DWELL = 5;
+  let auto = null, held = false;
+  function stopAuto() { if (auto) auto.kill(); auto = null; ticks.forEach((tk) => tk.style.setProperty('--p', 0)); }
+  function startAuto() {
+    stopAuto();
+    const tk = ticks[sel];
+    auto = gsap.fromTo(tk, { '--p': 0 }, { '--p': 1, duration: DWELL, ease: 'none', paused: held,
+      onComplete: () => { tk.style.setProperty('--p', 0); goCap((sel + 1) % ticks.length); } });
+  }
+  const hold = (v) => { held = v; if (auto) (v ? auto.pause() : auto.resume()); };
+  progress.addEventListener('pointerenter', () => hold(true));
+  progress.addEventListener('pointerleave', () => hold(progress.contains(document.activeElement)));
+  progress.addEventListener('focusin', () => hold(true));
+  progress.addEventListener('focusout', (e) => { if (!progress.contains(e.relatedTarget)) hold(progress.matches(':hover')); });
+
   ticks.forEach((tk, i) => tk.addEventListener('click', () => goCap(i)));
   progress.addEventListener('keydown', (e) => {
     const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
