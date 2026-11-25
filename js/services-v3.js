@@ -149,10 +149,9 @@ function paintMetrics(t) {
 /* =========================================================
    03 — the component (layered renders in CSS 3D, as on the
    Homepage R3 prototype): the assembled shot crossfades into
-   its three layers, which open out in depth. Each lifecycle
-   stage closes the layers, turns the assembly to a new angle
-   and opens it again. It plays on its own while on screen and
-   follows hover / focus on the ticker.
+   its three layers, which open out in depth, then it just
+   floats. The stages (autoplay + hover / focus on the ticker)
+   only change the copy, so the eye stays on the text.
    ========================================================= */
 // set up after the pinned scenes above it, so its triggers include their pin spacing
 function initCycle() {
@@ -184,7 +183,6 @@ function initCycle() {
       $('#svStageTitle').textContent = stages[on].title;
       $('#svStageText').textContent = stages[on].text;
     });
-    comp.turn(on);
   }
 
   // --- autoplay + hover / focus -----------------------------
@@ -217,22 +215,17 @@ function initCycle() {
   window.addEventListener('resize', () => { placeLine(false); comp.fit(); });
   if (document.fonts) document.fonts.ready.then(() => placeLine(false));
   paint(false);
-  comp.turn(on, true);
 }
 
 function buildComponent() {
-  const host = $('#svComp');
   const world = $('#svCompWorld');
   const asm = $('#svCompAsm');
   const shadow = $('#svCompShadow');
   const layers = $$('.sv-comp__layer', world).map((el) => ({ el, cx: +el.dataset.cx, cy: +el.dataset.cy, cz: +el.dataset.cz }));
   const E = (x) => x * x * (3 - 2 * x);
 
-  // one pose per stage: each step down the list turns the assembly 10° more
-  const STEP = 10;
-  const POSES = [0, 1, 2, 3, 4].map((i) => ({ rx: 4, ry: (i - 2) * STEP, rz: 5 }));
-  // cin: arrival, sw: assembled shot → layers, ex: layers open out
-  const s = { cin: 0, sw: 0, ex: 0, rx: POSES[0].rx, ry: POSES[0].ry, rz: POSES[0].rz, px: 0, py: 0 };
+  // one fixed pose; cin: arrival, sw: assembled shot → layers, ex: layers open out
+  const s = { cin: 0, sw: 0, ex: 0, rx: 4, ry: -10, rz: 5 };
 
   function fit() {
     const w = vw(), h = vh();
@@ -243,10 +236,12 @@ function buildComponent() {
 
   function paint(t = 0) {
     const cin = E(s.cin), ex = E(s.ex), sw = s.sw;
-    const float = Math.sin(t * 0.9) * 6;
+    // floating: a slow bob with a little sway
+    const float = Math.sin(t * 0.9) * 8;
+    const sway = Math.sin(t * 0.45) * 1.5;
     const sc = (0.78 + 0.22 * cin) * (1 + 0.06 * ex);
-    const rx = s.rx + 14 * (1 - cin) + s.py * -5;
-    const ry = s.ry + 16 * (1 - cin) + s.px * 7;
+    const rx = s.rx + 14 * (1 - cin) + sway * 0.5 * cin;
+    const ry = s.ry + 16 * (1 - cin) + sway * cin;
     const rz = s.rz - 6 * (1 - cin);
     const ty = 70 * (1 - cin) + float * cin;
     world.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg) scale(${sc.toFixed(4)})`;
@@ -270,39 +265,16 @@ function buildComponent() {
       .fromTo(s, { ex: 0 }, { ex: 1, duration: 0.45, ease: 'none' }, 0.55);
   } else { s.cin = 1; s.sw = 1; s.ex = 1; }
 
-  // a stage change: close, turn to the stage's angle, open again
-  let tl = null;
-  function turn(i, instant = false) {
-    const p = POSES[i % POSES.length];
-    if (instant || reduceMotion) { Object.assign(s, p); paint(); return; }
-    if (tl) tl.kill();
-    tl = gsap.timeline()
-      .to(s, { ex: 0, duration: 0.55, ease: 'power2.in' }, 0)
-      .to(s, { sw: 0, duration: 0.25, ease: 'none' }, 0.4)
-      .to(s, { rx: p.rx, ry: p.ry, rz: p.rz, duration: 1.3, ease: 'power3.inOut' }, 0.3)
-      .to(s, { sw: 1, duration: 0.25, ease: 'none' }, 1.15)
-      .to(s, { ex: 1, duration: 0.9, ease: 'power3.out' }, 1.2);
-  }
-
-  // pointer: the assembly leans toward the cursor
-  const ptr = { x: 0, y: 0 };
-  host.parentElement.addEventListener('pointermove', (ev) => {
-    ptr.x = (ev.clientX / vw() - 0.5) * 2; ptr.y = (ev.clientY / vh() - 0.5) * 2;
-  });
-
   let running = false;
   const t0 = performance.now();
-  const tick = () => {
-    s.px += (ptr.x - s.px) * 0.06; s.py += (ptr.y - s.py) * 0.06;
-    paint((performance.now() - t0) / 1000);
-  };
+  const tick = () => paint(reduceMotion ? 0 : (performance.now() - t0) / 1000);
   function setRunning(v) {
     if (v === running) return;
     running = v;
     if (v) gsap.ticker.add(tick); else gsap.ticker.remove(tick);
   }
   paint();
-  return { turn, setRunning, fit };
+  return { setRunning, fit };
 }
 
 if (!reduceMotion) {
