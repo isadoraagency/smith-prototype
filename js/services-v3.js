@@ -290,7 +290,7 @@ if (!reduceMotion) {
   const caps = $$('#svCaps li').map((li) => ({ title: $('b', li).textContent, text: $('span', li).textContent }));
   const caption = $('#svCaption');
   const progress = $('#svProgress');
-  const ticks = $$('#svTicks li');
+  const ticks = $$('#svTicks button');
   const titleWords = splitWords($('#svTitle'), true);
   const voice = $('#leader');
   const quoteWords = splitWords($('#svQuote'));
@@ -323,15 +323,27 @@ if (!reduceMotion) {
   }
   measure();
 
+  /* camera: scroll moves it field → capability → Todd (cam.f 0 → 1 → 2);
+     which capability it holds on is chosen with the ticks, and a click
+     flies the camera from where it is to that card (nav.u 0 → 1) */
   const cam = { f: 0, reveal: 0, introZ: -2600 };
-  let capOn = -1;
-  function camAt(f) {
-    const i = clamp(Math.floor(f), 0, G.stops.length - 2);
-    const u = clamp((f - i - 0.16) / 0.68, 0, 1);            // dwell at each stop
-    const tz = smoother(u);
-    const txy = smoother(clamp(u / 0.62, 0, 1));             // turn to the next card first, then travel to it
-    const a = G.stops[i], b = G.stops[i + 1];
+  const nav = { from: null, to: 0, u: 1 };
+  let sel = 0, capOn = -1;
+  // turn toward the next point first, then travel to it
+  function travel(a, b, u) {
+    const tz = smoother(u), txy = smoother(clamp(u / 0.62, 0, 1));
     return { x: lerp(a.x, b.x, txy), y: lerp(a.y, b.y, txy), z: lerp(a.z, b.z, tz) };
+  }
+  const capPoint = () => (nav.from ? travel(nav.from, G.stops[nav.to + 1], nav.u) : G.stops[nav.to + 1]);
+  function camAt(f) {
+    const leg = f <= 1 ? 0 : 1;
+    const u = clamp((f - leg - 0.16) / 0.68, 0, 1);            // dwell at each end
+    return leg === 0 ? travel(G.stops[0], capPoint(), u) : travel(capPoint(), G.stops[G.stops.length - 1], u);
+  }
+  function showCap(i) {
+    $('#svCapN').textContent = String(i + 1).padStart(2, '0');
+    $('#svCapTitle').textContent = caps[i].title;
+    $('#svCapText').textContent = caps[i].text;
   }
   function paintWorld() {
     const c = camAt(cam.f);
@@ -345,28 +357,42 @@ if (!reduceMotion) {
       card.style.opacity = o.toFixed(3);
       card.style.visibility = o < 0.01 ? 'hidden' : 'visible';
     });
-    // caption for the card at the centre
-    const near = Math.round(cam.f);
-    const best = near >= 1 && near <= capCards.length && Math.abs(cam.f - near) < 0.24 ? near - 1 : -1;
-    if (best !== capOn) {
-      const was = capOn; capOn = best;
-      ticks.forEach((tk, k) => tk.classList.toggle('is-on', k === best));
+    // caption + ticks while the camera holds on the capabilities
+    const best = Math.abs(cam.f - 1) < 0.24 ? sel : -1;
+    if ((best < 0) !== (capOn < 0)) {
       if (best < 0) gsap.to([caption, progress], { autoAlpha: 0, duration: 0.3, overwrite: true });
       else {
-        const apply = () => {                                      // reads the card at the centre now, not when queued
-          if (capOn < 0) return;
-          $('#svCapN').textContent = String(capOn + 1).padStart(2, '0');
-          $('#svCapTitle').textContent = caps[capOn].title;
-          $('#svCapText').textContent = caps[capOn].text;
-        };
-        if (was < 0) { apply(); gsap.fromTo(caption, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.5, overwrite: true }); gsap.to(progress, { autoAlpha: 1, duration: 0.4, overwrite: true }); }
-        else {
-          $('#svCapN').textContent = String(best + 1).padStart(2, '0');
-          swap(['#svCapTitle', '#svCapText'], apply);
-        }
+        showCap(best);
+        gsap.fromTo(caption, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.5, overwrite: true });
+        gsap.to(progress, { autoAlpha: 1, duration: 0.4, overwrite: true });
       }
     }
+    capOn = best;
   }
+
+  // a tick: fly from where the camera is (it may be mid-flight) to that card
+  let flight = null;
+  function goCap(i) {
+    if (i === sel) return;
+    nav.from = capPoint(); nav.to = i; nav.u = 0;
+    sel = i;
+    ticks.forEach((tk, k) => { if (k === sel) tk.setAttribute('aria-current', 'step'); else tk.removeAttribute('aria-current'); });
+    if (flight) flight.kill();
+    const dist = Math.hypot(G.stops[i + 1].x - nav.from.x, G.stops[i + 1].y - nav.from.y, G.stops[i + 1].z - nav.from.z);
+    flight = gsap.to(nav, { u: 1, duration: clamp(1 + dist / 3000, 1.2, 2.2), ease: 'none', onUpdate: paintWorld,
+      onComplete: () => { nav.from = null; } });
+    $('#svCapN').textContent = String(i + 1).padStart(2, '0');
+    swap(['#svCapTitle', '#svCapText'], () => showCap(sel));
+  }
+  ticks.forEach((tk, i) => tk.addEventListener('click', () => goCap(i)));
+  progress.addEventListener('keydown', (e) => {
+    const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    const i = clamp(sel + d, 0, ticks.length - 1);
+    goCap(i); ticks[i].focus();
+  });
+
   // where Todd's card sits when the camera stops: the voice layer starts exactly there
   const endBox = () => { const w = G.endW, h = w * 1.25; return { left: (vw() - w) / 2, top: (vh() - h) / 2, width: w, height: h }; };
 
@@ -376,14 +402,16 @@ if (!reduceMotion) {
   gsap.from(titleWords, { yPercent: 110, duration: 1.1, stagger: 0.035, ease: 'expo.out', delay: 0.5 });
   paintWorld();
 
-  const FLY = 7 * 1.25;
+  // field → capability 01 (scroll), hold while the ticks drive, → Todd (scroll)
+  const LEG = 1.25, HOLD = 1.6, FLY = 2 * LEG + HOLD;
   const t1 = gsap.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: intro, start: 'top top', end: '+=1250%', pin: true, scrub: 0.6, invalidateOnRefresh: true, onRefresh: () => { measure(); paintWorld(); } },
+    scrollTrigger: { trigger: intro, start: 'top top', end: '+=900%', pin: true, scrub: 0.6, invalidateOnRefresh: true, onRefresh: () => { measure(); paintWorld(); } },
   });
   t1
     .to('#svTitle', { autoAlpha: 0, y: -60, duration: 0.6, ease: 'power2.in' }, 0)
-    .to(cam, { f: 7, duration: FLY, onUpdate: paintWorld }, 0.2)
+    .to(cam, { f: 1, duration: LEG, onUpdate: paintWorld }, 0.2)
+    .to(cam, { f: 2, duration: LEG, onUpdate: paintWorld }, 0.2 + LEG + HOLD)
     // Todd's card opens to the full screen and becomes the quote's backdrop
     .set(voice, { autoAlpha: 1 }, 0.2 + FLY)
     // the card grows into the full screen; the photo keeps its framing and only widens
