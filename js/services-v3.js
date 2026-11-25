@@ -445,12 +445,14 @@ if (!reduceMotion) {
   gsap.set([...offices, ...checks], { autoAlpha: 0, y: 24 });
   gsap.timeline({ scrollTrigger: { trigger: tzSec, start: 'top bottom', end: 'top top', scrub: 0.6 } })
     .fromTo(tzTitle, { opacity: 0.12 }, { opacity: 1, stagger: 0.1, ease: 'none' }, 0.3)
-    .to(dial, { autoAlpha: 1, duration: 0.6 }, 0.3)
-    .to(dial, { rotateX: 30, scale: 0.86, z: -120, duration: 0.7, ease: 'none' }, 0.3)
+    // explicit from/to values on both timelines: they share the dial, so neither may
+    // record its start from whatever the other left behind (that left it squashed)
+    .fromTo(dial, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6, immediateRender: false }, 0.3)
+    .fromTo(dial, { rotateX: 58, scale: 0.72, z: -300 }, { rotateX: 30, scale: 0.86, z: -120, duration: 0.7, ease: 'none', immediateRender: false }, 0.3)
     .to(offices, { autoAlpha: 1, y: 0, stagger: 0.06, duration: 0.4 }, 0.6);
   const rot = { a: handAngle(tzNow.utcH) - 140 };
   gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: tzSec, start: 'top top', end: '+=220%', pin: true, scrub: 0.6 } })
-    .to(dial, { rotateX: 0, scale: 1, z: 0, duration: 1, ease: 'power2.out' }, 0)
+    .fromTo(dial, { rotateX: 30, scale: 0.86, z: -120, autoAlpha: 1 }, { rotateX: 0, scale: 1, z: 0, autoAlpha: 1, duration: 1, ease: 'power2.out', immediateRender: false }, 0)
     .to(rings, { attr: { 'stroke-dashoffset': 0 }, stagger: 0.08, duration: 0.8 }, 0)
     .to(arcs, { attr: { 'stroke-dasharray': (i, a) => `${a.dataset.len} ${a.dataset.c}` }, stagger: 0.1, duration: 0.7 }, 0.6)
     .to(rot, { a: handAngle(tzNow.utcH), duration: 1.2, ease: 'power3.out', onUpdate: () => hand.setAttribute('transform', `rotate(${rot.a} 320 320)`) }, 0.7)
@@ -459,7 +461,7 @@ if (!reduceMotion) {
     .to({}, { duration: 0.8 })
     // fly through the dial into the board
     .to(['.sv-clock__title', '.sv-offices', '.sv-checks'], { autoAlpha: 0, y: -50, duration: 0.6, ease: 'power2.in' }, 2.7)
-    .to(dial, { scale: 3.4, autoAlpha: 0, duration: 1, ease: 'power2.in' }, 2.7);
+    .fromTo(dial, { scale: 1, autoAlpha: 1 }, { scale: 3.4, autoAlpha: 0, duration: 1, ease: 'power2.in', immediateRender: false }, 2.7);
 
   /* =======================================================
      03 — lifecycle copy rises in with the board
