@@ -228,14 +228,9 @@ function buildComponent() {
   const layers = $$('.sv-comp__layer', world).map((el) => ({ el, cx: +el.dataset.cx, cy: +el.dataset.cy, cz: +el.dataset.cz }));
   const E = (x) => x * x * (3 - 2 * x);
 
-  // one pose per stage: the assembly is turned to a new angle each time
-  const POSES = [
-    { rx: 4, ry: -10, rz: 6 },
-    { rx: -2, ry: 12, rz: -5 },
-    { rx: 8, ry: -16, rz: 9 },
-    { rx: 0, ry: 16, rz: -8 },
-    { rx: 5, ry: -4, rz: 3 },
-  ];
+  // one pose per stage: each step down the list turns the assembly 10° more
+  const STEP = 10;
+  const POSES = [0, 1, 2, 3, 4].map((i) => ({ rx: 4, ry: (i - 2) * STEP, rz: 5 }));
   // cin: arrival, sw: assembled shot → layers, ex: layers open out
   const s = { cin: 0, sw: 0, ex: 0, rx: POSES[0].rx, ry: POSES[0].ry, rz: POSES[0].rz, px: 0, py: 0 };
 
