@@ -166,64 +166,47 @@ function initCycle() {
 }
 
 function buildComponent() {
-  const world = $('#svCompWorld');
-  const asm = $('#svCompAsm');
-  const shadow = $('#svCompShadow');
-  const layers = $$('.sv-comp__layer', world).map((el) => ({ el, cx: +el.dataset.cx, cy: +el.dataset.cy, cz: +el.dataset.cz }));
+  /* the lifecycle part: a cut-out render turned in CSS 3D to read like a
+     WebGL object. It rises in as the section arrives, floats on its own,
+     and turns and tilts with scroll; the floor shadow follows its height. */
+  const part = $('#svPart');
+  const shadow = $('#svPartShadow');
   const E = (x) => x * x * (3 - 2 * x);
-
-  // one fixed pose; cin: arrival, sw: assembled shot → layers, ex: layers open out
-  const s = { cin: 0, sw: 0, ex: 0, rx: 4, ry: -10, rz: 5 };
-
-  // the component spans about 1000 × 620 of its 1440 × 900 stage: fit that to its box
-  const box = $('#svComp');
-  function fit() {
-    const k = Math.min(box.clientWidth / 1000, box.clientHeight / 620);
-    world.style.setProperty('--cs', Math.max(0.2, k).toFixed(4));
-  }
-  fit();
+  const s = { cin: reduceMotion ? 1 : 0, p: 0.5, sp: 0.5 };
 
   function paint(t = 0) {
-    const cin = E(s.cin), ex = E(s.ex), sw = s.sw;
-    // floating: a slow bob with a little sway
-    const float = Math.sin(t * 0.9) * 8;
-    const sway = Math.sin(t * 0.45) * 1.5;
-    const sc = (0.78 + 0.22 * cin) * (1 + 0.06 * ex);
-    const rx = s.rx + 14 * (1 - cin) + sway * 0.5 * cin;
-    const ry = s.ry + 16 * (1 - cin) + sway * cin;
-    const rz = s.rz - 6 * (1 - cin);
-    const ty = 70 * (1 - cin) + float * cin;
-    world.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg) scale(${sc.toFixed(4)})`;
-    world.style.opacity = cin.toFixed(3);
-    asm.style.opacity = (1 - sw).toFixed(3);
-    shadow.style.opacity = (1 - 0.75 * ex).toFixed(3);
-    shadow.style.transform = `scale(${(1 + 0.6 * ex).toFixed(3)}, ${(1 - 0.3 * ex).toFixed(3)})`;
-    layers.forEach(({ el, cx, cy, cz }) => {
-      const dx = (724 - cx) * 0.94 * (1 - ex) + (cx - 709) * 0.22 * ex;
-      const dy = (466 - cy) * 0.94 * (1 - ex) + (cy - 423) * 0.22 * ex;
-      el.style.opacity = sw.toFixed(3);
-      el.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, ${(cz * ex * 1.6).toFixed(1)}px)`;
-    });
+    const cin = E(s.cin);
+    s.sp += (s.p - s.sp) * 0.08;                         // smoothed scroll progress, like a damped camera
+    const k = s.sp - 0.5;                                // -0.5 → 0.5 across the section
+    const float = reduceMotion ? 0 : Math.sin(t * 0.85) * 14;
+    const sway = reduceMotion ? 0 : Math.sin(t * 0.5) * 1.6;
+    const ry = k * 38 + sway;                            // turns as you scroll
+    const rx = 10 - k * 14 + sway * 0.4;                 // tips back slightly
+    const rz = -8 + k * 16;                              // and rolls
+    const ty = 90 * (1 - cin) - float;
+    part.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg)`;
+    part.style.opacity = cin.toFixed(3);
+    part.style.filter = `brightness(${(1 + k * 0.16).toFixed(3)})`;   // the light shifts as it turns
+    const lift = (float + 14) / 28;                      // 0 low … 1 high
+    shadow.style.opacity = (cin * (0.85 - lift * 0.35)).toFixed(3);
+    shadow.style.transform = `scale(${(1.05 - lift * 0.25 + Math.abs(k) * 0.1).toFixed(3)}, ${(1 - lift * 0.2).toFixed(3)})`;
   }
 
-  // scroll: it rises in assembled, then opens into its layers as the section settles
   if (!reduceMotion) {
-    gsap.timeline({ scrollTrigger: { trigger: '#lifecycle', start: 'top 85%', end: 'top 0%', scrub: 0.8 } })
-      .fromTo(s, { cin: 0 }, { cin: 1, duration: 0.55, ease: 'none' }, 0)
-      .fromTo(s, { sw: 0 }, { sw: 1, duration: 0.25, ease: 'none' }, 0.5)
-      .fromTo(s, { ex: 0 }, { ex: 1, duration: 0.45, ease: 'none' }, 0.55);
-  } else { s.cin = 1; s.sw = 1; s.ex = 1; }
+    gsap.fromTo(s, { cin: 0 }, { cin: 1, ease: 'none', scrollTrigger: { trigger: '#lifecycle', start: 'top 85%', end: 'top 15%', scrub: 0.8 } });
+    ScrollTrigger.create({ trigger: '#lifecycle', start: 'top bottom', end: 'bottom top', onUpdate: (st) => { s.p = st.progress; } });
+  }
 
   let running = false;
   const t0 = performance.now();
-  const tick = () => paint(reduceMotion ? 0 : (performance.now() - t0) / 1000);
+  const tick = () => paint((performance.now() - t0) / 1000);
   function setRunning(v) {
     if (v === running) return;
     running = v;
     if (v) gsap.ticker.add(tick); else gsap.ticker.remove(tick);
   }
   paint();
-  return { setRunning, fit };
+  return { setRunning, fit: () => {} };
 }
 
 if (!reduceMotion) {
