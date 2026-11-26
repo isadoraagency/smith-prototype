@@ -140,6 +140,64 @@
 .sv-cycle__item.is-on .sv-cycle__name::before { background: var(--red); box-shadow: 0 0 0 5px rgba(213, 59, 45, .25); }
 .sv-cycle__text { font-size: 18px; line-height: 28px; color: rgba(240, 241, 235, .85); padding-left: 24px; }
 
+/* ---------- 04: proof (on paper) ---------- */
+.sv-proof { color: var(--navy); }
+.sv-proof__inner { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 560fr) minmax(0, 712fr); gap: 72px; align-items: center; padding: 104px 48px 48px; }
+.sv-proof__media { height: min(78vh, 700px); border-radius: 16px; overflow: hidden; will-change: clip-path; }
+.sv-proof__media video { width: 100%; height: 100%; object-fit: cover; object-position: 62% 50%; display: block; will-change: transform; }
+.sv-proof__panel { display: flex; flex-direction: column; gap: 62px; }
+/* with motion the media leaves the grid: it starts full screen and js shrinks it into the slot */
+.sv-proof__slot { display: none; }
+.sv-proof.is-fly .sv-proof__slot { display: block; height: min(78vh, 700px); }
+.sv-proof.is-fly .sv-proof__media { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 0; z-index: 1; }
+.sv-metrics { display: flex; flex-direction: column; }
+.sv-metric { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; padding: 30px 0 40px; border-top: 1px solid rgba(25, 33, 52, .16); }
+.sv-metric b { font-family: var(--mono); font-weight: 400; font-size: clamp(48px, 4.4vw, 64px); line-height: 1; color: var(--red); font-variant-numeric: tabular-nums; padding-top: 10px; }
+.sv-metric h3 { font-weight: 500; font-size: 24px; line-height: 30px; margin-bottom: 6px; }
+.sv-metric p { font-size: 18px; line-height: 27px; color: rgba(25, 33, 52, .7); }
+
+/* ---------- 05: confidence ---------- */
+.sv-quality__title { position: absolute; left: 48px; top: calc(120px * var(--sy, 1)); width: min(760px, calc(100vw - 96px)); z-index: 2; }
+.sv-line { position: absolute; left: 0; right: 0; top: 50%; height: 0; }
+.sv-line__track { position: absolute; left: 0; top: 0; height: 0; will-change: transform; }
+.sv-line__base { position: absolute; left: -100vw; width: calc(100% + 200vw); top: -1px; height: 1px; background: rgba(185, 202, 235, .28); }
+.sv-line__lit { position: absolute; left: 0; top: -1.5px; height: 3px; width: 0; background: var(--blue); }
+.sv-step { position: absolute; top: 0; left: calc(var(--i) * var(--gap)); display: grid; place-items: center; translate: -50% -50%; }
+.sv-step i {
+  display: block; width: 40px; height: 40px; border-radius: 50%; background: var(--navy); box-shadow: inset 0 0 0 2px rgba(185, 202, 235, .85);
+  transition: background .4s, box-shadow .4s, border-radius .4s, rotate .4s, scale .4s;
+}
+.sv-step::before {
+  content: ""; position: absolute; width: 88px; height: 88px; border-radius: 50%; background: rgba(213, 59, 45, .2);
+  scale: .3; opacity: 0; transition: scale .5s, opacity .4s;
+}
+.sv-step.is-past i { background: var(--blue); box-shadow: none; }
+.sv-step.is-on i { background: var(--red); box-shadow: none; border-radius: 0; rotate: 45deg; scale: .9; }
+.sv-step.is-on::before { scale: 1; opacity: 1; }
+.sv-step em {
+  position: absolute; top: 52px; white-space: nowrap; font-style: normal; font-family: var(--mono); font-size: 24px; line-height: 30px;
+  letter-spacing: .08em; text-transform: uppercase; color: rgba(185, 202, 235, .55); transition: color .4s;
+}
+.sv-step.is-on em { color: #fff; }
+.sv-quality__text {
+  position: absolute; left: calc(50% - 56px); top: calc(50% + 116px); width: min(520px, calc(100vw - 96px)); z-index: 2;
+  font-size: 24px; line-height: 32px; color: #fff;
+}
+.sv-quality__btn { position: absolute; left: 50%; bottom: calc(60px * var(--sy, 1)); translate: -50% 0; z-index: 2; }
+.sv-quality__btn span, .sv-quality__btn:hover span { background: transparent; }
+
+/* ---------- 06: watching ---------- */
+.sv-watch { position: relative; min-height: 100vh; overflow: hidden; perspective: 1200px; }
+.sv-watch__media { position: absolute; inset: -8% 0; will-change: transform; }
+.sv-watch__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sv-watch__shade { position: absolute; inset: 0; background: rgba(0, 0, 0, .5); }
+.sv-watch__inner { position: relative; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 489px; gap: 48px; align-items: center; padding: 120px 48px 96px; }
+.sv-watch .sv-byte { position: relative; left: auto; top: auto; min-height: 0; transform-origin: 50% 100%; will-change: transform; }
+
+/* ---------- 07: CTA cards rise out of depth ---------- */
+.sv-cta { background: var(--paper); perspective: 1400px; }
+.sv-cta .cta__card { will-change: transform; }
+.sv-cta .cta-search__field { border-radius: 8px; }
 
 /* ---------- smaller screens ---------- */
 @media (max-width: 1100px) {
@@ -151,7 +209,7 @@
   .sv-clock__body { top: auto; bottom: 32px; }
   .sv-checks { display: none; }
   .sv-proof__inner { grid-template-columns: 1fr; gap: 24px; padding: 96px 24px 24px; align-content: center; }
-  .sv-proof__media { height: 30vh; }
+  .sv-proof__media, .sv-proof.is-fly .sv-proof__slot { height: 30vh; }
   .sv-proof__panel { gap: 24px; }
   .sv-metric { grid-template-columns: 120px 1fr; padding: 14px 0; gap: 16px; }
   .sv-metric b { font-size: 40px; padding-top: 0; }

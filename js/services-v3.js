@@ -413,25 +413,40 @@ if (!reduceMotion) {
   }));
 
   /* =======================================================
-     04 — proof on paper: mask reveal from the bottom
+     04 — proof on paper: the video rises in full screen (mask from
+     the bottom), then masks down into its place left of the metrics
      ======================================================= */
   const proof = $('#business');
   const bizTitle = splitWords($('#bizTitle'));
   const proofMedia = $('#svProofMedia');
+  const proofSlot = $('#svProofSlot');
+  const proofInner = $('.sv-proof__inner', proof);
   const metricRows = $$('.sv-metric', proof);
+  proof.classList.add('is-fly');
+  const fullBox = () => ({ left: 0, top: 0, width: proofInner.clientWidth, height: proofInner.clientHeight });
+  const slotBox = () => ({ left: proofSlot.offsetLeft, top: proofSlot.offsetTop, width: proofSlot.offsetWidth, height: proofSlot.offsetHeight });
   gsap.set(metricRows, { autoAlpha: 0, y: 40 });
+  gsap.set(bizTitle, { opacity: 0.12 });
   paintMetrics(0);
   gsap.fromTo(bg, { backgroundColor: NAVY }, { backgroundColor: PAPER, ease: 'none', immediateRender: false, scrollTrigger: { trigger: proof, start: 'top 90%', end: 'top 30%', scrub: true } });
   gsap.timeline({ scrollTrigger: { trigger: proof, start: 'top 75%', end: 'top top', scrub: 0.6 } })
-    .fromTo(proofMedia, { clipPath: 'inset(100% 0% 0% 0% round 16px)' }, { clipPath: 'inset(0% 0% 0% 0% round 16px)', duration: 1, ease: 'power2.out' }, 0)
-    .fromTo('#svProofMedia video', { scale: 1.3, yPercent: 8 }, { scale: 1, yPercent: 0, duration: 1.2, ease: 'power2.out' }, 0)
-    .fromTo(bizTitle, { opacity: 0.12 }, { opacity: 1, stagger: 0.08, ease: 'none', duration: 0.8 }, 0.3);
+    .fromTo(proofMedia, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power2.out' }, 0)
+    .fromTo('#svProofMedia video', { scale: 1.3, yPercent: 8 }, { scale: 1, yPercent: 0, duration: 1.2, ease: 'power2.out' }, 0);
   const mc = { t: 0 };
-  gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: proof, start: 'top top', end: '+=160%', pin: true, scrub: 0.6 } })
-    .to(metricRows, { autoAlpha: 1, y: 0, stagger: 0.25, duration: 0.5, ease: 'power2.out' }, 0)
-    .to(mc, { t: 1, duration: 1.4, onUpdate: () => paintMetrics(mc.t) }, 0)
+  gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: proof, start: 'top top', end: '+=230%', pin: true, scrub: 0.6, invalidateOnRefresh: true } })
+    // a beat of full-screen video, then it masks down into the slot on the left
+    .fromTo(proofMedia, {
+      left: () => fullBox().left, top: () => fullBox().top, width: () => fullBox().width, height: () => fullBox().height, borderRadius: 0,
+    }, {
+      left: () => slotBox().left, top: () => slotBox().top, width: () => slotBox().width, height: () => slotBox().height, borderRadius: 16,
+      duration: 1.2, ease: 'power2.inOut', immediateRender: false,
+    }, 0.35)
+    .fromTo('#svProofMedia video', { objectPosition: '50% 50%' }, { objectPosition: '62% 50%', duration: 1.2, ease: 'power2.inOut', immediateRender: false }, 0.35)
+    .to(bizTitle, { opacity: 1, stagger: 0.08, duration: 0.5 }, 1.05)
+    .to(metricRows, { autoAlpha: 1, y: 0, stagger: 0.25, duration: 0.5, ease: 'power2.out' }, 1.4)
+    .to(mc, { t: 1, duration: 1.4, onUpdate: () => paintMetrics(mc.t) }, 1.4)
     .to({}, { duration: 0.5 })
-    .to('.sv-proof__inner', { autoAlpha: 0, y: -60, duration: 0.6, ease: 'power2.in' }, 1.9);
+    .to(proofInner, { autoAlpha: 0, y: -60, duration: 0.6, ease: 'power2.in' }, 3.3);
 
   /* =======================================================
      05 — confidence: the timeline slides under a fixed centre
