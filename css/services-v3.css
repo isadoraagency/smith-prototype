@@ -53,32 +53,37 @@
 /* screen-reader list; shown as text when motion is reduced */
 .sv-caps { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* Todd: a layer of 01 that opens out of the last card */
-.sv-voice { position: absolute; inset: 0; z-index: 5; visibility: hidden; }
-/* sized and placed by js: it starts as Todd's card and grows to the full screen */
-.sv-voice__media { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; }
-.sv-voice__media img { position: absolute; left: -25%; top: 0; width: 125%; max-width: none; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
-.sv-voice__shade { position: absolute; inset: 0; background: var(--navy); opacity: .66; }
+/* Todd: a layer of 01 that opens out of the last card into the sv2 / 04 layout.
+   --s scales the 1440 × 900 Figma frame to the screen; positions are from its centre */
+.sv-voice { position: absolute; inset: 0; z-index: 5; visibility: hidden; --s: min(calc(100vw / 1440), calc(100vh / 900)); }
+/* end state here; js starts it as Todd's card in the field and grows it into place */
+.sv-voice__media {
+  position: absolute; left: calc(50% - 556 * var(--s)); top: calc(50% - 299 * var(--s));
+  width: calc(754 * var(--s)); height: calc(509 * var(--s)); border-radius: 16px; overflow: hidden;
+}
+.sv-voice__media img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 33%; display: block; }
+.sv-voice__shade { position: absolute; inset: 0; background: rgba(0, 0, 0, .5); }
 .sv-voice__content {
-  position: absolute; right: 48px; top: 50%; translate: 0 -50%; width: min(640px, calc(100vw - 96px)); margin: 0;
+  position: absolute; left: calc(50% + 70 * var(--s)); top: calc(50% + 88 * var(--s)); width: calc(539 * var(--s)); margin: 0;
   display: flex; flex-direction: column; gap: 32px;
 }
-.sv-quote { margin: 0; font-weight: 400; font-size: clamp(26px, 2.5vw, 36px); line-height: 1.3; color: #fff; }
+.sv-quote { margin: 0; font-weight: 500; font-size: clamp(18px, calc(24 * var(--s)), 30px); line-height: 1.25; color: #fff; }
 .sv-voice__content figcaption { display: flex; flex-direction: column; gap: 4px; }
 .sv-voice__content figcaption b { font-weight: 500; font-size: 20px; line-height: 26px; }
-.sv-voice__content figcaption span { font-size: 18px; line-height: 27px; color: rgba(240, 241, 235, .75); }
+.sv-voice__content figcaption span { font-size: 14px; line-height: 20px; color: #d5d5c9; }
+/* video pill, inside the portrait at its bottom left */
 .sv-pill {
-  align-self: flex-start; display: inline-flex; align-items: center; gap: 12px; padding: 9px 20px 9px 9px; border-radius: 999px;
-  background: rgba(0, 0, 0, .5); box-shadow: inset 0 0 0 1px rgba(185, 202, 235, .35); color: #fff; font-size: 16px; line-height: 20px;
+  position: absolute; left: 24px; bottom: 24px; display: inline-flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 999px;
+  background: rgba(0, 0, 0, .5); color: #fff; font-weight: 500; font-size: 14px; line-height: 20px;
   transition: box-shadow .3s;
 }
 .sv-pill:hover { box-shadow: inset 0 0 0 1px #fff; }
-.sv-pill__play { flex: 0 0 32px; width: 32px; height: 32px; display: block; transition: scale .3s; }
+.sv-pill__play { flex: 0 0 40px; width: 40px; height: 40px; display: block; transition: scale .3s; }
 .sv-pill__play svg { width: 100%; height: 100%; display: block; }
 .sv-pill__play circle { fill: var(--red); }
 .sv-pill__play path { fill: #fff; }
 .sv-pill:hover .sv-pill__play { scale: 1.08; }
-.sv-pill em { font-style: normal; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--blue-light, #b9caeb); }
+.sv-pill em { font-style: normal; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #f0f1eb; }
 
 /* ---------- 02: always on ---------- */
 .sv-clock.tz { background: transparent; }
@@ -224,8 +229,11 @@
   .sv-offices.tz__offices { left: 16px; right: 16px; }
   .sv-statement { width: calc(100vw - 32px); }
   .sv-cycle__text, .sv-quality__text { font-size: 16px; line-height: 24px; }
-  .sv-voice__content { left: 16px; right: 16px; width: auto; top: auto; bottom: 40px; translate: none; gap: 20px; }
-  .sv-quote { font-size: 22px; }
+  .sv-voice__media { left: 16px; top: 14vh; width: calc(100vw - 32px); height: calc((100vw - 32px) * .675); }
+  .sv-voice__content { left: 16px; right: 16px; width: auto; top: calc(14vh + (100vw - 32px) * .675 + 32px); gap: 20px; }
+  .sv-quote { font-size: 20px; line-height: 26px; }
+  .sv-pill { left: 12px; bottom: 12px; padding: 8px 14px 8px 8px; gap: 10px; }
+  .sv-pill__play { flex-basis: 32px; width: 32px; height: 32px; }
   .sv-ticker { left: 40px; }
   .sv-ticker__list { gap: 10px; }
   .sv-ticker__list button { font-size: 12px; }

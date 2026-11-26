@@ -363,6 +363,7 @@ if (!reduceMotion) {
       o *= clamp((760 - eff) / 360, 0, 1);                        // gone before it reaches the camera
       if (card !== hero && card !== endCard) o *= cam.reveal;
       o *= 1 - 0.9 * Math.max(0, bMax - b);                       // the rest of the field steps back
+      if (card === endCard && cam.f > 2.995) o = 0;               // the portrait layer has taken over from it
       card.style.opacity = o.toFixed(3);
       card.style.visibility = o < 0.01 ? 'hidden' : 'visible';
     });
@@ -378,6 +379,14 @@ if (!reduceMotion) {
 
   // where Todd's card sits when the camera stops: the voice layer starts exactly there
   const endBox = () => { const w = G.endW, h = w * 1.25; return { left: (vw() - w) / 2, top: (vh() - h) / 2, width: w, height: h }; };
+  // where it settles: the landscape portrait of sv2 / 04, read from the css layout
+  const toddBox = () => {
+    const m = $('#svVoiceMedia'), keep = ['left', 'top', 'width', 'height'].map((k) => m.style[k]);
+    m.style.left = m.style.top = m.style.width = m.style.height = '';
+    const b = { left: m.offsetLeft, top: m.offsetTop, width: m.offsetWidth, height: m.offsetHeight };
+    ['left', 'top', 'width', 'height'].forEach((k, i) => { m.style[k] = keep[i]; });
+    return b;
+  };
 
   // arrival: the field drifts in out of depth, the headline rises
   gsap.to(cam, { introZ: 0, reveal: 1, duration: 2.4, ease: 'expo.out', delay: 0.1, onUpdate: paintWorld });
@@ -395,23 +404,19 @@ if (!reduceMotion) {
     .to(cam, { f: 1, duration: LEG, onUpdate: paintWorld }, 0.2)
     .to(cam, { f: 2, duration: LEG, onUpdate: paintWorld }, 0.2 + LEG + HOLD)
     .to(cam, { f: 3, duration: LEG, onUpdate: paintWorld }, 0.2 + 2 * (LEG + HOLD))
-    // Todd's card opens to the full screen and becomes the quote's backdrop
+    // Todd's card opens out of the field into the landscape portrait, left of the quote
     .set(voice, { autoAlpha: 1 }, 0.2 + FLY)
-    // the card grows into the full screen; the photo keeps its framing and only widens
-    // to make room for the quote (no zoom or jump into a crop)
     .fromTo('#svVoiceMedia', {
-      left: () => endBox().left, top: () => endBox().top, width: () => endBox().width, height: () => endBox().height, borderRadius: 16,
-    }, { left: 0, top: 0, width: () => vw(), height: () => vh(), borderRadius: 0, duration: 1.4, ease: 'power2.inOut', immediateRender: false }, 0.2 + FLY)
-    .fromTo('#svVoiceMedia img', { width: '100%', left: '0%', objectPosition: '50% 50%' },
-      { width: () => (vw() < 720 ? '100%' : '125%'), left: () => (vw() < 720 ? '0%' : '-25%'), objectPosition: '50% 30%', duration: 1.4, ease: 'power2.inOut', immediateRender: false }, 0.2 + FLY)
-    .fromTo('#svVoiceShade', { opacity: 0 }, { opacity: 0.66, duration: 1, immediateRender: false }, 0.7 + FLY)
+      left: () => endBox().left, top: () => endBox().top, width: () => endBox().width, height: () => endBox().height,
+    }, { left: () => toddBox().left, top: () => toddBox().top, width: () => toddBox().width, height: () => toddBox().height, duration: 1.4, ease: 'power2.inOut', immediateRender: false }, 0.2 + FLY)
+    .fromTo('#svVoiceMedia img', { objectPosition: '50% 50%' }, { objectPosition: '50% 33%', duration: 1.4, ease: 'power2.inOut', immediateRender: false }, 0.2 + FLY)
+    .fromTo('#svVoiceShade', { opacity: 0 }, { opacity: 1, duration: 1, immediateRender: false }, 0.7 + FLY)
     .fromTo('#svQuote', { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.5, immediateRender: false }, 1.0 + FLY)
     .fromTo(quoteWords, { opacity: 0.12 }, { opacity: 1, stagger: 0.06, duration: 0.3, immediateRender: false }, 1.3 + FLY)
     .fromTo('#svVoiceContent figcaption, .sv-pill', { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, stagger: 0.15, duration: 0.5, immediateRender: false }, 2.9 + FLY)
-    // the photo sinks into the night for the clock
+    // quote and portrait lift away into the night for the clock
     .to('#svVoiceContent', { autoAlpha: 0, y: -60, duration: 0.7, ease: 'power2.in' }, 4.1 + FLY)
-    .to('#svVoiceShade', { opacity: 1, duration: 0.9 }, 4.2 + FLY)
-    .to('#svVoiceMedia img', { scale: 1.06, duration: 0.9 }, 4.2 + FLY)
+    .to('#svVoiceMedia', { autoAlpha: 0, y: -80, duration: 0.8, ease: 'power2.in' }, 4.2 + FLY)
     .to({}, { duration: 0.2 });
   gsap.set('#svVoiceContent figcaption, .sv-pill, #svQuote', { autoAlpha: 0 });
   gsap.set(quoteWords, { opacity: 0.12 });
