@@ -17,7 +17,7 @@
 
 .page-ad { background: var(--cobalt); }
 /* hidden until js/aerospace.js has split the words, so the headline never flashes in full */
-.js .ad-hero__title, .js #heroCopy .btn, .js #heroCallout { visibility: hidden; }
+.js .ad-hero__title, .js #heroCallout { visibility: hidden; }
 
 /* ---------- pinned scenes ---------- */
 .scene {
@@ -57,15 +57,15 @@
   transform-origin: 72% 33%;      /* the aircraft in the photo */
   will-change: transform;
 }
-.hero-media::after {              /* overlay/image, 50% */
+.hero-media::after {              /* overlay on the photo: 30% black (sm-module--hero) */
   content: ""; position: absolute; inset: 0;
-  background: var(--overlay);
+  background: rgba(0, 0, 0, .3);
   pointer-events: none;
 }
 .ad-hero {
   position: absolute; z-index: 3;
   left: var(--gutter); right: var(--gutter);
-  bottom: 22vh;
+  top: 50%; translate: 0 -50%;    /* headline centred on the screen, left aligned (sm-module--hero) */
   display: flex; flex-direction: column; align-items: flex-start; gap: 32px;
 }
 .ad-hero__title {

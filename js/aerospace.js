@@ -77,13 +77,12 @@ heroTitle.innerHTML = heroTitle.innerHTML
 const heroWords = $$('.wd', heroTitle);
 const introNav = gsap.utils.toArray('.nav > *, .chat');
 const heroImg = $('#heroMedia img');
-if (reduceMotion) gsap.set('#heroTitle, #heroCopy .btn', { visibility: 'visible' });
+if (reduceMotion) gsap.set('#heroTitle', { visibility: 'visible' });
 
 if (!reduceMotion) {
   gsap.set(heroWords, { yPercent: 110 });
   gsap.set(heroTitle, { visibility: 'visible' });   // hidden by CSS until split (no flash of the full headline)
   gsap.set(heroImg, { scale: 1.18 });
-  gsap.set('#heroCopy .btn', { autoAlpha: 0, y: 16 });
   gsap.set(introNav, { y: -24, autoAlpha: 0 });
   const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
   Promise.race([fontsReady, new Promise((r) => setTimeout(r, 1200))]).then(() => {
@@ -91,7 +90,6 @@ if (!reduceMotion) {
       .to(heroWords, { yPercent: 0, stagger: 0.06 }, 0)
       .to(heroImg, { scale: 1, duration: 2.4 }, 0)
       .to(introNav, { y: 0, autoAlpha: 1, stagger: 0.07, duration: 1.2, clearProps: 'transform,opacity,visibility' }, 0.2)
-      .to('#heroCopy .btn', { autoAlpha: 1, y: 0, duration: 1 }, 0.6)
   });
 }
 
