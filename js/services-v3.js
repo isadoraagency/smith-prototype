@@ -427,13 +427,15 @@ if (!reduceMotion) {
   const slotBox = () => ({ left: proofSlot.offsetLeft, top: proofSlot.offsetTop, width: proofSlot.offsetWidth, height: proofSlot.offsetHeight });
   gsap.set(metricRows, { autoAlpha: 0, y: 40 });
   gsap.set(bizTitle, { opacity: 0.12 });
+  gsap.set('#bizTitle', { autoAlpha: 0 });                  // hidden until the video has settled into its card
   paintMetrics(0);
-  gsap.fromTo(bg, { backgroundColor: NAVY }, { backgroundColor: PAPER, ease: 'none', immediateRender: false, scrollTrigger: { trigger: proof, start: 'top 90%', end: 'top 30%', scrub: true } });
   gsap.timeline({ scrollTrigger: { trigger: proof, start: 'top 75%', end: 'top top', scrub: 0.6 } })
     .fromTo(proofMedia, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power2.out' }, 0)
     .fromTo('#svProofMedia video', { scale: 1.3, yPercent: 8 }, { scale: 1, yPercent: 0, duration: 1.2, ease: 'power2.out' }, 0);
   const mc = { t: 0 };
   gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: proof, start: 'top top', end: '+=230%', pin: true, scrub: 0.6, invalidateOnRefresh: true } })
+    // the page turns to paper behind the full-screen video, where the change can't be seen
+    .fromTo(bg, { backgroundColor: NAVY }, { backgroundColor: PAPER, duration: 0.3, immediateRender: false }, 0)
     // a beat of full-screen video, then it masks down into the slot on the left
     .fromTo(proofMedia, {
       left: () => fullBox().left, top: () => fullBox().top, width: () => fullBox().width, height: () => fullBox().height, borderRadius: 0,
@@ -442,6 +444,7 @@ if (!reduceMotion) {
       duration: 1.2, ease: 'power2.inOut', immediateRender: false,
     }, 0.35)
     .fromTo('#svProofMedia video', { objectPosition: '50% 50%' }, { objectPosition: '62% 50%', duration: 1.2, ease: 'power2.inOut', immediateRender: false }, 0.35)
+    .fromTo('#bizTitle', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.15, immediateRender: false }, 1.0)
     .to(bizTitle, { opacity: 1, stagger: 0.08, duration: 0.5 }, 1.05)
     .to(metricRows, { autoAlpha: 1, y: 0, stagger: 0.25, duration: 0.5, ease: 'power2.out' }, 1.4)
     .to(mc, { t: 1, duration: 1.4, onUpdate: () => paintMetrics(mc.t) }, 1.4)
