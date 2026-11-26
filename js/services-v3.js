@@ -155,66 +155,14 @@ function paintMetrics(t) {
    ========================================================= */
 // set up after the pinned scenes above it, so its triggers include their pin spacing
 function initCycle() {
-  const stages = fromTemplate('#svStages');
-  const buttons = $$('#svTickerList button');
-  const items = buttons.map((b) => b.parentElement);
-  const line = $('#svTickerLine');
-  const GAP = 24;                                   // extra room under the active stage, for the line
-  let on = buttons.findIndex((b) => b.dataset.start !== undefined);
-  if (on < 0) on = 0;
-
-  const placeLine = (animate) => {
-    items.forEach((li, i) => gsap.to(li, { y: i > on ? GAP : 0, duration: animate ? 0.6 : 0, ease: 'power3.out' }));
-    const li = items[on];
-    const y = li.offsetTop + li.offsetHeight + 16 + 2;   // halfway into the widened gap
-    gsap.to(line, { y, duration: animate ? 0.6 : 0, ease: 'power3.out' });
-  };
-  const paint = (animate = true) => {
-    buttons.forEach((b, i) => { b.classList.toggle('is-on', i === on); b.setAttribute('aria-pressed', String(i === on)); });
-    placeLine(animate);
-  };
-
   const comp = buildComponent();
-  function go(i) {
-    if (i === on) return;
-    on = i;
-    paint();
-    swap(['#svStageTitle', '#svStageText'], () => {
-      $('#svStageTitle').textContent = stages[on].title;
-      $('#svStageText').textContent = stages[on].text;
-    });
-  }
-
-  // --- autoplay + hover / focus -----------------------------
-  let inView = false, hovering = false, timer = 0;
-  const DWELL = 5200;
-  const schedule = () => {
-    clearTimeout(timer);
-    if (!inView || hovering || reduceMotion || document.hidden) return;
-    timer = setTimeout(() => { go((on + 1) % stages.length); schedule(); }, DWELL);
-  };
-  buttons.forEach((b, i) => {
-    b.addEventListener('mouseenter', () => go(i));
-    b.addEventListener('focus', () => go(i));
-    b.addEventListener('click', () => go(i));
-  });
-  const ticker = $('#svTicker');
-  ticker.addEventListener('mouseenter', () => { hovering = true; clearTimeout(timer); });
-  ticker.addEventListener('mouseleave', () => { hovering = false; schedule(); });
-  ticker.addEventListener('focusout', (e) => { if (!ticker.contains(e.relatedTarget)) schedule(); });
-  document.addEventListener('visibilitychange', schedule);
-
-  ScrollTrigger.create({
-    trigger: '#lifecycle', start: 'top 60%', end: 'bottom 40%',
-    onToggle: (st) => { inView = st.isActive; schedule(); },
-  });
+  // the stage crossing the middle of the screen gets the red marker
+  $$('.sv-cycle__item').forEach((li) => ScrollTrigger.create({ trigger: li, start: 'top 55%', end: 'bottom 55%', toggleClass: 'is-on' }));
   ScrollTrigger.create({
     trigger: '#lifecycle', start: 'top bottom', end: 'bottom top',
     onToggle: (st) => comp.setRunning(st.isActive),
   });
-  window.addEventListener('resize', () => { placeLine(false); comp.fit(); });
-  if (document.fonts) document.fonts.ready.then(() => placeLine(false));
-  paint(false);
+  window.addEventListener('resize', comp.fit);
 }
 
 function buildComponent() {
@@ -227,10 +175,11 @@ function buildComponent() {
   // one fixed pose; cin: arrival, sw: assembled shot → layers, ex: layers open out
   const s = { cin: 0, sw: 0, ex: 0, rx: 4, ry: -10, rz: 5 };
 
+  // the component spans about 1000 × 620 of its 1440 × 900 stage: fit that to its box
+  const box = $('#svComp');
   function fit() {
-    const w = vw(), h = vh();
-    const k = w < 720 ? w / 900 : Math.min(w / 1440, h / 900);
-    world.style.setProperty('--cs', k.toFixed(4));
+    const k = Math.min(box.clientWidth / 1000, box.clientHeight / 620);
+    world.style.setProperty('--cs', Math.max(0.2, k).toFixed(4));
   }
   fit();
 
@@ -454,10 +403,14 @@ if (!reduceMotion) {
   /* =======================================================
      03 — lifecycle copy rises in with the board
      ======================================================= */
-  gsap.fromTo(['#svStageTitle', '#svStageText', '#svTicker'], { autoAlpha: 0, y: 40 }, {
-    autoAlpha: 1, y: 0, stagger: 0.08, ease: 'power2.out',
-    scrollTrigger: { trigger: '#lifecycle', start: 'top 55%', end: 'top 10%', scrub: 0.6 },
+  gsap.fromTo('#svCycleTitle', { autoAlpha: 0, y: 40 }, {
+    autoAlpha: 1, y: 0, ease: 'power2.out',
+    scrollTrigger: { trigger: '#lifecycle', start: 'top 70%', end: 'top 20%', scrub: 0.6 },
   });
+  // each stage rises in once as it reaches the screen, then stays put to be read
+  $$('.sv-cycle__item').forEach((li) => gsap.fromTo(li, { autoAlpha: 0, y: 48 }, {
+    autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: li, start: 'top 90%', once: true },
+  }));
 
   /* =======================================================
      04 — proof on paper: mask reveal from the bottom

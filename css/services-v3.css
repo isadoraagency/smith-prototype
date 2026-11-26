@@ -110,9 +110,17 @@
 .sv-checks li { display: flex; gap: 12px; font-size: 20px; line-height: 30px; color: rgba(240, 241, 235, .9); }
 .sv-checks svg { flex: 0 0 20px; height: 20px; margin-top: 2px; fill: none; stroke: var(--blue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-/* ---------- 03: the lifecycle (WebGL) ---------- */
-/* the component: a 1440 × 900 stage (as in Homepage R3) scaled to fit, in CSS 3D */
-.sv-comp { position: absolute; inset: 0; perspective: 1700px; perspective-origin: 52% 46%; overflow: hidden; }
+/* ---------- 03: the lifecycle ----------
+   a reading section, not a scene: the heading and the floating component
+   stay on screen (sticky) while all five stages scroll past on the right */
+.sv-cycle {
+  height: auto; min-height: 0; overflow: visible; padding: 0 48px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 600px); column-gap: 64px;
+}
+.sv-cycle__aside { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; flex-direction: column; padding: 128px 0 40px; }
+.sv-cycle__title { max-width: 600px; position: relative; z-index: 1; }
+/* the component: a 1440 × 900 stage (as in Homepage R3) scaled to fit its box, in CSS 3D */
+.sv-comp { position: relative; flex: 1; min-height: 0; perspective: 1700px; perspective-origin: 52% 46%; }
 .sv-comp__world {
   position: absolute; left: 50%; top: 46%; width: 1440px; height: 900px; margin: -466px 0 0 -724px;
   transform-style: preserve-3d; transform-origin: 724px 466px; scale: var(--cs, 1); translate: 4% 0; will-change: transform, opacity; opacity: 0;
@@ -120,90 +128,24 @@
 .sv-comp__img { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; max-width: none; will-change: transform, opacity; }
 .sv-comp__layer { opacity: 0; }
 .sv-comp__shadow { position: absolute; left: 474px; top: 610px; width: 520px; height: 90px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 8, 18, .55), rgba(0, 8, 18, 0)); filter: blur(6px); }
-.sv-cycle__shade { position: absolute; inset: 0; pointer-events: none; background: transparent; }
-.sv-cycle__copy { position: absolute; left: 48px; bottom: 48px; width: min(517px, calc(100vw - 96px)); z-index: 2; display: flex; flex-direction: column; gap: 8px; }
-.sv-cycle__text { font-size: 20px; line-height: 30px; color: rgba(240, 241, 235, .88); }
-.sv-ticker { position: absolute; right: 110px; top: calc(131px * var(--sy, 1)); z-index: 2; width: 257px; }
-.sv-ticker__list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
-.sv-ticker__list li { will-change: transform; }
-.sv-ticker__list button {
-  position: relative; display: block; padding: 0; text-align: left; color: rgba(185, 202, 235, .6);
-  font-family: var(--mono); font-size: 14px; line-height: 20px; letter-spacing: .1em; text-transform: uppercase;
-  transition: color .35s;
+.sv-cycle__list { list-style: none; margin: 0; padding: 128px 0 22vh; }
+.sv-cycle__item { display: flex; flex-direction: column; gap: 12px; padding: 40px 0; border-top: 1px solid rgba(185, 202, 235, .2); }
+.sv-cycle__item:last-child { border-bottom: 1px solid rgba(185, 202, 235, .2); }
+.sv-cycle__name { display: flex; align-items: center; gap: 16px; font-weight: 500; font-size: clamp(24px, 2vw, 30px); line-height: 1.2; letter-spacing: -0.005em; }
+/* marker: lights red for the stage crossing the middle of the screen */
+.sv-cycle__name::before {
+  content: ""; flex: 0 0 8px; height: 8px; border-radius: 50%; background: rgba(185, 202, 235, .35);
+  transition: background .4s, box-shadow .4s;
 }
-.sv-ticker__list button::before {
-  content: ""; position: absolute; left: -24px; top: 7px; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--red); box-shadow: 0 0 0 4px rgba(213, 59, 45, .28); opacity: 0; scale: .2; transition: opacity .35s, scale .35s;
-}
-.sv-ticker__list button:hover, .sv-ticker__list button:focus-visible { color: #fff; }
-.sv-ticker__list button.is-on { color: #fff; }
-.sv-ticker__list button.is-on::before { opacity: 1; scale: 1; }
-.sv-ticker__line {
-  position: absolute; left: -26px; top: 0; width: 560px; height: 74px; overflow: visible; pointer-events: none;
-  fill: none; stroke: rgba(255, 255, 255, .35); stroke-width: 1; vector-effect: non-scaling-stroke;
-}
+.sv-cycle__item.is-on .sv-cycle__name::before { background: var(--red); box-shadow: 0 0 0 5px rgba(213, 59, 45, .25); }
+.sv-cycle__text { font-size: 18px; line-height: 28px; color: rgba(240, 241, 235, .85); padding-left: 24px; }
 
-/* ---------- 04: proof (on paper) ---------- */
-.sv-proof { color: var(--navy); }
-.sv-proof__inner { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 560fr) minmax(0, 712fr); gap: 72px; align-items: center; padding: 104px 48px 48px; }
-.sv-proof__media { height: min(78vh, 700px); border-radius: 16px; overflow: hidden; will-change: clip-path; }
-.sv-proof__media video { width: 100%; height: 100%; object-fit: cover; object-position: 62% 50%; display: block; will-change: transform; }
-.sv-proof__panel { display: flex; flex-direction: column; gap: 62px; }
-.sv-metrics { display: flex; flex-direction: column; }
-.sv-metric { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; padding: 30px 0 40px; border-top: 1px solid rgba(25, 33, 52, .16); }
-.sv-metric b { font-family: var(--mono); font-weight: 400; font-size: clamp(48px, 4.4vw, 64px); line-height: 1; color: var(--red); font-variant-numeric: tabular-nums; padding-top: 10px; }
-.sv-metric h3 { font-weight: 500; font-size: 24px; line-height: 30px; margin-bottom: 6px; }
-.sv-metric p { font-size: 18px; line-height: 27px; color: rgba(25, 33, 52, .7); }
-
-/* ---------- 05: confidence ---------- */
-.sv-quality__title { position: absolute; left: 48px; top: calc(120px * var(--sy, 1)); width: min(760px, calc(100vw - 96px)); z-index: 2; }
-.sv-line { position: absolute; left: 0; right: 0; top: 50%; height: 0; }
-.sv-line__track { position: absolute; left: 0; top: 0; height: 0; will-change: transform; }
-.sv-line__base { position: absolute; left: -100vw; width: calc(100% + 200vw); top: -1px; height: 1px; background: rgba(185, 202, 235, .28); }
-.sv-line__lit { position: absolute; left: 0; top: -1.5px; height: 3px; width: 0; background: var(--blue); }
-.sv-step { position: absolute; top: 0; left: calc(var(--i) * var(--gap)); display: grid; place-items: center; translate: -50% -50%; }
-.sv-step i {
-  display: block; width: 40px; height: 40px; border-radius: 50%; background: var(--navy); box-shadow: inset 0 0 0 2px rgba(185, 202, 235, .85);
-  transition: background .4s, box-shadow .4s, border-radius .4s, rotate .4s, scale .4s;
-}
-.sv-step::before {
-  content: ""; position: absolute; width: 88px; height: 88px; border-radius: 50%; background: rgba(213, 59, 45, .2);
-  scale: .3; opacity: 0; transition: scale .5s, opacity .4s;
-}
-.sv-step.is-past i { background: var(--blue); box-shadow: none; }
-.sv-step.is-on i { background: var(--red); box-shadow: none; border-radius: 0; rotate: 45deg; scale: .9; }
-.sv-step.is-on::before { scale: 1; opacity: 1; }
-.sv-step em {
-  position: absolute; top: 52px; white-space: nowrap; font-style: normal; font-family: var(--mono); font-size: 24px; line-height: 30px;
-  letter-spacing: .08em; text-transform: uppercase; color: rgba(185, 202, 235, .55); transition: color .4s;
-}
-.sv-step.is-on em { color: #fff; }
-.sv-quality__text {
-  position: absolute; left: calc(50% - 56px); top: calc(50% + 116px); width: min(520px, calc(100vw - 96px)); z-index: 2;
-  font-size: 24px; line-height: 32px; color: #fff;
-}
-.sv-quality__btn { position: absolute; left: 50%; bottom: calc(60px * var(--sy, 1)); translate: -50% 0; z-index: 2; }
-.sv-quality__btn span, .sv-quality__btn:hover span { background: transparent; }
-
-/* ---------- 06: watching ---------- */
-.sv-watch { position: relative; min-height: 100vh; overflow: hidden; perspective: 1200px; }
-.sv-watch__media { position: absolute; inset: -8% 0; will-change: transform; }
-.sv-watch__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sv-watch__shade { position: absolute; inset: 0; background: rgba(0, 0, 0, .5); }
-.sv-watch__inner { position: relative; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 489px; gap: 48px; align-items: center; padding: 120px 48px 96px; }
-.sv-watch .sv-byte { position: relative; left: auto; top: auto; min-height: 0; transform-origin: 50% 100%; will-change: transform; }
-
-/* ---------- 07: CTA cards rise out of depth ---------- */
-.sv-cta { background: var(--paper); perspective: 1400px; }
-.sv-cta .cta__card { will-change: transform; }
-.sv-cta .cta-search__field { border-radius: 8px; }
 
 /* ---------- smaller screens ---------- */
 @media (max-width: 1100px) {
   .sv-clock__body { gap: 40px; }
   .sv-checks { width: 340px; }
   .sv-checks li { font-size: 17px; line-height: 26px; }
-  .sv-ticker { right: 48px; }
 }
 @media (max-width: 900px) {
   .sv-clock__body { top: auto; bottom: 32px; }
@@ -215,12 +157,17 @@
   .sv-metric b { font-size: 40px; padding-top: 0; }
   .sv-metric p { display: none; }
   .sv-watch__inner { grid-template-columns: 1fr; }
-  .sv-ticker { left: 48px; right: auto; top: 104px; }
-  .sv-ticker__line { display: none; }
-  .sv-comp__world { top: 52%; translate: 0 0; }
+  .sv-cycle { grid-template-columns: 1fr; padding: 0 24px; }
+  .sv-cycle__aside { position: relative; height: auto; padding: 112px 0 0; }
+  .sv-comp { flex: none; height: min(62vw, 420px); }
+  .sv-comp__world { translate: 0 0; }
+  .sv-cycle__list { padding: 8px 0 96px; }
 }
 @media (max-width: 720px) {
-  .sv-clock__title, .sv-quality__title, .sv-cycle__copy { left: 16px; right: 16px; width: auto; }
+  .sv-clock__title, .sv-quality__title { left: 16px; right: 16px; width: auto; }
+  .sv-cycle { padding: 0 16px; }
+  .sv-cycle__item { padding: 28px 0; gap: 8px; }
+  .sv-cycle__text { padding-left: 0; }
   .sv-set { width: calc(100vw - 32px); grid-template-columns: 1fr; gap: 24px; translate: -50% -50%; }
   .sv-set__item { display: grid; grid-template-columns: 84px 1fr; grid-template-rows: auto 1fr; column-gap: 16px; row-gap: 6px; }
   .sv-set__slot { grid-row: 1 / 3; width: 84px; margin: 0; }
@@ -234,9 +181,6 @@
   .sv-quote { font-size: 20px; line-height: 26px; }
   .sv-pill { left: 12px; bottom: 12px; padding: 8px 14px 8px 8px; gap: 10px; }
   .sv-pill__play { flex-basis: 32px; width: 32px; height: 32px; }
-  .sv-ticker { left: 40px; }
-  .sv-ticker__list { gap: 10px; }
-  .sv-ticker__list button { font-size: 12px; }
   .sv-step em { font-size: 20px; }
   .sv-quality__text { font-size: 20px; line-height: 28px; }
   .sv-quality__text { left: 24px; width: calc(100vw - 48px); }
