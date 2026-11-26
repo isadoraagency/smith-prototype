@@ -40,32 +40,16 @@
   position: absolute; left: 50%; top: 54%; z-index: 3; width: min(838px, calc(100vw - 96px)); translate: -50% -50%;
   font-weight: 500; font-size: clamp(34px, 3.9vw, 56px); line-height: 1.107; letter-spacing: -0.01em; text-align: center;
 }
-.sv-caption {
-  position: absolute; left: 48px; bottom: 106px; z-index: 3; width: min(520px, calc(100vw - 96px));
-  display: flex; flex-direction: column; gap: 12px; visibility: hidden;
+/* two sets of three capabilities: the cards fly into the slots (js), copy sits under them */
+.sv-set {
+  position: absolute; left: 50%; top: 50%; z-index: 3; translate: -50% -46%; width: min(1140px, calc(100vw - 96px));
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; visibility: hidden; pointer-events: none;
 }
-.sv-caption__title { font-weight: 500; font-size: clamp(28px, 2.8vw, 40px); line-height: 1.15; }
-.sv-caption__text { font-size: 20px; line-height: 30px; color: rgba(240, 241, 235, .85); }
-/* counter + ticks sit under the caption, bottom left (sv2 / 03); each tick is a button */
-.sv-progress { position: absolute; left: 48px; bottom: 48px; z-index: 3; display: flex; align-items: center; gap: 8px; visibility: hidden; color: #b9caeb; }
-.sv-progress b { font-weight: 400; color: #fff; }
-.sv-ticks { list-style: none; display: flex; gap: 8px; margin: 0; padding: 0; }
-.sv-ticks button {
-  position: relative; display: block; width: 28px; height: 16px; padding: 0; border: 0; background: none; cursor: pointer;
-}
-.sv-ticks button::before {
-  content: ""; position: absolute; left: 0; right: 0; top: 7px; height: 2px; background: rgba(185, 202, 235, .3);
-  transition: background .4s, transform .4s cubic-bezier(.2, .7, .2, 1); transform-origin: 50% 50%;
-}
-.sv-ticks button:hover::before { background: rgba(185, 202, 235, .75); transform: scaleY(2); }
-.sv-ticks button[aria-current]::before { background: rgba(185, 202, 235, .55); }
-/* the active tick fills red as autoplay counts down (--p 0 → 1, set in js) */
-.sv-ticks button::after {
-  content: ""; position: absolute; left: 0; right: 0; top: 7px; height: 2px; background: var(--red);
-  transform: scaleX(var(--p, 0)); transform-origin: 0 50%; pointer-events: none;
-}
-.sv-ticks button:hover::after { transform: scaleX(var(--p, 0)) scaleY(2); }
-.sv-ticks button:focus-visible { outline: 1px solid #fff; outline-offset: 2px; border-radius: 2px; }
+.sv-set__item { display: flex; flex-direction: column; gap: 12px; }
+.sv-set__slot { width: clamp(150px, 25vh, 236px); aspect-ratio: 4 / 5; margin-bottom: 20px; }
+.sv-set__title, .sv-set__text { translate: 0 var(--ty, 0); }
+.sv-set__title { font-weight: 500; font-size: clamp(24px, 2.1vw, 32px); line-height: 1.2; letter-spacing: -0.005em; }
+.sv-set__text { font-size: 18px; line-height: 28px; color: rgba(240, 241, 235, .85); max-width: 340px; }
 /* screen-reader list; shown as text when motion is reduced */
 .sv-caps { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -231,12 +215,15 @@
   .sv-comp__world { top: 52%; translate: 0 0; }
 }
 @media (max-width: 720px) {
-  .sv-caption, .sv-clock__title, .sv-quality__title, .sv-cycle__copy { left: 16px; right: 16px; width: auto; }
+  .sv-clock__title, .sv-quality__title, .sv-cycle__copy { left: 16px; right: 16px; width: auto; }
+  .sv-set { width: calc(100vw - 32px); grid-template-columns: 1fr; gap: 24px; translate: -50% -50%; }
+  .sv-set__item { display: grid; grid-template-columns: 84px 1fr; grid-template-rows: auto 1fr; column-gap: 16px; row-gap: 6px; }
+  .sv-set__slot { grid-row: 1 / 3; width: 84px; margin: 0; }
+  .sv-set__title { font-size: 20px; }
+  .sv-set__text { font-size: 15px; line-height: 22px; }
   .sv-offices.tz__offices { left: 16px; right: 16px; }
   .sv-statement { width: calc(100vw - 32px); }
-  .sv-caption { bottom: 88px; }
-  .sv-caption__text, .sv-cycle__text, .sv-quality__text { font-size: 16px; line-height: 24px; }
-  .sv-progress { left: 16px; bottom: 48px; }
+  .sv-cycle__text, .sv-quality__text { font-size: 16px; line-height: 24px; }
   .sv-voice__content { left: 16px; right: 16px; width: auto; top: auto; bottom: 40px; translate: none; gap: 20px; }
   .sv-quote { font-size: 22px; }
   .sv-ticker { left: 40px; }
@@ -250,7 +237,7 @@
 
 /* ---------- reduced motion: a calm, static page ---------- */
 .sv-static .sv-intro, .sv-static .sv-clock, .sv-static .sv-cycle, .sv-static .sv-proof, .sv-static .sv-quality { height: auto; min-height: 100vh; overflow: visible; }
-.sv-static .sv-space, .sv-static .sv-caption, .sv-static .sv-progress { display: none; }
+.sv-static .sv-space, .sv-static .sv-set { display: none; }
 .sv-static .sv-statement { position: relative; left: auto; top: auto; translate: none; margin: 0 auto; padding: 40vh 0 64px; }
 .sv-static .sv-voice { position: relative; visibility: visible; height: 100vh; }
 .sv-static .sv-caps { position: static; width: auto; height: auto; clip: auto; white-space: normal; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; list-style: none; padding: 0 48px 96px; }

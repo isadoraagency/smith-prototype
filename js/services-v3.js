@@ -288,9 +288,8 @@ if (!reduceMotion) {
   const endCard = $('.sv-card--end');
   const capCards = cards.filter((c) => c.dataset.cap !== undefined);
   const caps = $$('#svCaps li').map((li) => ({ title: $('b', li).textContent, text: $('span', li).textContent }));
-  const caption = $('#svCaption');
-  const progress = $('#svProgress');
-  const ticks = $$('#svTicks button');
+  const sets = $$('.sv-set', intro);
+  const slots = $$('.sv-set__slot', intro);                 // one per capability, in order
   const titleWords = splitWords($('#svTitle'), true);
   const voice = $('#leader');
   const quoteWords = splitWords($('#svQuote'));
@@ -298,15 +297,17 @@ if (!reduceMotion) {
   /* geometry, measured from the Figma frame (1440 × 900):
      a card's width there gives its depth (perspective P), its centre
      gives its place in the world */
-  const P = 1000, HERO_W = 438, ACTIVE_W = 526, END_W = 300;
+  const P = 1000, HERO_W = 438, END_W = 300;
   const depthFor = (screenW) => P * (1 - HERO_W / screenW);  // z where a HERO_W card looks screenW wide
+  const SET_Z = [1200, 5200];                                 // camera depth for each set of three
   let G = {};
   function measure() {
     const W = vw(), H = vh();
     const small = W < 720;
     const sx = small ? W / 820 : W / 1440, sy = H / 900;
     const s = small ? sx : Math.min(sx, sy);
-    world.style.setProperty('--w0', `${HERO_W * s}px`);
+    G.w0 = HERO_W * s;
+    world.style.setProperty('--w0', `${G.w0}px`);
     cards.forEach((c) => {
       const fw = +c.dataset.fw, k = fw / HERO_W;
       c._z = c === hero ? 0 : P * (1 - 1 / k);
@@ -314,123 +315,86 @@ if (!reduceMotion) {
       c._y = ((+c.dataset.fy - 450) * sy) / k;
       c.style.transform = `translate3d(${c._x.toFixed(1)}px, ${c._y.toFixed(1)}px, ${c._z.toFixed(1)}px)`;
     });
-    const activeEff = depthFor(ACTIVE_W), endEff = depthFor(END_W);
-    // camera stops: 0 = the field, 1..6 = each capability, 7 = Todd
-    G.stops = [{ x: 0, y: 0, z: 0 }]
-      .concat(capCards.map((c) => ({ x: c._x, y: c._y, z: activeEff - c._z })))
-      .concat([{ x: endCard._x, y: endCard._y, z: endEff - endCard._z }]);
+    // where each capability card lines up: its slot in the set layout, from the screen centre
+    const ir = intro.getBoundingClientRect();
+    G.slots = slots.map((el) => {
+      const r = el.getBoundingClientRect();
+      return { X: r.left - ir.left + r.width / 2 - ir.width / 2, Y: r.top - ir.top + r.height / 2 - ir.height / 2, k: r.width / G.w0 };
+    });
+    const endEff = depthFor(END_W);
+    // camera stops: 0 = the field, 1 = capabilities 01–03, 2 = 04–06, 3 = Todd
+    G.stops = [{ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: SET_Z[0] }, { x: 0, y: 0, z: SET_Z[1] },
+      { x: endCard._x, y: endCard._y, z: endEff - endCard._z }];
     G.endW = HERO_W * s * (P / (P - endEff));
   }
   measure();
 
-  /* camera: scroll moves it field → capability → Todd (cam.f 0 → 1 → 2);
-     which capability it holds on is chosen with the ticks, and a click
-     flies the camera from where it is to that card (nav.u 0 → 1) */
+  /* scroll drives everything (cam.f 0 → 3): the camera pushes into the
+     field, and at each set its three cards leave their places in the
+     field and line up in a row over their copy, then rejoin the field
+     as the camera moves on */
   const cam = { f: 0, reveal: 0, introZ: -2600 };
-  const nav = { from: null, to: 0, u: 1 };
-  let sel = 0, capOn = -1;
-  // turn toward the next point first, then travel to it
-  function travel(a, b, u) {
+  function camAt(f) {
+    const i = clamp(Math.floor(f), 0, G.stops.length - 2);
+    const u = clamp((f - i - 0.16) / 0.68, 0, 1);            // dwell at each stop
     const tz = smoother(u), txy = smoother(clamp(u / 0.62, 0, 1));
+    const a = G.stops[i], b = G.stops[i + 1];
     return { x: lerp(a.x, b.x, txy), y: lerp(a.y, b.y, txy), z: lerp(a.z, b.z, tz) };
   }
-  const capPoint = () => (nav.from ? travel(nav.from, G.stops[nav.to + 1], nav.u) : G.stops[nav.to + 1]);
-  function camAt(f) {
-    const leg = f <= 1 ? 0 : 1;
-    const u = clamp((f - leg - 0.16) / 0.68, 0, 1);            // dwell at each end
-    return leg === 0 ? travel(G.stops[0], capPoint(), u) : travel(capPoint(), G.stops[G.stops.length - 1], u);
-  }
-  function showCap(i) {
-    $('#svCapN').textContent = String(i + 1).padStart(2, '0');
-    $('#svCapTitle').textContent = caps[i].title;
-    $('#svCapText').textContent = caps[i].text;
-  }
+  const lineup = (f, k) => smoother(clamp((1 - Math.abs(f - (k + 1))) / 0.6, 0, 1));   // 1 within ±0.4 of the stop
   function paintWorld() {
     const c = camAt(cam.f);
     const z = c.z + cam.introZ;
     world.style.transform = `translate3d(${(-c.x).toFixed(1)}px, ${(-c.y).toFixed(1)}px, ${z.toFixed(1)}px)`;
+    const bs = [lineup(cam.f, 0), lineup(cam.f, 1)];
+    const bMax = Math.max(bs[0], bs[1]);
     cards.forEach((card) => {
-      const eff = card._z + z;                                   // > 0: in front of the screen plane
-      let o = clamp((eff + 15000) / 3000, 0, 1);                 // out of the distance
-      o *= clamp((760 - eff) / 360, 0, 1);                       // gone before it reaches the camera
+      const cap = card.dataset.cap === undefined ? -1 : +card.dataset.cap;
+      const b = cap < 0 ? 0 : bs[cap < 3 ? 0 : 1];
+      let x = card._x, y = card._y, cz = card._z;
+      if (b > 0) {
+        // the world position that shows the card in its slot from where the camera is now
+        const sl = G.slots[cap], eff = P * (1 - 1 / sl.k);
+        x = lerp(x, sl.X / sl.k + c.x, b); y = lerp(y, sl.Y / sl.k + c.y, b); cz = lerp(cz, eff - z, b);
+      }
+      if (cap >= 0) card.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${cz.toFixed(1)}px)`;
+      const eff = cz + z;                                         // > 0: in front of the screen plane
+      let o = clamp((eff + 15000) / 3000, 0, 1);                  // out of the distance
+      o *= clamp((760 - eff) / 360, 0, 1);                        // gone before it reaches the camera
       if (card !== hero && card !== endCard) o *= cam.reveal;
+      o *= 1 - 0.9 * Math.max(0, bMax - b);                       // the rest of the field steps back
       card.style.opacity = o.toFixed(3);
       card.style.visibility = o < 0.01 ? 'hidden' : 'visible';
     });
-    // caption + ticks while the camera holds on the capabilities
-    const best = Math.abs(cam.f - 1) < 0.24 ? sel : -1;
-    if ((best < 0) !== (capOn < 0)) {
-      if (best < 0) { gsap.to([caption, progress], { autoAlpha: 0, duration: 0.3, overwrite: true }); stopAuto(); }
-      else {
-        showCap(best); startAuto();
-        gsap.fromTo(caption, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.5, overwrite: true });
-        gsap.to(progress, { autoAlpha: 1, duration: 0.4, overwrite: true });
-      }
-    }
-    capOn = best;
+    // each set's copy reads while its cards are lined up
+    sets.forEach((el, k) => {
+      const d = cam.f - (k + 1);
+      const o = clamp((0.32 - Math.abs(d)) / 0.14, 0, 1);
+      el.style.opacity = o.toFixed(3);
+      el.style.visibility = o < 0.01 ? 'hidden' : 'visible';
+      el.style.setProperty('--ty', `${(-d * 90).toFixed(1)}px`);
+    });
   }
-
-  // a tick: fly from where the camera is (it may be mid-flight) to that card
-  let flight = null;
-  function goCap(i) {
-    if (i === sel) return;
-    nav.from = capPoint(); nav.to = i; nav.u = 0;
-    sel = i;
-    ticks.forEach((tk, k) => { if (k === sel) tk.setAttribute('aria-current', 'step'); else tk.removeAttribute('aria-current'); });
-    if (flight) flight.kill();
-    const dist = Math.hypot(G.stops[i + 1].x - nav.from.x, G.stops[i + 1].y - nav.from.y, G.stops[i + 1].z - nav.from.z);
-    flight = gsap.to(nav, { u: 1, duration: clamp(1 + dist / 3000, 1.2, 2.2), ease: 'none', onUpdate: paintWorld,
-      onComplete: () => { nav.from = null; } });
-    $('#svCapN').textContent = String(i + 1).padStart(2, '0');
-    swap(['#svCapTitle', '#svCapText'], () => showCap(sel));
-    if (capOn >= 0) startAuto();
-  }
-  /* autoplay: while the camera holds on the capabilities it moves on by
-     itself; the active tick fills red to show the time left. Hovering or
-     focusing the ticks pauses it, a click picks up from that capability. */
-  const DWELL = 5;
-  let auto = null, held = false;
-  function stopAuto() { if (auto) auto.kill(); auto = null; ticks.forEach((tk) => tk.style.setProperty('--p', 0)); }
-  function startAuto() {
-    stopAuto();
-    const tk = ticks[sel];
-    auto = gsap.fromTo(tk, { '--p': 0 }, { '--p': 1, duration: DWELL, ease: 'none', paused: held,
-      onComplete: () => { tk.style.setProperty('--p', 0); goCap((sel + 1) % ticks.length); } });
-  }
-  const hold = (v) => { held = v; if (auto) (v ? auto.pause() : auto.resume()); };
-  progress.addEventListener('pointerenter', () => hold(true));
-  progress.addEventListener('pointerleave', () => hold(progress.contains(document.activeElement)));
-  progress.addEventListener('focusin', () => hold(true));
-  progress.addEventListener('focusout', (e) => { if (!progress.contains(e.relatedTarget)) hold(progress.matches(':hover')); });
-
-  ticks.forEach((tk, i) => tk.addEventListener('click', () => goCap(i)));
-  progress.addEventListener('keydown', (e) => {
-    const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
-    if (!d) return;
-    e.preventDefault();
-    const i = clamp(sel + d, 0, ticks.length - 1);
-    goCap(i); ticks[i].focus();
-  });
 
   // where Todd's card sits when the camera stops: the voice layer starts exactly there
   const endBox = () => { const w = G.endW, h = w * 1.25; return { left: (vw() - w) / 2, top: (vh() - h) / 2, width: w, height: h }; };
 
   // arrival: the field drifts in out of depth, the headline rises
-  gsap.set([caption, progress], { autoAlpha: 0 });
   gsap.to(cam, { introZ: 0, reveal: 1, duration: 2.4, ease: 'expo.out', delay: 0.1, onUpdate: paintWorld });
   gsap.from(titleWords, { yPercent: 110, duration: 1.1, stagger: 0.035, ease: 'expo.out', delay: 0.5 });
   paintWorld();
 
-  // field → capability 01 (scroll), hold while the ticks drive, → Todd (scroll)
-  const LEG = 1.25, HOLD = 1.6, FLY = 2 * LEG + HOLD;
+  // field → 01–03 → 04–06 → Todd, each set held while it is read
+  const LEG = 1.25, HOLD = 1.1, FLY = 3 * LEG + 2 * HOLD;
   const t1 = gsap.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: intro, start: 'top top', end: '+=900%', pin: true, scrub: 0.6, invalidateOnRefresh: true, onRefresh: () => { measure(); paintWorld(); } },
+    scrollTrigger: { trigger: intro, start: 'top top', end: '+=1050%', pin: true, scrub: 0.6, invalidateOnRefresh: true, onRefresh: () => { measure(); paintWorld(); } },
   });
   t1
     .to('#svTitle', { autoAlpha: 0, y: -60, duration: 0.6, ease: 'power2.in' }, 0)
     .to(cam, { f: 1, duration: LEG, onUpdate: paintWorld }, 0.2)
     .to(cam, { f: 2, duration: LEG, onUpdate: paintWorld }, 0.2 + LEG + HOLD)
+    .to(cam, { f: 3, duration: LEG, onUpdate: paintWorld }, 0.2 + 2 * (LEG + HOLD))
     // Todd's card opens to the full screen and becomes the quote's backdrop
     .set(voice, { autoAlpha: 1 }, 0.2 + FLY)
     // the card grows into the full screen; the photo keeps its framing and only widens
